@@ -17,7 +17,7 @@ void merge(vector<int>&nums1,vector<int>&nums2){
             // cout<<"mid2 poitning at : "<<nums2[mid2]<<endl;
             // cout<<"st1 = "<<st1<<" end1 = "<<end1<<endl<<" st2 = "<<st2<<" & end2  = "<<end2<<endl;
             if(nums2[mid2]>=nums1[mid1]){
-                if(nums2[mid2]<=nums1[mid1+1]){
+                if(mid1!=nums1.size()&&nums2[mid2]<=nums1[mid1+1]){
                     // cout<<"Hey"<<endl;
                     nums1.insert(nums1.begin()+mid1+1,nums2[mid2]);
                     // cout<<nums2[mid2]<<" Inserted at posotion : "<<mid1+1<<endl;

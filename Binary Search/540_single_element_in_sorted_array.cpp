@@ -1,3 +1,6 @@
+// Input: nums = [1,1,2,3,3,4,4,8,8]
+// Output: 2
+
 class Solution {
 public:
     int find(vector<int>&nums){
