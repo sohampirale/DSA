@@ -4,7 +4,7 @@ public:
         int st=0,end=1,cnt=0;
         while(end!=target||end+1!=target){
             int temp=end;
-            end=end+(end-st+1)
+            end=end+(end-st+1);
             st=temp;
             cnt++;
         }
