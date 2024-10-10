@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace std;
 inline void print(){
-    cout<<"Learnign header files \nSuiiiiiiiiiiiiiiiiiiiiiiii"<<endl;
+    cout<<"Learnign header files"<<endl;
 }
 // Define an inline function
 inline void displayInline() {
