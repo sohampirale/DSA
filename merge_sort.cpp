@@ -4,12 +4,6 @@ using namespace std;
 int test=0,cnt=0;
 vector<int> merge_sort(vector<int>ans,vector<int>&nums,int st,int end){
     if(ans.empty())cout<<"Ans vector is  always taken as empty"<<endl;
-    cnt++;
-    if(cnt==15){
-        cout<<"Lot of calculation"<<endl;
-        ans.push_back(1);
-        return ans;
-    }
     if(st>=end){
         cout<<nums[st]<<" pushed at back"<<endl;
         ans.push_back(nums[st]);
