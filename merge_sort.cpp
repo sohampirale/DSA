@@ -54,4 +54,5 @@ int main(){
     cout<<"After coming out of the matrix the array becomes : ";
     for(int i=0;i<ans.size();i++)cout<<ans[i]<<" ";
     cout<<endl;
+  
 }
