@@ -12,8 +12,8 @@ vector<int> merge_sort(vector<int>ans,vector<int>&nums,int st,int end){
     int mid=st+(end-st)/2;
     vector<int>left_side=merge_sort(ans,nums,st,mid);
     vector<int>right_side=merge_sort(ans,nums,mid+1,end);
-    cout<<"size of left side receievd answer si : "<<left_side.size()<<endl;
-    cout<<"size of right side receievd answer si : "<<right_side.size()<<endl;
+    cout<<"size of left side receievd answer is : "<<left_side.size()<<endl;
+    cout<<"size of right side receievd answer is : "<<right_side.size()<<endl;
     cout<<endl;
     int i=0,j=0,k=0;
     if(left_side.empty())return right_side;
@@ -54,5 +54,14 @@ int main(){
     cout<<"After coming out of the matrix the array becomes : ";
     for(int i=0;i<ans.size();i++)cout<<ans[i]<<" ";
     cout<<endl;
-  
 }
+
+// ENter size of array  : 9
+// Enter 9 numbers : 23 1 45 25 34 23 99 56 34
+// Original array : 23 1 45 25 34 23 99 56 34 
+// After coming out of the matrix the array becomes : 1 23 23 25 34 34 45 56 99 
+
+// ENter size of array  : 8
+// Enter 8 numbers : 23 14 68 23 12 56 1 9
+// Original array : 23 14 68 23 12 56 1 9 
+// After coming out of the matrix the array becomes : 1 9 12 14 23 23 56 68 
