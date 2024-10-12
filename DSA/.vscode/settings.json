@@ -1,0 +1,8 @@
+{
+    "ros.distro": "humble",
+    "files.associations": {
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp"
+    }
+}
