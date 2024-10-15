@@ -4,5 +4,6 @@
         "*.tcc": "cpp",
         "ostream": "cpp",
         "iostream": "cpp"
-    }
+    },
+    "ros.distro": "humble"
 }
