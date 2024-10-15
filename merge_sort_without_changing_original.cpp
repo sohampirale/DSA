@@ -8,22 +8,24 @@ void merge_sort(vector<int>&nums,int st,int end){
     merge_sort(nums,st,mid);
     merge_sort(nums,mid+1,end);
     for(int i=t;i<=end;i++){
-        // cout<<"i = "<<i<<endl;
+        cout<<"i = "<<i<<endl;
         if(nums[i]<nums[i-1]){
-            // cout<<"We need to shift : "<<nums[i]<<endl;
+            cout<<"We need to shift : "<<nums[i]<<endl;
             int temp=nums[i];
             int j=i-1;
             while(j>=0&&nums[j]>temp){
-                // cout<<"Shifting : "<<nums[j]<<endl;
-                nums[j+1]=nums[j--];
+                cout<<"Shifting : "<<nums[j]<<endl;
+                nums[j+1]=nums[j];
+                j--;
             }
-            // cout<<"PUtting "<<temp<<" at pos : "<<j+1<<endl;
+            cout<<"PUtting "<<temp<<" at pos : "<<j+1<<endl;
             nums[j+1]=temp;
         }
+        cout<<"i : "<<i<<endl;
     }
-    // cout<<"Nums (st="<<st<<" & end = "<<end<<" & t = "<<t<<"): ";
-    // for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
-    // cout<<endl;
+    cout<<"Nums (st="<<st<<" & end = "<<end<<" & t = "<<t<<"): ";
+    for(int k=0;k<nums.size();k++)cout<<nums[k]<<" ";
+    cout<<endl;
 }
 int main(){
     int n;
