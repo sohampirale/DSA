@@ -4,6 +4,7 @@ using namespace std;
 class process
 {
 public:
+//test
     string name;
     vector<int> resources;
     vector<int>required;
