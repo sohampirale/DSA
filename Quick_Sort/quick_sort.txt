@@ -2,7 +2,7 @@
 #include<vector>
 using namespace std;
 //wokring
-void quick_sort_pivot_at_end(vector<int>&nums,int low,int high){
+void quick_sort(vector<int>&nums,int low,int high){
     if(low>=high)return;
     int pivot=nums[high];
     int st=low,end=high;
@@ -26,45 +26,9 @@ void quick_sort_pivot_at_end(vector<int>&nums,int low,int high){
     cout<<"Array modified to : ";
     for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
     cout<<endl;
-    quick_sort_pivot_at_end(nums,low,end);
-    quick_sort_pivot_at_end(nums,st,high);
+    quick_sort(nums,low,end);
+    quick_sort(nums,st,high);
 }
-
-void quick_sort_pivot_at_mid(vector<int>&nums,int low,int high){
-    if(low>high)return;
-    if(low==high){
-        cout<<"low = "<<low<<" & high = "<<high<<endl;
-        return;
-    }
-    int st=low,end=high;
-    int mid=st+(end-st)/2;
-    int pivot=nums[mid];
-    while(st<=end){
-
-        while(nums[st]<pivot){
-            st++;
-        }
-        
-        while(nums[end]>pivot)
-            end--;
-
-        if(st<=end){
-            int temp=nums[st];
-            nums[st]=nums[end];
-            nums[end]=temp;
-            st++;
-            end--;
-        }
-     
-        cout<<"Array modified to : ";
-        for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
-        cout<<endl;
-    }
-    cout<<"Came out at st = "<<st<<" & end = "<<end<<endl;
-    quick_sort_pivot_at_mid(nums,low,end);
-    quick_sort_pivot_at_mid(nums,st,high);
-}
-
 int main(){
     int n;
     cout<<"Enter size of array : ";
@@ -72,7 +36,7 @@ int main(){
     vector<int>nums(n);
     cout<<"Enter "<<n<<" numbers : ";
     for(int i=0;i<n;i++)cin>>nums[i];
-    quick_sort_pivot_at_mid(nums,0,n-1);
+    quick_sort(nums,0,n-1);
     cout<<"After calling the quick sort fucntion the original array becomes : ";
     for(int i=0;i<n;i++)cout<<nums[i]<<" ";
 }
@@ -100,10 +64,9 @@ int main(){
 //             int temp=nums[st];
 //             nums[st]=nums[end];
 //             nums[end]=temp;
-//               st++;
-//              end--;
 //         }
-//      
+//         st++;
+//         end--;
 //         cout<<"Array modified to : ";
 //         for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
 //         cout<<endl;
