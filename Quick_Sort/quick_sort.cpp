@@ -1,6 +1,6 @@
 #include<iostream>
 #include<vector>
-using namespace std;
+using namespace std;//idbsidbsihbd
 void quick_sort(vector<int>&nums,int low,int high){
     if(low>high)return;
     if(low==high){
