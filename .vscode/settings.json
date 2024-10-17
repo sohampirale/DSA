@@ -3,7 +3,9 @@
         "vector": "cpp",
         "*.tcc": "cpp",
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "deque": "cpp",
+        "string": "cpp"
     },
     "ros.distro": "humble"
 }
