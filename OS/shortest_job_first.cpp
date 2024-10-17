@@ -31,6 +31,19 @@ class process{
             this->priority=one_process.priority;
         }
 };
+class process_using_resource{
+    public:
+        string pid;
+        int bt,memory;
+        vector<int>need;
+        vector<vector<process_using_resource>>requests;
+        process_using_resource(string pid,int bt,int memory,vector<int>&need){
+            this->pid=pid;
+            this->bt=bt;
+            this->memory=memory;
+            this->need=need;
+        }
+};
 class base_process{
     public:
         string pid,batch;
@@ -74,22 +87,24 @@ class base_process{
         }
 
 };
-void manage(vector<vector<base_process>>&system,process& one_process){
-    if(one_process.isImp){
-        int priority=one_process.priority;
-        if(priority==1){
-            save_SJF_Process(system[3],one_process);
-        }
-        if(priority==1||priority==2){
-            save_SJF_Process(system[4],one_process);
-        }
+void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes){
+    if(reqRes){
+        if(one_process.isImp){
+            int priority=one_process.priority;
+            if(priority==1){
+                save_SJF_Process(system[3],one_process);
+            }
+            if(priority==1||priority==2){
+                save_SJF_Process(system[4],one_process);
+            }
 
-        save_SJF_Process(system[5],one_process);
+            // save_SJF_Process(system[5],one_process);
+        }
+        for(int i=0;i<3;i++){
+            save_SJF_Process(system[i],one_process);
+        }
+        cout<<"Process : "<<one_process.pid<<" is arranged in appropriate batches"<<endl;
     }
-    for(int i=0;i<3;i++){
-        save_SJF_Process(system[i],one_process);
-    }
-    cout<<"Process : "<<one_process.pid<<" is arranged in appropriate batches"<<endl;
 }
 void save_SJF_Process(vector<base_process>&SJF_v,process& one_process){
     int memory=one_process.memory;
@@ -137,8 +152,6 @@ int main(){
     cin>>n;
     vector<vector<base_process>>system(6,vector<base_process>(6));
     set_batch_name(system,batches);
-    cout<<"hi"<<endl;
-    cout<<"Hello"<<endl;
     for(int i=0;i<n;i++){
         cout<<"Enter name of process no : "<<i+1<<" : ";
         cin>>pid;
