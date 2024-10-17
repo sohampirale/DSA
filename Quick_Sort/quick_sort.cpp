@@ -51,7 +51,41 @@ void quick_sort_pivot_at_mid(vector<int>&nums,int low,int high){
             nums[end]=temp;
             st++;
             end--;
+        } 
+        cout<<"Array modified to : ";
+        for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
+        cout<<endl;
+    }
+    cout<<"Came out at st = "<<st<<" & end = "<<end<<endl;
+    quick_sort_pivot_at_mid(nums,low,end);
+    quick_sort_pivot_at_mid(nums,st,high);
+}
+
+//in this the st<end is kept and if st becomes > end then no prb that is the original approch
+// to split recursiove calls but if st becomes equal to end then the loop  braks and fucntion cann change from
+//  low-end  and  st-high   (where st==end)
+void quick_sort_pivot_at_mid_removed_equal_to_check(vector<int>&nums,int low,int high){
+    if(low>high)return;
+    if(low==high){
+        cout<<"low = "<<low<<" & high = "<<high<<endl;
+        return;
+    }
+    int st=low,end=high;
+    int mid=st+(end-st)/2;
+    int pivot=nums[mid];
+    while(st<end){
+        while(nums[st]<pivot){
+            st++;
         }
+        while(nums[end]>pivot)
+            end--;
+        if(st<end){
+            int temp=nums[st];
+            nums[st]=nums[end];
+            nums[end]=temp;
+            st++;
+            end--;
+        } 
         cout<<"Array modified to : ";
         for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
         cout<<endl;
@@ -91,7 +125,20 @@ int main(){
     vector<int>nums(n);
     cout<<"Enter "<<n<<" numbers : ";
     for(int i=0;i<n;i++)cin>>nums[i];
-    quick_sort_brocode(nums,0,n-1);
+    int choice;
+    cout<<"How do you want to use quick sort?\nTaking pivot at : \n1 : At front\n2 : At middle\n3   At end\nYour choice : ";
+    cin>>choice;
+    if(choice==1){
+        quick_sort_brocode(nums,0,n-1);
+    } else if(choice==2){
+        cout<<"Calling method where st<=end used";
+        quick_sort_pivot_at_mid(nums,0,n-1);
+    } else if(choice==3){
+        quick_sort_pivot_at_end(nums,0,n-1);
+    }
+
+
+    
     cout<<"After calling the quick sort fucntion the original array becomes : ";
     for(int i=0;i<n;i++)cout<<nums[i]<<" ";
 }
