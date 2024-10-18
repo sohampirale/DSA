@@ -9,6 +9,7 @@ class process{
         process* next;
         process(string name,int bt,int priority):bt(bt),name(name),next(nullptr),priority(priority){}
 };
+
 void free(process*& head){
     process* temp1=head,*temp2;
     while(temp1!=nullptr){
