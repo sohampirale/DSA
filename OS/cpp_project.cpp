@@ -67,7 +67,7 @@ class process_using_resource{
             this->memory=memory;
             this->need=need;
             this->allocated=allocated;
-            cout<<PId<<" need of resources is updated to : "<<endl;
+            cout<<PId<<"'s need of resources is updated to : "<<endl;
             for(int i=0;i<need.size();i++){
                 need[i]-=allocated[i];
                 cout<<need[i]<<" ";
@@ -165,6 +165,12 @@ class batch{
             cout<<"no of rows : "<<system.size()<<endl;
             cout<<"Number of colommns in each row : "<<system[0].size()<<endl;
         }
+        void addSJF(process& one_process){
+            
+        }
+        void save(process& one_process){
+
+        }
 };
 void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes){
     if(!reqRes){
@@ -221,6 +227,11 @@ void set_batch_name(vector<vector<base_process>>&system,vector<string>batches){
         }
     }
 }
+void saveProcesses(vector<batch>&batches,vector<process>&all_processes,vector<process_using_resource>&all_processes_using_resources){
+    for(int i=0;i<all_processes.size();i++){
+         
+    }
+}
 int main(){
     bool reqRes,isImp;
     int bt,memory,priority,n,k_resources_of_each,n_resources;
@@ -251,11 +262,8 @@ int main(){
         resource temp(resource_name,k_resources_of_each);
         all_resources.push_back(temp);
     }
-
-   
     cout<<"Enter number of processes : ";
     cin>>n;
-    
     vector<int>need,allocated;
     for(int i=0;i<n;i++){
         cout<<"Enter PId of process no-"<<i+1<<" : ";
@@ -291,11 +299,10 @@ int main(){
                 cin>>temp;
                 k_allocated.push_back(temp);
             }
-            
             process_using_resource temp_p(PId,bt,memory,k_needed,k_allocated);
+            all_processes_using_resources.push_back(temp_p);
             need.clear();
             allocated.clear();
-            all_processes_using_resources.push_back(temp_p);
         }
     }
 //     int n;
