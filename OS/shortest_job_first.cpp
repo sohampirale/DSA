@@ -3,9 +3,8 @@
 using namespace std;
 class process;
 class base_process;
-
 void saveProcess(vector<base_process>&SJF_v,process& one_process);
-void manage(vector<vector<base_process>>&system,process& one_process);
+void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes=false);
 class core{
     public:
         int number;
@@ -16,6 +15,8 @@ class core{
 
         }
 };
+
+
 class process{
     public:
         bool isImp;
@@ -27,6 +28,10 @@ class process{
             this->memory=memory;
             this->isImp=isImp;
             if(isImp)this->priority=priority;
+        }
+        //temp
+        process(int bt){
+            this->bt=bt;
         }
         process(){
             this->pid="demo";
@@ -96,21 +101,68 @@ class base_process{
         }
 
 };
+class batch{
+    public:
+        string batch_name;
+        vector<vector<process>>system;
+        vector<vector<process_using_resource>>processes_using_resoources;
+        batch(){
+            this->batch_name="demo node";
+            cout<<"Demo node created"<<endl;
+        }
+        batch(string batch_name,vector<process> base_process,int type=1){
+            this->batch_name=batch_name;
+            if(type==1){
+                //for creating 2d system
+                for(int i=0;i<6;i++){
+                    system.push_back(base_process);
+                }
+                for(int i=0;i<6;i++){
+                    process temp(10+i);
+                    system[i].push_back(temp);
+                }
+            } else if(type==2){
+                    for(int i=0;i<2;i++){
+                        system.push_back(base_process);
+                    }
+            }
+        }
+        void display_system(){
+            for(int i=0;i<system.size();i++){
+                cout<<"Processes in row - "<<i+1<<" : ";
+                for(int j=0;j<system[i].size();j++){
+                    cout<<system[i][j].bt<<" ";
+                }
+                cout<<endl;
+            }
+        }
+        //for creating a batch of priority algorithm
+        batch(string batch_name,vector<process> base_process){
+            this->batch_name=batch_name;
+            for(int i=0;i<6;i++){
+                system.push_back(base_process);
+            }
+            // system.resize(6,vector<process>(6));
+            cout<<"Batch - "<<batch_name<<" is created"<<endl;
+            cout<<"no of rows : "<<system.size()<<endl;
+            cout<<"Number of colommns in each row : "<<system[0].size()<<endl;
+        }
+};
 void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes){
-    if(reqRes){
+    if(!reqRes){
         if(one_process.isImp){
             int priority=one_process.priority;
             if(priority==1){
-                save_SJF_Process(system[3],one_process);
+                saveProcess(system[3],one_process);
             }
             if(priority==1||priority==2){
-                save_SJF_Process(system[4],one_process);
+                saveProcess(system[4],one_process);
             }
 
             // save_SJF_Process(system[5],one_process);
         }
         for(int i=0;i<3;i++){
-            save_SJF_Process(system[i],one_process);
+            saveProcess(system[i],one_process);
         }
         cout<<"Process : "<<one_process.pid<<" is arranged in appropriate batches"<<endl;
     }
@@ -152,32 +204,77 @@ void set_batch_name(vector<vector<base_process>>&system,vector<string>batches){
     }
 }
 int main(){
-    int n;
-    string pid;
-    vector<core>cores={core(1),core(2),core(3),core(4),core(5),core(6)};
-    vector<string>batches={"SJF","SRTF","Round Robbin","Highest Priority","Medium Priority","Lowest Priority"};
-    bool isImp;
-    int bt,memory,priority=-1;
-    cout<<"How many processes you have : ";
-    cin>>n;
-    vector<vector<base_process>>system(6,vector<base_process>(6));
-    set_batch_name(system,batches);
-    for(int i=0;i<n;i++){
-        cout<<"Enter name of process no : "<<i+1<<" : ";
-        cin>>pid;
-        cout<<"Enter burst time of "<<pid<<" : ";
-        cin>>bt;
-        cout<<"Enter memory of "<<pid<<" : ";
-        cin>>memory;
-        cout<<"Does "<<pid<<" has priority ?\n1 : Yes 0 : NO\nYour choice : ";
-        cin>>isImp;
-        if(isImp){
-            cout<<"Enter priority of the process\n1 : High\n2 : Mid\n3 : Low\nYour choice : ";
-            cin>>priority;
-        } else priority=-1;
-        process one_process(pid,bt,memory,isImp,priority);
-        priority=-1;
-        manage(system,one_process);
-        // save_SJF_Process(system[0],one_process);
-    }
+    vector<batch>batches;
+    vector<string>batches_name={"SJF","SRTF"};
+    process base;
+    vector<process>base_process={base};
+    batch temp("SJF",base_process,1);
+    temp.display_system();
+    cout<<"Came out"<<endl;
+    batch temp2("SRTF",base_process,2);
+    temp2.display_system();
+    cout<<"Came out"<<endl;
+    // for(int i=0;i<batches.size();i++){
+    //     batch temp(batches_name[i],base_process);
+    //     batches.push_back(temp);
+    // }
+    
+    // int n;
+    // cout<<"Enter number of processes : ";
+    // cin>>n;
+    // bool reqRes;
+    // int bt,memory;
+    // string PId;
+    // vector<int>need,allocated;
+    // for(int i=0;i<n;i++){
+    //     cout<<"Enter PId of process no-"<<i+1<<" : ";
+    //     cin>>PId;
+    //     cout<<"Does "<<PId<<" requires Resources ? \n1 : Yes 0 : No\nYour choice : ";
+    //     cin>>reqRes;
+    //     cout<<"Enter burst time of "<<PId<<" : ";
+    //     cin>>bt;
+    //     cout<<"Enter memory size of "<<PId<<" : ";
+    //     cin>>memory;
+
+    //     if(!reqRes){
+    //         // cout<<""        
+    //     }
+    // }
+//     int n;
+//     string pid;
+//     vector<core>cores={core(1),core(2),core(3),core(4),core(5),core(6)};
+//     vector<string>batches={"SJF","SRTF","Round Robbin","Highest Priority","Medium Priority","Lowest Priority"};
+//     bool isImp;
+//     int bt,memory,priority=-1;
+//     cout<<"How many processes you have : ";
+//     cin>>n;
+//     vector<vector<base_process>>system(6,vector<base_process>(6));
+//     set_batch_name(system,batches);
+//     for(int i=0;i<n;i++){
+//         cout<<"Enter name of process no : "<<i+1<<" : ";
+//         cin>>pid;
+//         cout<<"Enter burst time of "<<pid<<" : ";
+//         cin>>bt;
+//         cout<<"Enter memory of "<<pid<<" : ";
+//         cin>>memory;
+//         cout<<"Does "<<pid<<" has priority ?\n1 : Yes 0 : NO\nYour choice : ";
+//         cin>>isImp;
+//         if(isImp){
+//             cout<<"Enter priority of the process\n1 : High\n2 : Mid\n3 : Low\nYour choice : ";
+//             cin>>priority;
+//         } else priority=-1;
+//         process one_process(pid,bt,memory,isImp,priority);
+//         priority=-1;
+//         manage(system,one_process);
+//         // save_SJF_Process(system[0],one_process);
+//     }
+// //     cout<<"SJF batch is :"<<endl;
+// //     for(int i=0;i<system[0].size();i++){
+// //         cout<<"Section : "<<i+1<<" : ";
+// //         for(int j=1;j<system[0][i].batch.size();j++){
+// //             cout<<system[0][i].heap[j].pid<<" ";
+// //         }
+// //         cout<<endl;
+// //     }
+
 }

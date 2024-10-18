@@ -5,7 +5,11 @@
         "ostream": "cpp",
         "iostream": "cpp",
         "deque": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
     },
     "ros.distro": "humble"
 }
