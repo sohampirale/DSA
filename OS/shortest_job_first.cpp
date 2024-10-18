@@ -4,9 +4,18 @@ using namespace std;
 class process;
 class base_process;
 
-void save_SJF_Process(vector<base_process>&SJF_v,process& one_process);
+void saveProcess(vector<base_process>&SJF_v,process& one_process);
 void manage(vector<vector<base_process>>&system,process& one_process);
+class core{
+    public:
+        int number;
+        core(int number){
+            this->number=number;
+        }
+        void execute(vector<vector<process>>&heap){
 
+        }
+};
 class process{
     public:
         bool isImp;
@@ -75,23 +84,25 @@ class base_process{
 
 };
 void manage(vector<vector<base_process>>&system,process& one_process){
+
     if(one_process.isImp){
         int priority=one_process.priority;
         if(priority==1){
-            save_SJF_Process(system[3],one_process);
+            saveProcess(system[3],one_process);
         }
         if(priority==1||priority==2){
-            save_SJF_Process(system[4],one_process);
+            saveProcess(system[4],one_process);
         }
+        saveProcess(system[5],one_process);
+    }
 
-        save_SJF_Process(system[5],one_process);
-    }
     for(int i=0;i<3;i++){
-        save_SJF_Process(system[i],one_process);
+        saveProcess(system[i],one_process);
     }
+
     cout<<"Process : "<<one_process.pid<<" is arranged in appropriate batches"<<endl;
 }
-void save_SJF_Process(vector<base_process>&SJF_v,process& one_process){
+void saveProcess(vector<base_process>&SJF_v,process& one_process){
     int memory=one_process.memory;
     if(memory<0||memory>256){
         cout<<"Invalid memory entered"<<endl;
@@ -130,6 +141,7 @@ void set_batch_name(vector<vector<base_process>>&system,vector<string>batches){
 int main(){
     int n;
     string pid;
+    vector<core>cores={core(1),core(2),core(3),core(4),core(5),core(6)};
     vector<string>batches={"SJF","SRTF","Round Robbin","Highest Priority","Medium Priority","Lowest Priority"};
     bool isImp;
     int bt,memory,priority=-1;
