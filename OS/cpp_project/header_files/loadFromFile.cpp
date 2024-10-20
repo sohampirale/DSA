@@ -1,101 +1,10 @@
 #include<iostream>
 #include<vector>
-#include<queue>
+#include<string>
 #include<fstream>
-#include<algorithm>
-
 using namespace std;
-// #include "process.h"
-// #include "resource.h"
-// #include "batch.h"
-// #include "loadFromFile.h"
-// #include "processUsingResource.h"
-
-class process;
-class core;
-class resource;
-class process_using_resource;
-class batch;
-
-class process{
-    public:
-        bool isImp;
-        string pid;
-        int bt,memory,priority=-1;
-        process(string pid,int bt,int memory,bool isImp,int priority=-1){
-            this->pid=pid;
-            this->bt=bt;
-            this->memory=memory;
-            this->isImp=isImp;
-            if(isImp)this->priority=priority;
-        }      
-};
-
-struct compMinBT{
-    bool operator()(const process& a, const process& b){
-        return a.bt > b.bt;
-    }
-};
-
-class core{
-    public:
-        int number;
-        core(int number){
-            this->number=number;
-        }
-        void execute(vector<vector<process>>&heap){
-
-        }
-};
-
-class resource{
-    public:
-        string resource_name;
-        int free_resources;
-        resource(string resource_name,int free_resources){
-
-            this->resource_name=resource_name;
-            this->free_resources=free_resources;
-            cout<<free_resources<<" : "<<resource_name<<"'s created" <<endl;
-
-        }
-};  
-
-class process_using_resource{
-    public:
-        string PId;
-        int bt,memory;
-        vector<int>need;
-        vector<int>allocated;
-        vector<vector<process_using_resource>>requests;
-        process_using_resource(string PId,int bt,int memory,vector<int>&need,vector<int>&allocated){
-
-            this->PId=PId;
-            this->bt=bt;
-            this->memory=memory;
-            this->need=need;
-            this->allocated=allocated;
-            cout<<endl;
-        }
-};
-
-class batch{
-    public:
-        string batch_name;
-        vector<priority_queue<process,vector<process>,compMinBT>>system;
-        batch(string batch_name,int type){
-            this->batch_name=batch_name;
-            cout<<"Batch "<<batch_name<<" created with ";
-            if(type==1||type==2){
-                system.resize(6);
-                cout<<6<<" heaps"<<endl;
-            } else {
-                system.resize(2);
-                cout<<2<<" heaps"<<endl;
-            }
-        }
-};
-
+#include "loadFromFile.h"
+#include "all_classes.h"
 void load_resources_from_file(vector<resource>&all_resources){
         fstream file;
         file.open("file_data/resources.txt",ios::in);
@@ -237,39 +146,6 @@ void load_manually(vector<int>&k_needed,vector<int>&k_allocated,vector<resource>
             need.clear();
             allocated.clear();
         }
-    }
-}
-
-void create_batches(vector<batch>&batches){
-    batch SJF("SJF",1);
-    batch SRTF("SRTF",2);
-    batch Priority("Priority",3);
-    batch Process_Resource("Process_Resource",4);
-}
-
-int start(){
-    int choice;
-    cout<<"Enter your choice :\n1 : Enter data manually\n2 : Load Data\nYour choice : ";
-    cin>>choice;
-    return choice;
-}
-
-int main(){
-    bool reqRes,isImp;
-    int bt,memory,priority,n,k_resources_of_each,n_resources;
-    string PId,resource_name;
-    vector<int>k_needed,k_allocated;    //this vector is used to get no of each resources are needed/allocated to a process
-    vector<resource>all_resources;
-    vector<process>all_processes;
-    vector<process_using_resource>all_processes_using_resources;
-    vector<batch>batches;
-    create_batches(batches);
-
-    int choice=start();
-    if(choice==1){
-        load_manually(k_needed,k_allocated,all_resources,all_processes,all_processes_using_resources);
-    } else if(choice==2){
-        load_from_file(all_resources,all_processes,all_processes_using_resources);
     }
 }
 
