@@ -4,28 +4,24 @@
 using namespace std;
 class process;
 class base_process;
+class core;
+class resource;
+class process;
+class process_using_resource;
+class batch;
 void saveProcess(vector<base_process>&SJF_v,process& one_process);
 void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes=false);
-class core{
-    public:
-        int number;
-        core(int number){
-            this->number=number;
-        }
-        void execute(vector<vector<process>>&heap){
+void set_batch_name(vector<vector<base_process>>&system,vector<string>batches);
+void saveProcesses(vector<batch>&batches,vector<process>&all_processes,vector<process_using_resource>&all_processes_using_resources);
 
-        }
-};
-class resource{
-    public:
-        string resource_name;
-        int free_resources;
-        resource(string resource_name,int free_resources){
-            this->resource_name=resource_name;
-            this->free_resources=free_resources;
-            cout<<free_resources<<" : "<<resource_name<<"'s created" <<endl;
-        }
-};  
+void load_manually(bool &reqRes,bool &isImp,
+    int&n_resources,int & k_resources_of_each,int&n,int&bt,int&memory,int&priority,
+    string&resource_name,string& PId,
+    vector<int>&k_needed,vector<int>&k_allocated,
+    vector<resource>&all_resources,vector<process>&all_processes,
+    vector<process_using_resource>&all_processes_using_resources);
+
+int start();
 
 class process{
     public:
@@ -55,6 +51,32 @@ class process{
             this->priority=one_process.priority;
         }
 };
+struct compMinBT{
+    bool operator()(const process& a, const process& b){
+        return a.bt > b.bt;
+    }
+};
+class core{
+    public:
+        int number;
+        core(int number){
+            this->number=number;
+        }
+        void execute(vector<vector<process>>&heap){
+
+        }
+};
+class resource{
+    public:
+        string resource_name;
+        int free_resources;
+        resource(string resource_name,int free_resources){
+            this->resource_name=resource_name;
+            this->free_resources=free_resources;
+            cout<<free_resources<<" : "<<resource_name<<"'s created" <<endl;
+        }
+};  
+
 class process_using_resource{
     public:
         string PId;
@@ -122,7 +144,7 @@ class base_process{
 class batch{
     public:
         string batch_name;
-        vector<priority_queue<process>>system;
+        vector<priority_queue<process,vector<process>,compMinBT>>system;
         // vector<vector<process>>system;
         // vector<vector<process_using_resource>>processes_using_resources;
 
@@ -149,6 +171,7 @@ void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes
         cout<<"Process : "<<one_process.pid<<" is arranged in appropriate batches"<<endl;
     }
 }
+
 void saveProcess(vector<base_process>&SJF_v,process& one_process){
     int memory=one_process.memory;
     if(memory<0||memory>256){
@@ -185,11 +208,14 @@ void set_batch_name(vector<vector<base_process>>&system,vector<string>batches){
         }
     }
 }
+
 void saveProcesses(vector<batch>&batches,vector<process>&all_processes,vector<process_using_resource>&all_processes_using_resources){
     for(int i=0;i<all_processes.size();i++){
          
     }
 }
+
+
 void load_manually(bool &reqRes,bool &isImp,
     int&n_resources,int & k_resources_of_each,int&n,int&bt,int&memory,int&priority,
     string&resource_name,string& PId,
@@ -250,6 +276,8 @@ void load_manually(bool &reqRes,bool &isImp,
             }
     }
 }
+
+
 int start(){
     int c1;
     cout<<"Enter your choice :\n1 : Enter data manually\n2 : Load Data\nYour choice : ";
@@ -258,33 +286,35 @@ int start(){
         return 1;
     } else if(c1==2){
         return 2;
-    }
+    } else return -1;
+}
+void create_batches(){
+    
 }
 int main(){
-    bool reqRes,isImp;
-    int bt,memory,priority,n,k_resources_of_each,n_resources;
-    string PId,resource_name;
-    vector<int>k_needed,k_allocated;    //this vector is used to get no of each resources are needed/allocated to a process
-    vector<resource>all_resources;
-    vector<process>all_processes;
-    vector<process_using_resource>all_processes_using_resources;
-    vector<batch>batches;
-    vector<string>batches_name={"SJF","SRTF"};
-    process base;
-    vector<process>base_process={base};
-    for(int i=0;i<batches_name.size();i++){
-        batch temp(batches_name[i],base_process,1);
-        batches.push_back(temp);
-    }
-    batch priority_batch("Priority",base_process,2);
-    batches.push_back(priority_batch);
-    batch process_r("Resource",base_process,3);
-    batches.push_back(process_r);
+    // bool reqRes,isImp;
+    // int bt,memory,priority,n,k_resources_of_each,n_resources;
+    // string PId,resource_name;
+    // vector<int>k_needed,k_allocated;    //this vector is used to get no of each resources are needed/allocated to a process
+    // vector<resource>all_resources;
+    // vector<process>all_processes;
+    // vector<process_using_resource>all_processes_using_resources;
+    // vector<batch>batches;
+    // vector<string>batches_name={"SJF","SRTF"};
+    // process base;
+    // vector<process>base_process={base};
+    // for(int i=0;i<batches_name.size();i++){
+    //     batch temp(batches_name[i]);
+    //     batches.push_back(temp);
+    // }
+    // batch priority_batch("Priority",base_process,2);
+    // batches.push_back(priority_batch);
+    // batch process_r("Resource",base_process,3);
+    // batches.push_back(process_r);
 
-    int choice=start();
+    // int choice=start();
     
-
-
+  
 
     
 }
@@ -331,8 +361,7 @@ int main(){
 // //         }
 // //         cout<<endl;
 // //     }
-
-}
+// }
 
 
 
