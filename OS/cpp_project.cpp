@@ -1,5 +1,6 @@
 #include<iostream>
 #include<vector>
+#include<queue>
 using namespace std;
 class process;
 class base_process;
@@ -121,55 +122,12 @@ class base_process{
 class batch{
     public:
         string batch_name;
-        vector<vector<process>>system;
-        vector<vector<process_using_resource>>processes_using_resources;
-        batch(){
-            this->batch_name="demo node";
-            cout<<"Demo node created"<<endl;
-        }
-        batch(string batch_name,vector<process> base_process,int type=1){
-            this->batch_name=batch_name;
-            cout<<"Batch : "<<batch_name<<" created"<<endl;
-            if(type==1){
-                //for creating 2d system
-                for(int i=0;i<6;i++){
-                    system.push_back(base_process);
-                }
-            } else if(type==2){
-                    for(int i=0;i<2;i++){
-                        system.push_back(base_process);
-                    }
-            } else if(type==3){
-                processes_using_resources.resize(2);
-                cout<<"In "<<batch_name<<" batch no of rows : "<<processes_using_resources.size()<<endl;
-                cout<<"No of colomns : "<<processes_using_resources[0].size()<<endl;
-            }
-        }
-        void display_system(){
-            for(int i=0;i<system.size();i++){
-                cout<<"Processes in row - "<<i+1<<" : ";
-                for(int j=0;j<system[i].size();j++){
-                    cout<<system[i][j].bt<<" ";
-                }
-                cout<<endl;
-            }
-        }
-        //for creating a batch of priority algorithm
-        batch(string batch_name,vector<process> base_process){
-            this->batch_name=batch_name;
-            for(int i=0;i<6;i++){
-                system.push_back(base_process);
-            }
-            // system.resize(6,vector<process>(6));
-            cout<<"Batch - "<<batch_name<<" is created"<<endl;
-            cout<<"no of rows : "<<system.size()<<endl;
-            cout<<"Number of colommns in each row : "<<system[0].size()<<endl;
-        }
-        void addSJF(process& one_process){
-            
-        }
-        void save(process& one_process){
+        vector<priority_queue<process>>system;
+        // vector<vector<process>>system;
+        // vector<vector<process_using_resource>>processes_using_resources;
 
+        batch(string batch_name){
+            this->batch_name=batch_name;
         }
 };
 void manage(vector<vector<base_process>>&system,process& one_process,bool reqRes){
@@ -232,6 +190,76 @@ void saveProcesses(vector<batch>&batches,vector<process>&all_processes,vector<pr
          
     }
 }
+void load_manually(bool &reqRes,bool &isImp,
+    int&n_resources,int & k_resources_of_each,int&n,int&bt,int&memory,int&priority,
+    string&resource_name,string& PId,
+    vector<int>&k_needed,vector<int>&k_allocated,
+    vector<resource>&all_resources,vector<process>&all_processes,
+    vector<process_using_resource>&all_processes_using_resources){
+        cout<<"Enter how many resources are there : ";
+        cin>>n_resources;
+        for(int i=0;i<n_resources;i++){
+            cout<<"Enter name of resource no:"<<i+1<<" : ";
+            cin>>resource_name; 
+            cout<<"How many "<<resource_name<<"'s are present in total : ";
+            cin>>k_resources_of_each;
+            resource temp(resource_name,k_resources_of_each);
+            all_resources.push_back(temp);
+        }
+        cout<<"Enter number of processes : ";
+        cin>>n;
+        vector<int>need,allocated;
+        for(int i=0;i<n;i++){
+            cout<<"Enter PId of process no-"<<i+1<<" : ";
+            cin>>PId;
+            cout<<"Does "<<PId<<" requires Resources ? \n1 : Yes 0 : No\nYour choice : ";
+            cin>>reqRes;
+            cout<<"Enter burst time of "<<PId<<" : ";
+            cin>>bt;
+            cout<<"Enter memory size of "<<PId<<" : ";
+            cin>>memory;
+            if(!reqRes){
+                cout<<"Is "<<PId<<" an important process?\n1 : Yes 0 : No\nYour choice : ";
+                cin>>isImp;
+                if(isImp){
+                    cout<<"Set priority for "<<PId<<"\n1 : High 2 : Mid\n3Your choice :  ";
+                    cin>>priority;
+                    // process(string pid,int bt,int memory,bool isImp,int priority=-1){
+                    process temp(PId,bt,memory,isImp,priority);
+                    all_processes.push_back(temp);
+                } else {
+                    process temp(PId,bt,memory,isImp);
+                    all_processes.push_back(temp);
+                }
+            } else {
+                int temp;
+                for(int j=0;j<all_resources.size();j++){
+                    cout<<"How many "<<all_resources[i].resource_name<<"'s are needed for "<<PId<<" : ";
+                    cin>>temp;
+                    k_needed.push_back(temp);
+                }
+                for(int j=0;j<all_resources.size();j++){
+                    cout<<"How many "<<all_resources[i].resource_name<<"'s are allocated to "<<PId<<" : ";
+                    cin>>temp;
+                    k_allocated.push_back(temp);
+                }
+                process_using_resource temp_p(PId,bt,memory,k_needed,k_allocated);
+                all_processes_using_resources.push_back(temp_p);
+                need.clear();
+                allocated.clear();
+            }
+    }
+}
+int start(){
+    int c1;
+    cout<<"Enter your choice :\n1 : Enter data manually\n2 : Load Data\nYour choice : ";
+    cin>>c1;
+    if(c1==1){
+        return 1;
+    } else if(c1==2){
+        return 2;
+    }
+}
 int main(){
     bool reqRes,isImp;
     int bt,memory,priority,n,k_resources_of_each,n_resources;
@@ -252,59 +280,21 @@ int main(){
     batches.push_back(priority_batch);
     batch process_r("Resource",base_process,3);
     batches.push_back(process_r);
-    cout<<"Enter how many resources are there : ";
-    cin>>n_resources;
-    for(int i=0;i<n_resources;i++){
-        cout<<"Enter name of resource no:"<<i+1<<" : ";
-        cin>>resource_name; 
-        cout<<"How many "<<resource_name<<"'s are present in total : ";
-        cin>>k_resources_of_each;
-        resource temp(resource_name,k_resources_of_each);
-        all_resources.push_back(temp);
-    }
-    cout<<"Enter number of processes : ";
-    cin>>n;
-    vector<int>need,allocated;
-    for(int i=0;i<n;i++){
-        cout<<"Enter PId of process no-"<<i+1<<" : ";
-        cin>>PId;
-        cout<<"Does "<<PId<<" requires Resources ? \n1 : Yes 0 : No\nYour choice : ";
-        cin>>reqRes;
-        cout<<"Enter burst time of "<<PId<<" : ";
-        cin>>bt;
-        cout<<"Enter memory size of "<<PId<<" : ";
-        cin>>memory;
-        if(!reqRes){
-            cout<<"Is "<<PId<<" an important process?\n1 : Yes 0 : No\nYour choice : ";
-            cin>>isImp;
-            if(isImp){
-                cout<<"Set priority for "<<PId<<"\n1 : High 2 : Mid\n3Your choice :  ";
-                cin>>priority;
-                // process(string pid,int bt,int memory,bool isImp,int priority=-1){
-                process temp(PId,bt,memory,isImp,priority);
-                all_processes.push_back(temp);
-            } else {
-                process temp(PId,bt,memory,isImp);
-                all_processes.push_back(temp);
-            }
-        } else {
-            int temp;
-            for(int j=0;j<all_resources.size();j++){
-                cout<<"How many "<<all_resources[i].resource_name<<"'s are needed for "<<PId<<" : ";
-                cin>>temp;
-                k_needed.push_back(temp);
-            }
-            for(int j=0;j<all_resources.size();j++){
-                cout<<"How many "<<all_resources[i].resource_name<<"'s are allocated to "<<PId<<" : ";
-                cin>>temp;
-                k_allocated.push_back(temp);
-            }
-            process_using_resource temp_p(PId,bt,memory,k_needed,k_allocated);
-            all_processes_using_resources.push_back(temp_p);
-            need.clear();
-            allocated.clear();
-        }
-    }
+
+    int choice=start();
+    
+
+
+
+    
+}
+
+
+
+
+
+
+
 //     int n;
 //     string pid;
 //     vector<core>cores={core(1),core(2),core(3),core(4),core(5),core(6)};
@@ -343,3 +333,60 @@ int main(){
 // //     }
 
 }
+
+
+
+
+//g
+// cout<<"Enter how many resources are there : ";
+//     cin>>n_resources;
+//     for(int i=0;i<n_resources;i++){
+//         cout<<"Enter name of resource no:"<<i+1<<" : ";
+//         cin>>resource_name; 
+//         cout<<"How many "<<resource_name<<"'s are present in total : ";
+//         cin>>k_resources_of_each;
+//         resource temp(resource_name,k_resources_of_each);
+//         all_resources.push_back(temp);
+//     }
+//     cout<<"Enter number of processes : ";
+//     cin>>n;
+//     vector<int>need,allocated;
+//     for(int i=0;i<n;i++){
+//         cout<<"Enter PId of process no-"<<i+1<<" : ";
+//         cin>>PId;
+//         cout<<"Does "<<PId<<" requires Resources ? \n1 : Yes 0 : No\nYour choice : ";
+//         cin>>reqRes;
+//         cout<<"Enter burst time of "<<PId<<" : ";
+//         cin>>bt;
+//         cout<<"Enter memory size of "<<PId<<" : ";
+//         cin>>memory;
+//         if(!reqRes){
+//             cout<<"Is "<<PId<<" an important process?\n1 : Yes 0 : No\nYour choice : ";
+//             cin>>isImp;
+//             if(isImp){
+//                 cout<<"Set priority for "<<PId<<"\n1 : High 2 : Mid\n3Your choice :  ";
+//                 cin>>priority;
+//                 // process(string pid,int bt,int memory,bool isImp,int priority=-1){
+//                 process temp(PId,bt,memory,isImp,priority);
+//                 all_processes.push_back(temp);
+//             } else {
+//                 process temp(PId,bt,memory,isImp);
+//                 all_processes.push_back(temp);
+//             }
+//         } else {
+//             int temp;
+//             for(int j=0;j<all_resources.size();j++){
+//                 cout<<"How many "<<all_resources[i].resource_name<<"'s are needed for "<<PId<<" : ";
+//                 cin>>temp;
+//                 k_needed.push_back(temp);
+//             }
+//             for(int j=0;j<all_resources.size();j++){
+//                 cout<<"How many "<<all_resources[i].resource_name<<"'s are allocated to "<<PId<<" : ";
+//                 cin>>temp;
+//                 k_allocated.push_back(temp);
+//             }
+//             process_using_resource temp_p(PId,bt,memory,k_needed,k_allocated);
+//             all_processes_using_resources.push_back(temp_p);
+//             need.clear();
+//             allocated.clear();
+//         }
