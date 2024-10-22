@@ -5,7 +5,7 @@ using namespace std;
 void quick_sort_pivot_at_end(vector<int>&nums,int low,int high){
     if(low>=high)return;
     int pivot=nums[high];
-    int st=low,end=high;
+    int st=low,end=high;//gg
     cout<<"low = "<<low<<" & high = "<<high<<endl;
     while(st<=end){
         while(nums[st]<pivot){

@@ -1,0 +1,1 @@
+class process_using_resource;
