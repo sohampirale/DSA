@@ -25,17 +25,9 @@ vector<int> merge_sort(vector<int>&nums,int st,int end){
     } else if(j==right.size()){
         temp.insert(temp.end(),left.begin()+i,left.end());
     }
-    // while(i==left.size()&&j<right.size()){
-    //     temp.push_back(right[j]);
-    //     j++;
-    // }
-    // while(j==right.size()&&i<left.size()){
-    //     temp.push_back(left[i]);
-    //     i++;
-    // }
-    cout<<"Retunring : ";
-    for(int k=0;k<temp.size();k++)cout<<temp[k]<<" ";
-    cout<<endl;
+    // cout<<"Retunring : ";
+    // for(int k=0;k<temp.size();k++)cout<<temp[k]<<" ";
+    // cout<<endl;
     return temp;
 }
 int main(){
@@ -50,3 +42,7 @@ int main(){
     for(int i=0;i<n;i++)cout<<ans[i]<<" ";
     cout<<endl;
 }
+
+// Enter size of array : 5
+// Enter 5 numbers : 2 5 3 1 4
+// Received sorted array is : 1 2 3 4 5 
