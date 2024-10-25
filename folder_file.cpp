@@ -16,7 +16,11 @@ void addfile(folder*&root,string filename){
         cout<<"CUrrently the directory is empty so first we need to create the folder"<<endl;
         return;
     }
-    
+    cout<<"Folder present in this directory are :\n";
+    for(int i=0;i<root->sub.size();i++){
+        
+    }
+
 }
 int main(){
     int choice=1;
