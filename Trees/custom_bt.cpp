@@ -30,9 +30,9 @@ void display_with_indent(node*&one_node,string indent="",string side=""){
     display_with_indent(one_node->right,indent+"\t","r");
 }
 
-void display_with_arrows(node*&one_node,string indent="  ",int level=0){
+void display_with_arrows1(node*&one_node,string indent="  ",int level=0){
     if(!one_node)return;
-    display_with_arrows(one_node->right,indent+"  ",level+1);
+    display_with_arrows1(one_node->right,indent+"  ",level+1);
     if(one_node->right){
         for(int i=0;i<=level;i++)cout<<indent;
         cout<<"|"<<endl;
@@ -43,7 +43,7 @@ void display_with_arrows(node*&one_node,string indent="  ",int level=0){
         for(int i=0;i<=level;i++)cout<<indent;
         cout<<"|"<<endl;
     }
-    display_with_arrows(one_node->left,indent+"  ",level+1);
+    display_with_arrows1(one_node->left,indent+"  ",level+1);
 }
 
 void display_with_arrows2(node*&one_node,string indent=" ",int level=0){
@@ -52,7 +52,7 @@ void display_with_arrows2(node*&one_node,string indent=" ",int level=0){
     if(one_node->right){
         // for(int i=0;i<=level;i++)cout<<indent;
         // cout<<"|"<<endl;
-        display_with_arrows(one_node->right,indent,level+1);
+        display_with_arrows2(one_node->right,indent,level+1);
     }
 
     for(int i=0;i<level;i++)cout<<indent;
@@ -66,11 +66,34 @@ void display_with_arrows2(node*&one_node,string indent=" ",int level=0){
     cout<<"|"<<endl;
     
     if(one_node->left){
-        // for(int i=0;i<=level;i++)cout<<indent;
-        // cout<<"|"<<endl;
-        display_with_arrows(one_node->left,indent,level+1);
+        display_with_arrows2(one_node->left,indent,level+1);
     }
 }
+
+//went to rigthmost first
+void preetyDisplayRight(node*&one_node,int level=0){
+    if(!one_node)return;
+    if(one_node->right)preetyDisplayRight(one_node->right,level+1);
+    if(level!=0){
+        for(int i=0;i<level-1;i++)cout<<"|\t";
+        cout<<"|----->"<<one_node->data<<endl;
+    } else cout<<one_node->data<<endl;
+    if(one_node->left)preetyDisplayRight(one_node->left,level+1);
+}
+
+
+//went to leftmost first
+void preetyDisplayLeft(node*&one_node,int level=0){
+
+    if(!one_node)return;
+    if(one_node->left)preetyDisplayLeft(one_node->left,level+1);
+    if(level!=0){
+        for(int i=0;i<level-1;i++)cout<<"|\t";
+        cout<<"|----->"<<one_node->data<<endl;
+    } else cout<<one_node->data<<endl;
+    if(one_node->right)preetyDisplayLeft(one_node->right,level+1);
+}
+
 
 void add(node*&one_node){
     if(!one_node){
@@ -111,24 +134,29 @@ int main(){
     node*root=nullptr;
     add(root);
     cout<<"Tree created is : "<<endl;
-    // display_with_indent(root);
-    // preorder(root);
-    display_with_arrows2(root);
+    int choice;
+    cout<<"Enter by which method you want to print(1-4) : ";
+    cin>>choice;
+    
+    if(choice==1) display_with_arrows1(root);
+    else if(choice==2)display_with_arrows2(root);
+    else if(choice==3)preetyDisplayRight(root);
+    else if(choice==4)preetyDisplayLeft(root);
     delete_nodes(root);
 }
 
 
 
 
-    // if(one_node->right){
-    //     cout<<indent<<"|"<<endl;
-    //     display_with_arrows(one_node->right,indent+" ",level+1);
-    // }
-    // cout<<indent;
-    // for(int i=0;i<level;i++)cout<<"-";
-    // cout<<"->"<<one_node->data<<endl;
-  
-    //    if(one_node->left){
-    //     display_with_arrows(one_node->left,indent+" ",level+1);
-    //     cout<<indent<<"|"<<endl;
-    // }
+// if(one_node->right){
+//     cout<<indent<<"|"<<endl;
+//     display_with_arrows(one_node->right,indent+" ",level+1);
+// }
+// cout<<indent;
+// for(int i=0;i<level;i++)cout<<"-";
+// cout<<"->"<<one_node->data<<endl;
+
+//    if(one_node->left){
+//     display_with_arrows(one_node->left,indent+" ",level+1);
+//     cout<<indent<<"|"<<endl;
+// }
