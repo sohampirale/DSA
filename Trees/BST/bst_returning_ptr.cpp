@@ -21,12 +21,24 @@ class node{
 bool balanced=true;
 node* not_balanced_point;
 
+int getHeightNode(node*&one_node){
+    if(!one_node)return 0;
+    return one_node->height;
+}
+
+bool isBalancedNode(node*& one_node){
+    int righth=getHeightNode(one_node->right);
+    int lefth=getHeightNode(one_node->left);
+    cout<<"righth = "<<righth<<" & lefth = "<<lefth<<" of "<<one_node->data<<endl;
+    one_node->height=max(righth,lefth)+1;
+    return abs(righth-lefth)<=1;
+}
+
 node* add(int data,node*one_node){
     if(!one_node){
         one_node=new node(data);
         return one_node;
     }
-    int lefth=0,righth=0;
     if(data<=one_node->data){
         one_node->left=add(data,one_node->left);
     }
@@ -34,24 +46,17 @@ node* add(int data,node*one_node){
     if(data>one_node->data){
         one_node->right=add(data,one_node->right);
     }
-
-    if(one_node->right)righth=one_node->right->height;
-    if(one_node->left)lefth=one_node->left->height;
-    cout<<"righth = "<<righth<<" & lefth = "<<lefth<<" of "<<one_node->data<<endl;
-    if(abs(lefth-righth)>1){
+    
+    if(!isBalancedNode(one_node)){
         if(!not_balanced_point)not_balanced_point=one_node;
         balanced=false;
     }
-    int mx=max(righth,lefth)+1;
-    one_node->height=mx;
    
     return one_node;
-
 }
 
 void delete_nodes(node*root){
     if(root==nullptr){
-        // cout<<"Hit null"<<endl;
         return;
     }
     delete_nodes(root->left);
@@ -82,25 +87,19 @@ void preetyDisplayLeft(node*&one_node,int level=0){
     if(one_node->right)preetyDisplayLeft(one_node->right,level+1);
 }
 
-// void getMinMaxHeights(node*one_node,int level=0){
-//     cout<<"hi"<<endl;
-//     if(!one_node->left&&!one_node->right){
-//         if(level>mx)mx=level;
-//         if(level<mn)mn=level;
-//         return;
-//     } 
-//     if(one_node->left){
-//         getMinMaxHeights(one_node->left,level+1);
-//     } 
-//     if(one_node->right) {
-//         getMinMaxHeights(one_node->right,level+1);
-//     }
-// }
+
+
+bool isBalancedTree(node*&root){
+    if(!root)return true;
+    return abs(getHeightNode(root->left)-getHeightNode(root->right))<=1&&isBalancedTree(root->left)&&isBalancedTree(root->right);
+}
+
 
 int main(){
+    cout<<abs(2-(-1))<<endl;
+    return 0;
     int choice=1,data;
     node*root=nullptr;
-    vector<int>max_heights;
     while(choice!=0){
         cout<<"1 : Add data\n2 : Get min max heights\n3 : Display\nYour choice : ";
         cin>>choice;
@@ -116,6 +115,7 @@ int main(){
                 cout<<"because of node at "<<not_balanced_point->data<<endl;
                 not_balanced_point=nullptr;
             }
+            cout<<"isBalancedTree(root) = "<<isBalancedTree(root)<<endl;
         }else if(choice==2){
             
         }
@@ -125,3 +125,25 @@ int main(){
     }
     delete_nodes(root);
 } 
+
+
+//wrong because not checking wehther the node* ptr is null or not and directly acesingthe ->height attribute
+// bool isBalanced1(node*&root){
+//     if(!root)return true;
+//     return abs(root->left->height-root->right->height)<=1&&isBalanced1(root->left)&&isBalanced1(root->right);
+// }
+
+// void getMinMaxHeights(node*one_node,int level=0){
+//     cout<<"hi"<<endl;
+//     if(!one_node->left&&!one_node->right){
+//         if(level>mx)mx=level;
+//         if(level<mn)mn=level;
+//         return;
+//     } 
+//     if(one_node->left){
+//         getMinMaxHeights(one_node->left,level+1);
+//     } 
+//     if(one_node->right) {
+//         getMinMaxHeights(one_node->right,level+1);
+//     }
+// }
