@@ -10,9 +10,10 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "utility": "cpp",
-
         "fstream": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "unordered_map": "cpp",
+        "algorithm": "cpp"
     },
     "ros.distro": "humble"
 }

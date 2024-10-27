@@ -62,7 +62,7 @@ void delete_nodes(node*root){
     delete_nodes(root->left);
     delete_nodes(root->right);
     delete root;
-}
+    }
 
 //went to rigthmost first
 void preetyDisplayRight(node*&one_node,int level=0){
