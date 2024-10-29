@@ -13,7 +13,8 @@
         "fstream": "cpp",
         "iosfwd": "cpp",
         "unordered_map": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "new": "cpp"
     },
     "ros.distro": "humble"
 }

@@ -1,6 +1,7 @@
 #include<iostream>
 #include<vector>
 #include<algorithm>
+#include<unistd.h>
 using namespace std;
 
 class node{
@@ -153,6 +154,18 @@ void delete_nodes(node*&one_node){
 int main(){
     int choice=1,data;
     node*root=nullptr;
+    root=new node(1);
+    int n;
+    cout<<"Enter how many numbers you want to insert : ";
+    cin>>n;
+    for(int i=0;i<n;i++)root=add(root,root,i);
+    cout<<"Added "<<n<<endl;
+    sleep(2);
+    for(int i=-1;i>-n;i--)root=add(root,root,i);
+
+    preetyDisplayRight(root);
+    cout<<"HEight of the tree with "<<n<<" nodes is : "<<root->height<<endl;
+    return 0;
     while(choice){
         cout<<"1 : Add node\n2 : Display\n3 : Print heights\nYour choice : ";
         cin>>choice;
