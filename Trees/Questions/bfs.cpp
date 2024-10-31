@@ -395,11 +395,19 @@ void addNextAdd(node*& one_node,queue<node*>&loc){
     cout<<"Pushed left right of "<<one_node->data<<endl;
 }
 
-void createNormalTree(queue<node*>&loc,int data){
-    node*& one_node=loc.front();
-    one_node=new node(data);
-    addNextAdd(one_node,loc);
-    loc.pop();
+void createNormalTree(queue<node*>&parent,int data){
+    static int cnt=0;
+    node*one_node=new node(data);
+    cout<<"cnt = "<<cnt<<endl;
+    if(cnt==0){
+        parent.front()->left=one_node;
+        cnt++;
+    } else if(cnt==1){
+        parent.front()->right=one_node;
+        cnt=0;
+        parent.pop();
+    }
+    parent.push(one_node);
 }
 
 void printHeights(node*&one_node){
@@ -521,6 +529,15 @@ void delete_nodes(node*&one_node){
     delete one_node;
 }
 
+void create_BST(queue<node*>loc,int data){
+    auto it=loc.front();
+    while(1){
+        cout<<"it : "<<it->data<<endl;
+        if(it->data==45)break;
+        it++;
+    }
+}
+
 int getchoice(){
     int choice;
     cout<<"1 : Add node\n";
@@ -536,6 +553,7 @@ int getchoice(){
     cout<<"11 : Modify each node to point at right next node to it"<<endl;
     cout<<"12 : Modify each node to point at right next node to it  (Using Pointers)"<<endl;
     cout<<"13 : Modify each node to point at right next node to it (116) (Using Pointers)"<<endl;
+    cout<<"14 : Create BST"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -543,134 +561,155 @@ int getchoice(){
 
 
 int main(){
-    int choice=1,data;
-    node*root=nullptr;
-    BFS bfs;
-    queue<node*>loc;
-    try{
-        while(choice){
-            choice=getchoice();
-            if(choice==1){
-                cout<<"Enter data : ";
-                cin>>data;
-                
-                // if(!root){
-                //     root=new node(0);
-                //     loc.push(root);
-                // }
-                if(loc.empty())loc.push(root);
-                createNormalTree(loc,data);
+    deque<node*>loc;
+    node* n1=new node(1);
+    node* n2=new node(2);
+    node* n3=new node(3);
+    loc.push_back(n1);
+    loc.push_back(n2);
+    loc.push_back(n3);
 
-                // try{
-                //     if(!root)root=new node(data);
-                //     else root=add(root,root,data);
-                //     cout<<"Root pointing at : "<<root->data<<endl;
-                // } catch(...){
-                //     cout<<"Error occured"<<endl;
-                // }
-            } else if(choice==2){
-                if(!root){
-                    cout<<"Tree is empty"<<endl;
-                    continue;    
-                }
-                try{
-                    preetyDisplayRight(root);
-                } catch(...){
-                    cout<<"Error occured"<<endl;
-                }
-            } else if(choice==3){
-                printHeights(root);
-            }else if(choice==4){
-                vector<node*>loc={root};
-                bfs.printBFS(loc);
-            } else if(choice==5){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bfs.printBFSUsingQueue(loc);
-            }else if(choice==6){
-                vector<node*>loc={root};
-                vector<int>SumAtEveryLevel;
-                bfs.findSumAtEveryLevel(loc,SumAtEveryLevel);
-                cout<<"Sums at every level are : ";
-                for(int i : SumAtEveryLevel)cout<<i<<" ";
-                cout<<endl;
-            }
-            else if(choice==7){
-                int find;
-                bfs.clearQueue(loc);
-                loc.push(root);
-                cout<<"ENter the data to find rigth next node from : ";
-                cin>>find;
-                node* answer=bfs.findRightNextNode(loc,find);
-                if(answer)cout<<"Answer received : "<<answer->data<<endl;
-                else cout<<"node with data "<<find<<" not found"<<endl;
-            }    
-            else if(choice==8){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bfs.printBFSUsingQueueWhileLoop(loc);
-            }
-            else if(choice==9){
-                vector<vector<int>>answer;
-             
-                int methodChoice;
-                cout<<"WHich method to use\n1 : Using stack\n2 : USing queue3 : Using Dequeue\nYour choice : ";
-                cin>>methodChoice;
-                if(methodChoice==1){
-                    vector<int>temp;
-                    temp.push_back(root->data);
-                    answer.push_back(temp);
-                    stack<node*>loc;
-                    loc.push(root);
-                    answer=bfs.ZigZagTraversal103(loc,answer,false);
-                } else if(methodChoice==2){
-                    queue<node*>loc;
-                    loc.push(root);
-                    answer=bfs.ZigZagTraversal103_withQueue(loc,answer,false);
-                } else if(methodChoice==3){
-                    deque<node*>loc;
-                    loc.push_back(root);
-                    answer=bfs.ZigZagTraversal103_withDeque(loc,answer,true);
-                }
-                cout<<"Answer receievd from ZigZag traversal is : "<<endl;
-                for(int i=0;i<answer.size();i++){
-                    for(int j=0;j<answer[i].size();j++){
-                        cout<<answer[i][j]<<" ";
-                    }
-                    cout<<endl;
-                }
-            }
-            else if(choice==10){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                vector<vector<int>>answer;
-                bfs.levelOrderTraversalReverse(loc,answer);
-                cout<<"Answer receievd from levelOrderTraversalReverse is : "<<endl;
-                for(int i=0;i<answer.size();i++){
-                    for(int j=0;j<answer[i].size();j++){
-                        cout<<answer[i][j]<<" ";
-                    }
-                    cout<<endl;
-                }
-            }
-            else if(choice==11){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bfs.populatingNextRightPointersInEachNode116(loc);
-            }
-            else if(choice==12){
-                bfs.try2_populatingNextRightPointersInEachNode116(root);
-                bfs.printNext(root);
-            } else if(choice==13){
-                bfs.try3_populatingNextRightPointersInEachNode116(root);
-            }
-        }
-
-    } catch(...){
-        cout<<"Error occured"<<endl;
+    auto it=loc.begin();
+    while(1){
+        cout<<"it : "<<(*it)->data<<endl;
+        if((*it)->data==3)break;
+        ++it;
     }
-    cout<<"Came out"<<endl;
-   delete_nodes(root);
+    return 0;
+
+
+//     int choice=1,data;
+//     node*root=nullptr;
+//     BFS bfs;
+//     queue<node*>loc;
+//     try{
+//         while(choice){
+//             choice=getchoice();
+//             if(choice==1){
+//                 cout<<"Enter data : ";
+//                 cin>>data;
+                
+//                 if(!root){
+//                     root=new node(data);
+//                     loc.push(root);
+//                     continue;
+//                 }
+//                 createNormalTree(loc,data);
+
+//                 // try{
+//                 //     if(!root)root=new node(data);
+//                 //     else root=add(root,root,data);
+//                 //     cout<<"Root pointing at : "<<root->data<<endl;
+//                 // } catch(...){
+//                 //     cout<<"Error occured"<<endl;
+//                 // }
+//             } else if(choice==2){
+//                 if(!root){
+//                     cout<<"Tree is empty"<<endl;
+//                     continue;    
+//                 }
+//                 try{
+//                     preetyDisplayRight(root);
+//                 } catch(...){
+//                     cout<<"Error occured"<<endl;
+//                 }
+//             } else if(choice==3){
+//                 printHeights(root);
+//             }else if(choice==4){
+//                 vector<node*>loc={root};
+//                 bfs.printBFS(loc);
+//             } else if(choice==5){
+//                 bfs.clearQueue(loc);
+//                 loc.push(root);
+//                 bfs.printBFSUsingQueue(loc);
+//             }else if(choice==6){
+//                 vector<node*>loc={root};
+//                 vector<int>SumAtEveryLevel;
+//                 bfs.findSumAtEveryLevel(loc,SumAtEveryLevel);
+//                 cout<<"Sums at every level are : ";
+//                 for(int i : SumAtEveryLevel)cout<<i<<" ";
+//                 cout<<endl;
+//             }
+//             else if(choice==7){
+//                 int find;
+//                 bfs.clearQueue(loc);
+//                 loc.push(root);
+//                 cout<<"ENter the data to find rigth next node from : ";
+//                 cin>>find;
+//                 node* answer=bfs.findRightNextNode(loc,find);
+//                 if(answer)cout<<"Answer received : "<<answer->data<<endl;
+//                 else cout<<"node with data "<<find<<" not found"<<endl;
+//             }    
+//             else if(choice==8){
+//                 bfs.clearQueue(loc);
+//                 loc.push(root);
+//                 bfs.printBFSUsingQueueWhileLoop(loc);
+//             }
+//             else if(choice==9){
+//                 vector<vector<int>>answer;
+             
+//                 int methodChoice;
+//                 cout<<"WHich method to use\n1 : Using stack\n2 : USing queue3 : Using Dequeue\nYour choice : ";
+//                 cin>>methodChoice;
+//                 if(methodChoice==1){
+//                     vector<int>temp;
+//                     temp.push_back(root->data);
+//                     answer.push_back(temp);
+//                     stack<node*>loc;
+//                     loc.push(root);
+//                     answer=bfs.ZigZagTraversal103(loc,answer,false);
+//                 } else if(methodChoice==2){
+//                     queue<node*>loc;
+//                     loc.push(root);
+//                     answer=bfs.ZigZagTraversal103_withQueue(loc,answer,false);
+//                 } else if(methodChoice==3){
+//                     deque<node*>loc;
+//                     loc.push_back(root);
+//                     answer=bfs.ZigZagTraversal103_withDeque(loc,answer,true);
+//                 }
+//                 cout<<"Answer receievd from ZigZag traversal is : "<<endl;
+//                 for(int i=0;i<answer.size();i++){
+//                     for(int j=0;j<answer[i].size();j++){
+//                         cout<<answer[i][j]<<" ";
+//                     }
+//                     cout<<endl;
+//                 }
+//             }
+//             else if(choice==10){
+//                 bfs.clearQueue(loc);
+//                 loc.push(root);
+//                 vector<vector<int>>answer;
+//                 bfs.levelOrderTraversalReverse(loc,answer);
+//                 cout<<"Answer receievd from levelOrderTraversalReverse is : "<<endl;
+//                 for(int i=0;i<answer.size();i++){
+//                     for(int j=0;j<answer[i].size();j++){
+//                         cout<<answer[i][j]<<" ";
+//                     }
+//                     cout<<endl;
+//                 }
+//             }
+//             else if(choice==11){
+//                 bfs.clearQueue(loc);
+//                 loc.push(root);
+//                 bfs.populatingNextRightPointersInEachNode116(loc);
+//             }
+//             else if(choice==12){
+//                 bfs.try2_populatingNextRightPointersInEachNode116(root);
+//                 bfs.printNext(root);
+//             } else if(choice==13){
+//                 bfs.try3_populatingNextRightPointersInEachNode116(root);
+//             }
+//             else if(choice==14){
+
+//                 create_BST()
+//             }
+//         }
+
+//     } catch(...){
+//         cout<<"Error occured"<<endl;
+//     }
+//     cout<<"Came out"<<endl;
+//    delete_nodes(root);
 }    
 
 
