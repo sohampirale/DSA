@@ -390,17 +390,16 @@ class BFS{
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
     if(!one_node)return;
-    one_node->left=new node(0);
-    one_node->right=new node(0);
     loc.push(one_node->left);
     loc.push(one_node->right);
+    cout<<"Pushed left right of "<<one_node->data<<endl;
 }
 
 void createNormalTree(queue<node*>&loc,int data){
-    auto it=loc.front();
+    node*& one_node=loc.front();
+    one_node=new node(data);
+    addNextAdd(one_node,loc);
     loc.pop();
-    addNextAdd(it,loc);
-    it->data=data;
 }
 
 void printHeights(node*&one_node){
@@ -559,16 +558,21 @@ int main(){
                 //     root=new node(0);
                 //     loc.push(root);
                 // }
-                // createNormalTree(loc,data);
+                if(loc.empty())loc.push(root);
+                createNormalTree(loc,data);
 
-                try{
-                    if(!root)root=new node(data);
-                    else root=add(root,root,data);
-                    cout<<"Root pointing at : "<<root->data<<endl;
-                } catch(...){
-                    cout<<"Error occured"<<endl;
-                }
+                // try{
+                //     if(!root)root=new node(data);
+                //     else root=add(root,root,data);
+                //     cout<<"Root pointing at : "<<root->data<<endl;
+                // } catch(...){
+                //     cout<<"Error occured"<<endl;
+                // }
             } else if(choice==2){
+                if(!root){
+                    cout<<"Tree is empty"<<endl;
+                    continue;    
+                }
                 try{
                     preetyDisplayRight(root);
                 } catch(...){
