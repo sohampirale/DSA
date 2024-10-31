@@ -1,10 +1,5 @@
-#include<iostream>
-#include<vector>
-#include<algorithm>
-#include<unistd.h>
-#include<queue>
-#include<stack>
-#include<algorithm>
+#include<bits/stdc++.h>
+
 using namespace std;
 
 class node{
@@ -15,6 +10,7 @@ class node{
             this->data=data;
             this->left=nullptr;
             this->right=nullptr;
+            this->next=nullptr;
             this->height=0;
         }
         ~node(){
@@ -345,6 +341,51 @@ class BFS{
             if(one_node->next)cout<<one_node->next->data<<endl;
             else cout<<"nullptr"<<endl;
         }
+
+        void goRight(node*t1,node*t2){
+            if(!t1){
+                cout<<"Retunring from goRight because t1 it nullptr"<<endl;
+                return;
+            } else if(!t2){
+                cout<<"Retunring from goRight because t2 it nullptr"<<endl;
+                return;
+            }
+            t1->next=t2->left;
+            cout<<"Caling go left on "<<t1->data<<endl;
+            goLeft(t1,t1);
+            cout<<"Caling go left on "<<t2->data<<endl;
+            goLeft(t2,t2);
+        }
+
+        void goLeft(node*t1,node*t2){
+            if(t1==nullptr)return;
+            if(t1!=t2)t1->next=t2->right;
+            goLeft(t1->left,t1);
+            cout<<"Calling goRIght from t1: "<<t1->data<<" & t2 : "<<t2->data<<endl;
+            goRight(t1->next,t2->next);
+        }
+
+        void try2_populatingNextRightPointersInEachNode116(node*&root){
+            //time limit exceeded 
+            goLeft(root,root);
+        }
+
+        void try3_populatingNextRightPointersInEachNode116(node*&root){
+            node*t2=root,*t1=root;
+            while(t2->left){
+                t1=t2;
+                while(t1){
+                    t1->left->next=t1->right;
+                    if(t1->next){
+                        t1->right->next=t1->next->left;
+                    }
+                    t1=t1->next;
+                }
+                t2=t2->left;
+            }
+            cout<<"Connected next node of every node"<<endl;
+            printNext(root);
+        }
 };
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
@@ -494,10 +535,13 @@ int getchoice(){
     cout<<"9 : Binary ZigZag level order traversal"<<endl;
     cout<<"10 : Get BFS in reverse level order"<<endl;
     cout<<"11 : Modify each node to point at right next node to it"<<endl;
+    cout<<"12 : Modify each node to point at right next node to it  (Using Pointers)"<<endl;
+    cout<<"13 : Modify each node to point at right next node to it (116) (Using Pointers)"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
 }
+
 
 int main(){
     int choice=1,data;
@@ -511,22 +555,22 @@ int main(){
                 cout<<"Enter data : ";
                 cin>>data;
                 
-                if(!root){
-                    root=new node(0);
-                    loc.push(root);
-                }
-                createNormalTree(loc,data);
-
-                // try{
-                //     if(!root)root=new node(data);
-                //     else root=add(root,root,data);
-                //     cout<<"Root pointing at : "<<root->data<<endl;
-                // } catch(...){
-                //     cout<<"Error occured"<<endl;
+                // if(!root){
+                //     root=new node(0);
+                //     loc.push(root);
                 // }
+                // createNormalTree(loc,data);
+
+                try{
+                    if(!root)root=new node(data);
+                    else root=add(root,root,data);
+                    cout<<"Root pointing at : "<<root->data<<endl;
+                } catch(...){
+                    cout<<"Error occured"<<endl;
+                }
             } else if(choice==2){
                 try{
-                preetyDisplayRight(root);
+                    preetyDisplayRight(root);
                 } catch(...){
                     cout<<"Error occured"<<endl;
                 }
@@ -609,6 +653,12 @@ int main(){
                 bfs.clearQueue(loc);
                 loc.push(root);
                 bfs.populatingNextRightPointersInEachNode116(loc);
+            }
+            else if(choice==12){
+                bfs.try2_populatingNextRightPointersInEachNode116(root);
+                bfs.printNext(root);
+            } else if(choice==13){
+                bfs.try3_populatingNextRightPointersInEachNode116(root);
             }
         }
 
