@@ -20,7 +20,8 @@ class node{
 
 class BFS{
     public:
-    
+        vector<node*>extra;
+        node* parent,*child,*grandchild;
         void printBFS(vector<node*>&loc){
             if(loc.empty()){
                 // cout<<"Returnign because loc vector is empty"<<endl;
@@ -386,7 +387,436 @@ class BFS{
             cout<<"Connected next node of every node"<<endl;
             printNext(root);
         }
+
+        void addAddrIsCousins(node*&one_node,queue<node*>&loc,int x,int y,bool&found){
+            if(one_node->left){
+                loc.push(one_node->left);
+                if(one_node->left->data==x){
+                    found=true;
+                    return;
+                } else if(one_node->left->data==y){
+                    found=true;
+                    return;
+                }
+            } 
+            if(one_node->right){
+                if(one_node->right->data==x){
+                    found=true;
+                } else if(one_node->right->data==y){
+                    found=true;
+                }
+                loc.push(one_node->right);
+            }
+        }
+
+        bool isCousins993(queue<node*>&loc,int x,int y){
+            if(loc.empty()){
+                return false;
+            }
+            bool found=false,isCousins=false;
+            while(!loc.empty()){
+                int size=loc.size();
+                auto it=loc.front();
+                for(int i=0;i<size;i++){
+                    // it=loc.front();
+                    addAddrIsCousins(loc.front(),loc,x,y,found);
+                    loc.pop();
+                    if(found){
+                        bool found2=false;
+                        for(int j=i+1;j<size;j++){
+                            addAddrIsCousins(loc.front(),loc,x,y,found2);
+                            if(found2)return true;
+                        }
+                        return false;
+                    }
+                }
+            }
+            cout<<"hi"<<endl;
+            return false;
+        }
+
+        void addAddrIsCousinsTry2(queue<node*>&loc,node*& one_node,int x,int y,int level,vector<int>&levels,vector<node*>&parents){
+            if(!one_node)return;
+            if(one_node->left){
+                loc.push(one_node->left);
+                if(one_node->left->data==x||one_node->left->data==y){
+                    levels.push_back(level);
+                    parents.push_back(one_node);
+                }
+            } 
+            if(one_node->right){
+                loc.push(one_node->right);
+                if(one_node->right->data==x||one_node->right->data==y){
+                    levels.push_back(level);
+                    parents.push_back(one_node);
+                }
+            }
+        }
+
+        bool isCousins_try2(queue<node*>&loc,int x,int y){
+            if(loc.front()->data==x&&loc.front()->data==y)return false;
+            vector<int>levels;
+            vector<node*>parents;
+            int level=1;
+            bool flag=false;
+            while(!loc.empty()){
+                int size=loc.size();
+                for(int i=0;i<size;i++){
+                    addAddrIsCousinsTry2(loc,loc.front(),x,y,level,levels,parents);
+                    if(levels.size()==2){flag=true;break;}
+                    loc.pop();
+                }
+                if(flag)break;
+                level++;
+            }
+            if(levels.size()==2){
+                if(levels[0]!=levels[1])return false;
+                if(parents[0]==parents[1])return false;
+                return true;
+            } else return false;
+        }
+        
+        void addAddrIsCousinsTry3(queue<node*>&loc,node*&one_node){
+            if(!one_node)return;
+
+            if(!one_node->left){
+                one_node->left==new node(-10);
+            }
+            loc.push(one_node->left);
+
+            if(!one_node->right){
+                one_node->right=new node(-10);
+            }
+            loc.push(one_node->right);
+        }
+        
+        bool isCousins_try3(queue<node*>&loc,int x,int y){
+            if(loc.front()->data==x&&loc.front()->data==y)return false;
+            bool flag=false;
+            while(!loc.empty()){
+                int size=loc.size();
+                auto it=loc.front();
+                for(int i=0;i<size;i++){
+                    it=loc.front();
+                    addAddrIsCousinsTry3(loc,it);
+                    if(it->data==x||it->data==y){
+                        if(flag)return true;
+                        else {
+                            i++;
+                            loc.pop();
+                            flag=true;
+                        }
+                    }
+                    loc.pop();
+                }
+                if(flag){
+                    return false;
+                }
+            }
+            return false;
+        }
+        
+        void addAddrIsCousinsTry4(queue<node*>&loc,node*&one_node){
+            if(!one_node)return;
+            if(one_node->data==-10)return;
+
+            if(!one_node->left){
+                one_node->left=new node(-10);
+            }
+            loc.push(one_node->left);
+
+            if(!one_node->right){
+                one_node->right=new node(-10);
+            }
+            loc.push(one_node->right);
+            node*extra_node = new node(-10);
+            loc.push(extra_node);
+            extra.push_back(extra_node);
+    }
+        
+        void delete_extra(vector<node*>&extra){
+            for(int i=0;i<extra.size();i++){
+                delete extra[i];
+            }
+        }
+        
+        bool isCousins_try4(queue<node*>&loc,int x,int y){
+            if(loc.front()->data==x&&loc.front()->data==y){
+                delete_extra(extra);
+                return false;
+            }
+            bool flag=false;
+            while(!loc.empty()){
+                queue<node*>newloc;
+                int size=loc.size();
+                auto it=loc.front();
+                while(!loc.empty()){
+                    it=loc.front();
+                    addAddrIsCousinsTry4(newloc,it);
+                    cout<<"Checking for "<<it->data<<endl;
+                    if((it->data==x||it->data==y)){
+                        cout<<"found for "<<it->data<<endl;
+                        if(flag){
+                            delete_extra(extra);
+                            return true;
+                        }
+                        else {
+                            loc.pop();
+                            loc.pop();
+                            flag=true;
+                            continue;
+                        }
+                    }
+                    loc.pop();
+                }
+                if(flag){
+                    delete_extra(extra);
+                    return false;
+                }
+                loc=newloc;
+            }
+            delete_extra(extra);
+            return false;
+        }
+        
+        void addAddrIsSymmetricLeft(node*&one_node,deque<node*>&temp){
+            if(!one_node)return;
+            if(one_node->left){
+                temp.push_front(one_node->left);
+            }
+            if(one_node->right){
+                temp.push_front(one_node->right);
+            }
+        }
+
+        void addAddrIsSymmetricRight(node*&one_node,deque<node*>&temp){
+            if(!one_node)return;
+            if(one_node->right){
+                temp.push_back(one_node->right);
+            }
+            if(one_node->left){
+                temp.push_back(one_node->left);
+            }
+        }
+
+        bool isSymettric(node*&root){
+            if(!root->left&&!root->right){
+                return true;
+            } else if(!root->left||!root->right){
+                return false;
+            }
+
+            deque<node*>answer,temp;
+            answer.push_front(root->left);
+            answer.push_back(root->right);
+            while(!answer.empty()){
+                int size=answer.size();
+                auto left_it=answer.front(),right_it=answer.back();
+                for(int i=0;i<size/2;i++){
+                    left_it=answer.front();
+                    right_it=answer.back();
+                    if(left_it->data!=right_it->data){
+                        return false;
+                    }
+                    addAddrIsSymmetricLeft(left_it,temp);
+                    addAddrIsSymmetricRight(right_it,temp);
+                    answer.pop_front();
+                    answer.pop_back();
+                }
+                answer=temp;
+                cout<<"deque is : "<<endl;
+                while(!temp.empty()){
+                    cout<<temp.front()->data<<" ";
+                    temp.pop_front();
+                }
+                cout<<endl;
+            }
+            return true;
+        }
+
+        void rightShiftFromBFS(node*&one_node,node*&root){
+            if(!one_node)return ;
+            node*temp=one_node->left;
+            one_node->left=temp->right;
+            temp->right=one_node;
+            if(one_node==parent)
+                root=temp;
+            else if(one_node==child) 
+                parent->right=temp;
+        }
+
+        void leftShiftFromBFS(node*&one_node,node*&root){
+            if(!one_node)return;
+            node*temp=one_node->right;
+            one_node->right=temp->left;
+            temp->left=one_node;
+            if(one_node==parent)
+                root=temp;
+            else 
+                parent->left=temp;
+        
+        }
+
+        void rotate(node*& one_node,node*&root,int left,int right){
+            parent=one_node;
+            bool left_child=false,left_grandchild=false;
+            cout<<"Parent pointing at : "<<parent->data<<endl;
+            if(left>right){
+                child=one_node->left;
+                left_child=true;
+            }else child=one_node->right;
+
+            int child_left=getHeight(child->left),child_right=getHeight(child->right);
+
+            if(child_left>child_right){
+                grandchild=child->left;
+                left_grandchild=true;
+            }
+            else grandchild=child->right;
+
+            if(left_child){
+                if(left_grandchild){
+                    cout<<"left left case"<<endl;
+                    rightShiftFromBFS(parent,root);
+                } else {
+                    cout<<"left right case"<<endl;
+                    leftShiftFromBFS(child,root);
+                    rightShiftFromBFS(parent,root);
+                }
+            } else {
+                if(left_grandchild){
+                    cout<<"right left case"<<endl;
+                    rightShiftFromBFS(child,root);
+                    leftShiftFromBFS(parent,root);
+                } else {
+                    cout<<"right right case"<<endl;
+                    leftShiftFromBFS(parent,root);
+                }
+            }
+        }
+
+        int setHeight(node*&one_node,node*&root){
+            if(!one_node->left&&!one_node->right)return 0;
+            int left=getHeight(one_node->left),right=getHeight(one_node->right);
+            if(abs(right-left)>1){
+                cout<<"We need to rearrange tree for "<<one_node->data<<endl;
+                rotate(one_node,root,left,right);
+                //after rearranging using AVL we need to check for right height and left height again
+                return setHeight(one_node,root);
+            }
+            // if(left==0&&right==0)return 0; this cant be done because it will always keeps returning 0
+            return max(left,right)+1;
+        }
+
+        int getHeight(node*&one_node){
+            if(!one_node)return 0;
+            else return one_node->height;
+        }
+        
+        void createBSTWithBFS(node*&root,int data){
+            static int cnt=0;
+            stack<node*>loc;
+            loc.push(root);
+            auto it=loc.top();
+            while(!loc.empty()){
+                it=loc.top();
+                cnt++;
+                if(cnt==40)break;
+                if(data<it->data){
+                    if(it->left){
+                        cout<<"Pushing "<<it->left->data<<endl;
+                        loc.push(it->left);
+                        continue;
+                    } else {
+                        it->left=new node(data);
+                        cout<<data<<" created to left of "<<it->data<<endl;
+                        break;
+                    }
+                } else {
+                    if(it->right){
+                        cout<<"Pushing "<<it->right->data<<endl;
+                        loc.push(it->right);
+                        continue;
+                    } else {
+                        it->right=new node(data);
+                        cout<<data<<" created to right of "<<it->data<<endl;
+                        break;
+                    }
+                }
+            }
+            while(!loc.empty()){
+                it=loc.top();
+                cout<<"Height of "<<it->data<<" is modified from "<<it->height<<" to : ";
+                it->height=setHeight(it,root);
+                cout<<it->height<<endl;
+                loc.pop();
+            }
+        }
+
 };
+
+
+// typedef struct TreeNode node;
+// class Solution {
+// public:
+//     void addAddrIsSymmetricLeft(node*&one_node,deque<node*>&temp){
+//             if(!one_node)return;
+//             if(one_node->left){
+//                 temp.push_front(one_node->left);
+//             }
+//             if(one_node->right){
+//                 temp.push_front(one_node->right);
+//             }
+//         }
+
+//         void addAddrIsSymmetricRight(node*&one_node,deque<node*>&temp){
+//             if(!one_node)return;
+//             if(one_node->right){
+//                 temp.push_back(one_node->right);
+//             }
+//             if(one_node->left){
+//                 temp.push_back(one_node->left);
+//             }
+//         }
+
+//         bool isSymettric_helper(node*&root){
+//             if(!root->left&&!root->right){
+//                 return true;
+//             } else if(!root->left||!root->right){
+//                 return false;
+//             }
+//             deque<node*>answer,temp;
+//             answer.push_front(root->left);
+//             answer.push_back(root->right);
+//             while(!answer.empty()){
+//                 int size=answer.size();
+//                 auto left_it=answer.front(),right_it=answer.back();
+//                 for(int i=0;i<size/2;i++){
+//                     left_it=answer.front();
+//                     right_it=answer.back();
+//                     if(left_it->val!=right_it->val){
+//                         return false;
+//                     }
+//                     addAddrIsSymmetricLeft(left_it,temp);
+//                     addAddrIsSymmetricRight(right_it,temp);
+//                     answer.pop_front();
+//                     answer.pop_back();
+//                 }
+//                 answer=temp;
+//                 cout<<"deque is : "<<endl;
+//                 while(!temp.empty()){
+//                     cout<<temp.front()->val<<" ";
+//                     temp.pop_front();
+//                 }
+//                 cout<<endl;
+//             }
+//             return true;
+//         }
+
+//     bool isSymmetric(TreeNode* root) {
+//         return isSymettric_helper(root);
+//     }
+// };
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
     if(!one_node)return;
@@ -425,6 +855,16 @@ void preetyDisplayRight(node*&one_node,int level=0){
         cout<<"|----->"<<one_node->data<<endl;
     } else cout<<one_node->data<<endl;
     if(one_node->left)preetyDisplayRight(one_node->left,level+1);
+}
+
+void preetyDisplayRightHeights(node*&one_node,int level=0){
+    if(!one_node)return;
+    if(one_node->right)preetyDisplayRightHeights(one_node->right,level+1);
+    if(level!=0){
+        for(int i=0;i<level-1;i++)cout<<"|\t";
+        cout<<"|----->"<<one_node->height<<endl;
+    } else cout<<one_node->height<<endl;
+    if(one_node->left)preetyDisplayRightHeights(one_node->left,level+1);
 }
 
 int getHeight(node*&one_node){
@@ -554,6 +994,10 @@ int getchoice(){
     cout<<"12 : Modify each node to point at right next node to it  (Using Pointers)"<<endl;
     cout<<"13 : Modify each node to point at right next node to it (116) (Using Pointers)"<<endl;
     cout<<"14 : Create BST"<<endl;
+    cout<<"15 : isCoursins"<<endl;
+    cout<<"16 : is symmetric"<<endl;
+    cout<<"17 : Create BST with BFS"<<endl;
+    cout<<"18 : Print heights using preetyDisplay"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -561,155 +1005,169 @@ int getchoice(){
 
 
 int main(){
-    deque<node*>loc;
-    node* n1=new node(1);
-    node* n2=new node(2);
-    node* n3=new node(3);
-    loc.push_back(n1);
-    loc.push_back(n2);
-    loc.push_back(n3);
-
-    auto it=loc.begin();
-    while(1){
-        cout<<"it : "<<(*it)->data<<endl;
-        if((*it)->data==3)break;
-        ++it;
-    }
-    return 0;
-
-
-//     int choice=1,data;
-//     node*root=nullptr;
-//     BFS bfs;
-//     queue<node*>loc;
-//     try{
-//         while(choice){
-//             choice=getchoice();
-//             if(choice==1){
-//                 cout<<"Enter data : ";
-//                 cin>>data;
+    int choice=1,data;
+    node*root=nullptr;
+    BFS bfs;
+    queue<node*>loc;
+    try{
+        while(choice){
+            choice=getchoice();
+            if(choice==1){
+                cout<<"Enter data : ";
+                cin>>data;
                 
-//                 if(!root){
-//                     root=new node(data);
-//                     loc.push(root);
-//                     continue;
-//                 }
-//                 createNormalTree(loc,data);
+                if(!root){
+                    root=new node(data);
+                    loc.push(root);
+                    continue;
+                }
+                createNormalTree(loc,data);
 
-//                 // try{
-//                 //     if(!root)root=new node(data);
-//                 //     else root=add(root,root,data);
-//                 //     cout<<"Root pointing at : "<<root->data<<endl;
-//                 // } catch(...){
-//                 //     cout<<"Error occured"<<endl;
-//                 // }
-//             } else if(choice==2){
-//                 if(!root){
-//                     cout<<"Tree is empty"<<endl;
-//                     continue;    
-//                 }
-//                 try{
-//                     preetyDisplayRight(root);
-//                 } catch(...){
-//                     cout<<"Error occured"<<endl;
-//                 }
-//             } else if(choice==3){
-//                 printHeights(root);
-//             }else if(choice==4){
-//                 vector<node*>loc={root};
-//                 bfs.printBFS(loc);
-//             } else if(choice==5){
-//                 bfs.clearQueue(loc);
-//                 loc.push(root);
-//                 bfs.printBFSUsingQueue(loc);
-//             }else if(choice==6){
-//                 vector<node*>loc={root};
-//                 vector<int>SumAtEveryLevel;
-//                 bfs.findSumAtEveryLevel(loc,SumAtEveryLevel);
-//                 cout<<"Sums at every level are : ";
-//                 for(int i : SumAtEveryLevel)cout<<i<<" ";
-//                 cout<<endl;
-//             }
-//             else if(choice==7){
-//                 int find;
-//                 bfs.clearQueue(loc);
-//                 loc.push(root);
-//                 cout<<"ENter the data to find rigth next node from : ";
-//                 cin>>find;
-//                 node* answer=bfs.findRightNextNode(loc,find);
-//                 if(answer)cout<<"Answer received : "<<answer->data<<endl;
-//                 else cout<<"node with data "<<find<<" not found"<<endl;
-//             }    
-//             else if(choice==8){
-//                 bfs.clearQueue(loc);
-//                 loc.push(root);
-//                 bfs.printBFSUsingQueueWhileLoop(loc);
-//             }
-//             else if(choice==9){
-//                 vector<vector<int>>answer;
-             
-//                 int methodChoice;
-//                 cout<<"WHich method to use\n1 : Using stack\n2 : USing queue3 : Using Dequeue\nYour choice : ";
-//                 cin>>methodChoice;
-//                 if(methodChoice==1){
-//                     vector<int>temp;
-//                     temp.push_back(root->data);
-//                     answer.push_back(temp);
-//                     stack<node*>loc;
-//                     loc.push(root);
-//                     answer=bfs.ZigZagTraversal103(loc,answer,false);
-//                 } else if(methodChoice==2){
-//                     queue<node*>loc;
-//                     loc.push(root);
-//                     answer=bfs.ZigZagTraversal103_withQueue(loc,answer,false);
-//                 } else if(methodChoice==3){
-//                     deque<node*>loc;
-//                     loc.push_back(root);
-//                     answer=bfs.ZigZagTraversal103_withDeque(loc,answer,true);
-//                 }
-//                 cout<<"Answer receievd from ZigZag traversal is : "<<endl;
-//                 for(int i=0;i<answer.size();i++){
-//                     for(int j=0;j<answer[i].size();j++){
-//                         cout<<answer[i][j]<<" ";
-//                     }
-//                     cout<<endl;
-//                 }
-//             }
-//             else if(choice==10){
-//                 bfs.clearQueue(loc);
-//                 loc.push(root);
-//                 vector<vector<int>>answer;
-//                 bfs.levelOrderTraversalReverse(loc,answer);
-//                 cout<<"Answer receievd from levelOrderTraversalReverse is : "<<endl;
-//                 for(int i=0;i<answer.size();i++){
-//                     for(int j=0;j<answer[i].size();j++){
-//                         cout<<answer[i][j]<<" ";
-//                     }
-//                     cout<<endl;
-//                 }
-//             }
-//             else if(choice==11){
-//                 bfs.clearQueue(loc);
-//                 loc.push(root);
-//                 bfs.populatingNextRightPointersInEachNode116(loc);
-//             }
-//             else if(choice==12){
-//                 bfs.try2_populatingNextRightPointersInEachNode116(root);
-//                 bfs.printNext(root);
-//             } else if(choice==13){
-//                 bfs.try3_populatingNextRightPointersInEachNode116(root);
-//             }
-//             else if(choice==14){
+                // try{
+                //     if(!root)root=new node(data);
+                //     else root=add(root,root,data);
+                //     cout<<"Root pointing at : "<<root->data<<endl;
+                // } catch(...){
+                //     cout<<"Error occured"<<endl;
+                // }
+            } else if(choice==2){
+                if(!root){
+                    cout<<"Tree is empty"<<endl;
+                    continue;    
+                }
+                try{
+                    preetyDisplayRight(root);
+                } catch(...){
+                    cout<<"Error occured"<<endl;
+                }
+            } else if(choice==3){
+                printHeights(root);
+            }else if(choice==4){
+                vector<node*>loc={root};
+                bfs.printBFS(loc);
+            } else if(choice==5){
+                bfs.clearQueue(loc);
+                loc.push(root);
+                bfs.printBFSUsingQueue(loc);
+            }else if(choice==6){
+                vector<node*>loc={root};
+                vector<int>SumAtEveryLevel;
+                bfs.findSumAtEveryLevel(loc,SumAtEveryLevel);
+                cout<<"Sums at every level are : ";
+                for(int i : SumAtEveryLevel)cout<<i<<" ";
+                cout<<endl;
+            }
+            else if(choice==7){
+                int find;
+                bfs.clearQueue(loc);
+                loc.push(root);
+                cout<<"ENter the data to find rigth next node from : ";
+                cin>>find;
+                node* answer=bfs.findRightNextNode(loc,find);
+                if(answer)cout<<"Answer received : "<<answer->data<<endl;
+                else cout<<"node with data "<<find<<" not found"<<endl;
+            }    
+            else if(choice==8){
+                bfs.clearQueue(loc);
+                loc.push(root);
+                bfs.printBFSUsingQueueWhileLoop(loc);
+            }
+            else if(choice==9){
+                vector<vector<int>>answer;
+                int methodChoice;
+                cout<<"WHich method to use\n1 : Using stack\n2 : USing queue3 : Using Dequeue\nYour choice : ";
+                cin>>methodChoice;
+                if(methodChoice==1){
+                    vector<int>temp;
+                    temp.push_back(root->data);
+                    answer.push_back(temp);
+                    stack<node*>loc;
+                    loc.push(root);
+                    answer=bfs.ZigZagTraversal103(loc,answer,false);
+                } else if(methodChoice==2){
+                    queue<node*>loc;
+                    loc.push(root);
+                    answer=bfs.ZigZagTraversal103_withQueue(loc,answer,false);
+                } else if(methodChoice==3){
+                    deque<node*>loc;
+                    loc.push_back(root);
+                    answer=bfs.ZigZagTraversal103_withDeque(loc,answer,true);
+                }
+                cout<<"Answer receievd from ZigZag traversal is : "<<endl;
+                for(int i=0;i<answer.size();i++){
+                    for(int j=0;j<answer[i].size();j++){
+                        cout<<answer[i][j]<<" ";
+                    }
+                    cout<<endl;
+                }
+            }
+            else if(choice==10){
+                bfs.clearQueue(loc);
+                loc.push(root);
+                vector<vector<int>>answer;
+                bfs.levelOrderTraversalReverse(loc,answer);
+                cout<<"Answer receievd from levelOrderTraversalReverse is : "<<endl;
+                for(int i=0;i<answer.size();i++){
+                    for(int j=0;j<answer[i].size();j++){
+                        cout<<answer[i][j]<<" ";
+                    }
+                    cout<<endl;
+                }
+            }
+            else if(choice==11){
+                bfs.clearQueue(loc);
+                loc.push(root);
+                bfs.populatingNextRightPointersInEachNode116(loc);
+            }
+            else if(choice==12){
+                bfs.try2_populatingNextRightPointersInEachNode116(root);
+                bfs.printNext(root);
+            } else if(choice==13){
+                bfs.try3_populatingNextRightPointersInEachNode116(root);
+            }
+            else if(choice==14){
+                // create_BST()
+            }
+            else if(choice==15){
+                int x,y;
+                cout<<"Enter x : ";
+                cin>>x;
+                cout<<"Enter y : ";
+                cin>>y;
+                bfs.clearQueue(loc);
+                loc.push(root);
+                bool isCousins=bfs.isCousins_try4(loc,x,y);
+                if(isCousins)cout<<x<<" & "<<y<<" are cousins"<<endl;
+                else cout<<x<<" & "<<y<<" are not cousins"<<endl;
+            }
+            else if(choice==16){
+                bfs.clearQueue(loc);
+                bool isSymmetric=bfs.isSymettric(root);
+                if(isSymmetric)cout<<"Tree is symmetric"<<endl;
+                else cout<<"Tree is not symmetric"<<endl;
+                cout<<"Came out"<<endl;
+            }
+            else if(choice==17){
+                cout<<"Enter data : ";
+                cin>>data;
+                if(!root){
+                    root=new node(data);
+                    cout<<"First node cerated in BST"<<endl;
+                } else {
+                    bfs.createBSTWithBFS(root,data);
+                    cout<<"Came out"<<endl;
+                }
+            }
+            else if(choice==18){
+                preetyDisplayRightHeights(root);
+            }
+        }
 
-//                 create_BST()
-//             }
-//         }
-
-//     } catch(...){
-//         cout<<"Error occured"<<endl;
-//     }
-//     cout<<"Came out"<<endl;
-//    delete_nodes(root);
+    } catch(...){
+        cout<<"Error occured"<<endl;
+    }
+    cout<<"Came out"<<endl;
+   delete_nodes(root);
 }    
 
 
