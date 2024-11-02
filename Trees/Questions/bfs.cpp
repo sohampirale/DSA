@@ -743,6 +743,7 @@ class BFS{
         
         node* rotateReturnPtr(node*&one_node){
             int left=getHeight(one_node->left),right=getHeight(one_node->right);
+            cout<<"lefth = "<<left<<" & righth = "<<right<<endl;
             if(abs(left-right)>1){
                 cout<<"tree is not balanced"<<endl;
                 parent=one_node;
@@ -778,7 +779,10 @@ class BFS{
                 }
                 setHeightOfCreatingBSTWithReturningPtrAVL(parent);
             }
-            setHeightOfCreatingBSTWithReturningPtrAVL(one_node);
+            setHeightOfCreatingBSTWithReturningPtrAVL(parent);
+            setHeightOfCreatingBSTWithReturningPtrAVL(grandchild);
+            setHeightOfCreatingBSTWithReturningPtrAVL(child);
+
             return one_node;
         }
 
