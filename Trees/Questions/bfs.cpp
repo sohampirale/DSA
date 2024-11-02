@@ -897,7 +897,6 @@ class BFS{
         }
 };
 
-
 void addNextAdd(node*& one_node,queue<node*>&loc){
     if(!one_node)return;
     loc.push(one_node->left);
