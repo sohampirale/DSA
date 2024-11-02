@@ -599,6 +599,7 @@ class BFS{
             }
         }
 
+
         bool isSymmetric(node*&root){
             if(!root->left&&!root->right){
                 return true;
@@ -610,6 +611,7 @@ class BFS{
             answer.push_front(root->left);
             answer.push_back(root->right);
             while(!answer.empty()){
+                deque<node*>newloc;
                 int size=answer.size();
                 auto left_it=answer.front(),right_it=answer.back();
                 for(int i=0;i<size/2;i++){
@@ -621,7 +623,7 @@ class BFS{
                     addAddrIsSymmetricLeft(left_it,temp);
                     addAddrIsSymmetricRight(right_it,temp);
                     answer.pop_front();
-                    answer.pop_back();
+                    answer.pop_back();                 
                 }
                 answer=temp;
                 cout<<"deque is : "<<endl;
@@ -852,6 +854,47 @@ class BFS{
 
         }
 
+        bool isSymmetricCheck(node*&front,node*&back,deque<node*>&loc){
+            auto front_left=front->left,front_right=front->right,back_left=back->left,back_right=back->right;
+            if(front_left&&!back_right)return false;
+            else if(!front_left&&back_right)return false;
+            else if(front_left&&back_right){
+                if(front_left->data!=back_right->data)return false;
+                loc.push_front(front_left);
+                loc.push_back(back_right);
+            }
+            if(front_right&&!back_left)return false;
+            else if(!front_right&&back_left)return false;
+            else if(front_right&&back_left){
+                if(front_right->data!=back_left->data)return false;
+                loc.push_front(front_right);
+                loc.push_back(back_left);
+            }
+            return true;
+        }
+
+        bool isSymmetricRecursive(deque<node*>&loc){
+            if(loc.empty())return true;
+            int size=loc.size();
+            deque<node*>newloc;
+            for(int i=0;i<size/2;i++){
+                if(!isSymmetricCheck(loc.front(),loc.back(),newloc)){
+                    return false;
+                }
+                loc.pop_front();
+                loc.pop_back();
+            }
+            return isSymmetricRecursive(newloc);
+        }
+
+        bool isSymmetricMethod2(node*&root){
+            if(!root)return true;
+            else if((!root->left&&root->right)||(root->left&&!root->right))return false;
+            deque<node*>loc;
+            loc.push_front(root->left);
+            loc.push_back(root->right);
+            return isSymmetricRecursive(loc);
+        }
 };
 
 
@@ -1037,6 +1080,7 @@ int getchoice(){
     cout<<"18 : Print heights using preetyDisplay"<<endl;
     cout<<"19 : create BST using returning ptr and BFS"<<endl;
     cout<<"20 : isSymmetric"<<endl;
+    cout<<"21 : isSymmetric method2"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -1218,6 +1262,11 @@ int main(){
             }
             else if(choice==20){
                 bool ans=bfs.isSymmetric(root);
+                if(ans)cout<<"Symmetric"<<endl;
+                else cout<<"Not symmetric"<<endl;
+            }
+            else if(choice==21){
+                bool ans=bfs.isSymmetricMethod2(root);
                 if(ans)cout<<"Symmetric"<<endl;
                 else cout<<"Not symmetric"<<endl;
             }
