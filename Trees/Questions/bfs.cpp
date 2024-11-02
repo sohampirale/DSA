@@ -532,7 +532,7 @@ class BFS{
             node*extra_node = new node(-10);
             loc.push(extra_node);
             extra.push_back(extra_node);
-    }
+        }
         
         void delete_extra(vector<node*>&extra){
             for(int i=0;i<extra.size();i++){
@@ -599,7 +599,7 @@ class BFS{
             }
         }
 
-        bool isSymettric(node*&root){
+        bool isSymmetric(node*&root){
             if(!root->left&&!root->right){
                 return true;
             } else if(!root->left||!root->right){
@@ -740,6 +740,7 @@ class BFS{
             temp->right=one_node;
             return temp;
         }
+        
         node* rotateReturnPtr(node*&one_node){
             int left=getHeight(one_node->left),right=getHeight(one_node->right);
             if(abs(left-right)>1){
@@ -848,9 +849,6 @@ class BFS{
         }
 
 };
-
-
-
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
     if(!one_node)return;
@@ -1033,6 +1031,7 @@ int getchoice(){
     cout<<"17 : Create BST with BFS"<<endl;
     cout<<"18 : Print heights using preetyDisplay"<<endl;
     cout<<"19 : create BST using returning ptr and BFS"<<endl;
+    cout<<"20 : isSymmetric"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -1044,6 +1043,7 @@ int main(){
     BFS bfs;
     queue<node*>loc;
     try{
+        //
         while(choice){
             choice=getchoice();
             if(choice==1){
@@ -1180,7 +1180,7 @@ int main(){
             }
             else if(choice==16){
                 bfs.clearQueue(loc);
-                bool isSymmetric=bfs.isSymettric(root);
+                bool isSymmetric=bfs.isSymmetric(root);
                 if(isSymmetric)cout<<"Tree is symmetric"<<endl;
                 else cout<<"Tree is not symmetric"<<endl;
                 cout<<"Came out"<<endl;
@@ -1198,7 +1198,7 @@ int main(){
             }
             else if(choice==18){
                 preetyDisplayRightHeights(root);
-            }
+            } 
             else if(choice==19){
                 cout<<"Enter data : ";
                 cin>>data;
@@ -1210,6 +1210,11 @@ int main(){
                 stack<node*>loc;
                 loc.push(root);
                 root=bfs.createBSTWithBFSReturningPtr(loc,data);
+            }
+            else if(choice==20){
+                bool ans=bfs.isSymmetric(root);
+                if(ans)cout<<"Symmetric"<<endl;
+                else cout<<"Not symmetric"<<endl;
             }
         }
 
