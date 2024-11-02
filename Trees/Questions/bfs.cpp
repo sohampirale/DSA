@@ -599,7 +599,7 @@ class BFS{
             }
         }
 
-        bool isSymettric(node*&root){
+        bool isSymmetric(node*&root){
             if(!root->left&&!root->right){
                 return true;
             } else if(!root->left||!root->right){
@@ -639,7 +639,7 @@ class BFS{
             node*temp=one_node->left;
             one_node->left=temp->right;
             temp->right=one_node;
-            if(one_node==parent)
+            if(one_node==parent&&parent==root)
                 root=temp;
             else if(one_node==child) 
                 parent->right=temp;
@@ -708,9 +708,106 @@ class BFS{
             return max(left,right)+1;
         }
 
+        void setHeightOfCreatingBSTWithReturningPtrAVL(node*&one_node){
+            if(!one_node)return;
+            cout<<"Setting height of "<<one_node->data<<endl;
+            if(!one_node->left&&!one_node->right)one_node->height=0;
+            int left=getHeight(one_node->left),right=getHeight(one_node->right);
+            one_node->height=max(left,right)+1;
+        }
+
         int getHeight(node*&one_node){
             if(!one_node)return 0;
             else return one_node->height;
+        }
+
+        void setGrandChild(node*&child){
+            int left=getHeight(child->left),right=getHeight(child->right);
+            if(left>right)grandchild=child->left;
+            else grandchild=child->right;
+        }
+
+        node* leftShiftReturningPtr(node*&one_node){
+            node*temp=one_node->right;
+            one_node->right=temp->left;
+            temp->left=one_node;
+            return temp;
+        }
+
+        node* rightShiftReturningPtr(node*&one_node){
+            node*temp=one_node->left;
+            one_node->left=temp->right;
+            temp->right=one_node;
+            return temp;
+        }
+        
+        node* rotateReturnPtr(node*&one_node){
+            int left=getHeight(one_node->left),right=getHeight(one_node->right);
+            cout<<"lefth = "<<left<<" & righth = "<<right<<endl;
+            if(abs(left-right)>1){
+                cout<<"tree is not balanced"<<endl;
+                parent=one_node;
+                if(left>right)child=parent->left;
+                else child=parent->right;
+                setGrandChild(child);
+                cout<<"Parent : "<<parent->data<<endl;
+                cout<<"Child : "<<child->data<<endl;
+                cout<<"Grandchild : "<<grandchild->data<<endl;
+
+                if(child==parent->left){
+
+                    if(grandchild==child->left){
+                        cout<<"Left left case"<<endl;
+                        one_node = rightShiftReturningPtr(parent);
+                    } else {
+                        parent->left=leftShiftReturningPtr(child);
+                        setHeightOfCreatingBSTWithReturningPtrAVL(child);
+                        one_node = rightShiftReturningPtr(parent);
+                    }
+
+                } else {
+
+                    if(grandchild==child->right){
+                        cout<<"right right"<<endl;
+                        one_node = leftShiftReturningPtr(parent);
+                    } else {
+                        parent->right = rightShiftReturningPtr(child);
+                        setHeightOfCreatingBSTWithReturningPtrAVL(child);
+                        one_node = leftShiftReturningPtr(parent);
+                    }
+
+                }
+                setHeightOfCreatingBSTWithReturningPtrAVL(parent);
+            }
+            setHeightOfCreatingBSTWithReturningPtrAVL(parent);
+            setHeightOfCreatingBSTWithReturningPtrAVL(grandchild);
+            setHeightOfCreatingBSTWithReturningPtrAVL(child);
+
+            return one_node;
+        }
+
+        node* createBSTWithBFSReturningPtr(stack<node*>&loc,int data){
+            auto it=loc.top();
+            if(data<=it->data){
+                if(it->left){
+                    loc.push(it->left);
+                    it->left=createBSTWithBFSReturningPtr(loc,data);
+                } else {
+                    it->left=new node(data);
+                    cout<<data<<" created"<<endl;
+                    return it;
+                }
+            } else {
+                if(it->right){
+                    loc.push(it->right);
+                    it->right=createBSTWithBFSReturningPtr(loc,data);
+                } else {
+                    it->right=new node(data);
+                    cout<<data<<" created to the right of "<<it->data<<endl;
+                    return it;
+                }
+            }
+            return rotateReturnPtr(it);
         }
         
         void createBSTWithBFS(node*&root,int data){
@@ -744,6 +841,7 @@ class BFS{
                     }
                 }
             }
+
             while(!loc.empty()){
                 it=loc.top();
                 cout<<"Height of "<<it->data<<" is modified from "<<it->height<<" to : ";
@@ -751,6 +849,7 @@ class BFS{
                 cout<<it->height<<endl;
                 loc.pop();
             }
+
         }
 
 };
@@ -936,12 +1035,12 @@ int getchoice(){
     cout<<"16 : is symmetric"<<endl;
     cout<<"17 : Create BST with BFS"<<endl;
     cout<<"18 : Print heights using preetyDisplay"<<endl;
-    cout<<"19 : isSymmetric"<<endl;
+    cout<<"19 : create BST using returning ptr and BFS"<<endl;
+    cout<<"20 : isSymmetric"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
 }
-
 
 int main(){
     int choice=1,data;
@@ -955,21 +1054,25 @@ int main(){
             if(choice==1){
                 cout<<"Enter data : ";
                 cin>>data;
-                
-                if(!root){
-                    root=new node(data);
-                    loc.push(root);
-                    continue;
-                }
-                createNormalTree(loc,data);
 
-                // try{
-                //     if(!root)root=new node(data);
-                //     else root=add(root,root,data);
-                //     cout<<"Root pointing at : "<<root->data<<endl;
-                // } catch(...){
-                //     cout<<"Error occured"<<endl;
-                // }
+                int m=1;
+                if(m==1){
+                    if(!root){
+                        root=new node(data);
+                        loc.push(root);
+                        continue;
+                    }
+                    createNormalTree(loc,data);
+                } else if(m==2){
+                    try{
+                        if(!root)root=new node(data);
+                        else root=add(root,root,data);
+                        cout<<"Root pointing at : "<<root->data<<endl;
+                    } catch(...){
+                        cout<<"Error occured"<<endl;
+                    }
+                }  
+
             } else if(choice==2){
                 if(!root){
                     cout<<"Tree is empty"<<endl;
@@ -1082,7 +1185,7 @@ int main(){
             }
             else if(choice==16){
                 bfs.clearQueue(loc);
-                bool isSymmetric=bfs.isSymettric(root);
+                bool isSymmetric=bfs.isSymmetric(root);
                 if(isSymmetric)cout<<"Tree is symmetric"<<endl;
                 else cout<<"Tree is not symmetric"<<endl;
                 cout<<"Came out"<<endl;
@@ -1102,6 +1205,18 @@ int main(){
                 preetyDisplayRightHeights(root);
             } 
             else if(choice==19){
+                cout<<"Enter data : ";
+                cin>>data;
+                if(!root){
+                    root=new node(data);
+                    cout<<"First node created"<<endl;
+                    continue;
+                }
+                stack<node*>loc;
+                loc.push(root);
+                root=bfs.createBSTWithBFSReturningPtr(loc,data);
+            }
+            else if(choice==20){
                 bool ans=bfs.isSymmetric(root);
                 if(ans)cout<<"Symmetric"<<endl;
                 else cout<<"Not symmetric"<<endl;
