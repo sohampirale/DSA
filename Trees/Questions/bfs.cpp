@@ -20,7 +20,6 @@ class node{
 
 class BFS{
     public:
-    
         void printBFS(vector<node*>&loc){
             if(loc.empty()){
                 // cout<<"Returnign because loc vector is empty"<<endl;
@@ -386,6 +385,8 @@ class BFS{
             cout<<"Connected next node of every node"<<endl;
             printNext(root);
         }
+
+
 };
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
@@ -536,6 +537,7 @@ int getchoice(){
     cout<<"11 : Modify each node to point at right next node to it"<<endl;
     cout<<"12 : Modify each node to point at right next node to it  (Using Pointers)"<<endl;
     cout<<"13 : Modify each node to point at right next node to it (116) (Using Pointers)"<<endl;
+    cout<<"20 : isSymmetric"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -663,6 +665,11 @@ int main(){
                 bfs.printNext(root);
             } else if(choice==13){
                 bfs.try3_populatingNextRightPointersInEachNode116(root);
+            }
+            else if(choice==20){
+                bool ans=bfs.isSymmetric(root);
+                if(ans)cout<<"Symmetric"<<endl;
+                else cout<<"Not symmetric"<<endl;
             }
         }
 
