@@ -599,8 +599,8 @@ class BFS{
             }
         }
 
-
         bool isSymmetric(node*&root){
+            //not correct
             if(!root->left&&!root->right){
                 return true;
             } else if(!root->left||!root->right){
