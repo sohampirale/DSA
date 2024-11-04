@@ -1,0 +1,5 @@
+vector<int> numbers = {1, 2, 3};
+numbers.resize(5, 0); // Result: {1, 2, 3, 0, 0}
+
+vector<int> numbers = {1, 2, 3};
+numbers.assign(5, 0); // Result: {0, 0, 0, 0, 0}
