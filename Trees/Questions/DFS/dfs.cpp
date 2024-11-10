@@ -1753,35 +1753,92 @@ class DFS{
 
         vector<string>allPaths;
         int nPathSums=0;
-        void helperPathSumAny(node*&one_node,int target,vector<int>&sums){
-            cout<<"Hi"<<endl;
-            if(!one_node)return;
-            int curr=one_node->data;
-            cout<<"Sums.size() = "<<sums.size()<<endl;
-            int size=sums.size();
-            for(int i=0;i<size;i++){
-                cnt++;
-                if(cnt>=2000){
-                    cout<<"Inifninte loop broken"<<endl;
-                    return;
-                }
-                int temp=sums[i]+curr;
-                if(temp==target){
-                    nPathSums++;
-                    cout<<"Found ans no -"<<nPathSums<<endl;
-                    // allPaths.push_back(path);
-                }
-                sums.push_back(temp);
+        int recursiveFindAllSums(int target,int st,vector<int>&nums,int sum){
+            if(st>=nums.size())return 0;
+            int cnt=0;
+            sum+=nums[st];
+            if(sum==target)cnt=1;
+            cnt+=recursiveFindAllSums(target,st+1,nums,sum);
+            return cnt;
+        }
+        
+        int possibleWaysToGetTargetViaSum(int target,vector<int>nums,int sum=0){
+            int cnt=0;
+            for(int i=0;i<nums.size();i++){
+                cnt+=recursiveFindAllSums(target,i,nums,0);
             }
-            helperPathSumAny(one_node->left,target,sums);
-            helperPathSumAny(one_node->right,target,sums);
+            return cnt;
+        }
+        
+        int possibleWaysToGetTargetViaSum2(int target,vector<int>nums){
+            string path="";
+            int cnt=0;
+            int sum=0;
+            for(int i=nums.size()-1;i>=0;i--){
+                path="->"+to_string(nums[i])+path;
+                sum+=nums[i];
+                if(sum==target){
+                    cnt++;
+                    allPaths.push_back(path);
+                }
+            }
+            return cnt;
+        }
+        
+        int helperPathSumAny(node*&one_node,int target,vector<int>nums){
+            if(!one_node)return 0;
+            int cnt=0;
+            // if(!one_node->left&&!one_node->right)
+            cnt+=possibleWaysToGetTargetViaSum2(target,nums);
+            cout<<"Found "<<cnt<<" for "<<one_node->data<<" nums : ";
+            for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
+            cout<<endl;
+            if(one_node->left){
+                nums.push_back(one_node->left->data);
+                int cntleft=helperPathSumAny(one_node->left,target,nums);
+                nums.pop_back();
+                cnt+=cntleft;
+            }
+            if(one_node->right){
+                nums.push_back(one_node->right->data);
+                int cntright=helperPathSumAny(one_node->right,target,nums);
+                nums.pop_back();
+                cnt+=cntright;
+            }
+            return cnt;
         }
 
-        void pathSumAnyPresent(node*&root,int target){
+        int pathSumAnyPresent(node*&root,int target){
+            nPathSums=0;
             vector<int>sums;
-            sums.push_back(0);
-            helperPathSumAny(root,target,sums);
-            cout<<"NUmber of solutions possibel are : "<<nPathSums<<endl;
+            sums.push_back(root->data);
+            int total_possible_answers=helperPathSumAny(root,target,sums);
+            cout<<"NUmber of solutions possibel are : "<<total_possible_answers<<endl;
+            cout<<"ALl possible paths are : "<<endl;
+            for(string str : allPaths){
+                cout<<str<<endl;
+            }
+            return total_possible_answers;
+        }
+
+        void addAddrInStackForIterative(node*&one_node,stack<node*>&loc){
+            if(!one_node)return;
+            if(one_node->right)loc.push(one_node->right);
+            if(one_node->left)loc.push(one_node->left);
+        }
+
+        void inorderUsingStack(node*&root){
+            if(!root)return;
+            stack<node*>loc;
+            loc.push(root);
+            auto it=loc.top();
+            while(!loc.empty()){
+                it=loc.top();
+                cout<<it->data<<" ";
+                loc.pop();
+                addAddrInStackForIterative(it,loc);
+            }
+            cout<<endl;
         }
 }; 
 
@@ -1969,12 +2026,14 @@ int getchoice(){
     cout<<"17 : Maximum Path Sum"<<endl;
     cout<<"18 : Path Exists"<<endl;
     cout<<"19 : Path sums any"<<endl;
+    cout<<"20 : Inorder using Stack"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
 }
 
 int main(){
+   
     int choice=1,data;
     node*root=nullptr;
     DFS dfs;
@@ -2004,7 +2063,8 @@ int main(){
                     }
                 }  
 
-            } else if(choice==2){
+            } 
+            else if(choice==2){
                 if(!root){
                     cout<<"Tree is empty"<<endl;
                     continue;    
@@ -2014,11 +2074,14 @@ int main(){
                 } catch(...){
                     cout<<"Error occured"<<endl;
                 }
-            } else if(choice==4){
+            } 
+            else if(choice==4){
                 dfs.preorder(root);
-            } else if(choice==5){
+            } 
+            else if(choice==5){
                 dfs.inorder(root);
-            } else if(choice==6){
+            } 
+            else if(choice==6){
                 dfs.postorder(root);
             }
             else if(choice==7){
@@ -2164,7 +2227,13 @@ int main(){
                 int target;
                 cout<<"Enter target : ";
                 cin>>target;
-                dfs.pathSumAnyPresent(root,target);
+                int total_possible=dfs.pathSumAnyPresent(root,target);
+                cout<<"Total_possible = "<<total_possible<<endl;
+            }
+            else if(choice==20){
+                stack<node*>loc;
+                loc.push(root);
+                dfs.inorderUsingStack(root);
             }
         }
 
