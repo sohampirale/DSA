@@ -6,6 +6,7 @@ class folder{
         string folder_name;
         vector<folder*>sub;
 };
+
 class file:public folder{
     public:
         string filedata;
