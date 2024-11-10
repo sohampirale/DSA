@@ -1,0 +1,3 @@
+Printer 10
+Scanner 5
+Resource3 2
