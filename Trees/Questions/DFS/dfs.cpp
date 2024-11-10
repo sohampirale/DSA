@@ -1701,6 +1701,88 @@ class DFS{
             if(postorder.empty())return nullptr;
             return helperCreateBTFromPostorderAndInorder(postorder,inorder);
         }
+        int maxx=INT_MIN;
+        int helperMaxPathSum(node*&one_node){
+            if(!one_node)return 0;
+            // if(!one_node->left&&!one_node->right){
+            //     return one_node->val;
+            // }
+            int curr=one_node->data;
+            int left=helperMaxPathSum(one_node->left);
+            int right=helperMaxPathSum(one_node->right);
+            if(left<0&&right<0){
+                if(curr>maxx)maxx=curr;
+                return curr;
+            } else if(left<0){
+                if((right+curr)>maxx)maxx=right+curr;
+                return curr+right;
+            } else if(right<0){
+                if((left+curr)>maxx)maxx=left+curr;
+                return curr+left;
+            }
+            else if((left+right+curr)>maxx)maxx=left+right+curr;
+            return left>right? (left +curr): (right+curr);
+        }
+
+        int maxPathSum(node*&root){
+            maxx=INT_MIN;
+            int maxReceived=helperMaxPathSum(root);
+            return maxx>maxReceived? maxx : maxReceived;
+        }
+
+        bool helperPathExists(node*&one_node,vector<int>path){
+            if(!one_node)return false;
+            if(one_node->data!=path.back())return false;
+            path.pop_back();
+            if(path.empty())return true;
+            return helperPathExists(one_node->left,path) || helperPathExists(one_node->right,path);
+        }
+        
+        bool helperPathExistsTry2(node*&one_node,vector<int>&path,int i=0){
+            if(i==path.size())return true;
+            if(!one_node)return false;
+            if(one_node->data!=path[i])return false;
+            // if(i=path.size()-1)return true;
+            return helperPathExistsTry2(one_node->left,path,i+1) || helperPathExistsTry2(one_node->right,path,i+1);
+        }
+        
+        bool pathExists(node*&root,vector<int>path){
+            // reverse(path.begin(),path.end());
+            return helperPathExistsTry2(root,path);
+        }
+
+        vector<string>allPaths;
+        int nPathSums=0;
+        void helperPathSumAny(node*&one_node,int target,vector<int>&sums){
+            cout<<"Hi"<<endl;
+            if(!one_node)return;
+            int curr=one_node->data;
+            cout<<"Sums.size() = "<<sums.size()<<endl;
+            int size=sums.size();
+            for(int i=0;i<size;i++){
+                cnt++;
+                if(cnt>=2000){
+                    cout<<"Inifninte loop broken"<<endl;
+                    return;
+                }
+                int temp=sums[i]+curr;
+                if(temp==target){
+                    nPathSums++;
+                    cout<<"Found ans no -"<<nPathSums<<endl;
+                    // allPaths.push_back(path);
+                }
+                sums.push_back(temp);
+            }
+            helperPathSumAny(one_node->left,target,sums);
+            helperPathSumAny(one_node->right,target,sums);
+        }
+
+        void pathSumAnyPresent(node*&root,int target){
+            vector<int>sums;
+            sums.push_back(0);
+            helperPathSumAny(root,target,sums);
+            cout<<"NUmber of solutions possibel are : "<<nPathSums<<endl;
+        }
 }; 
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
@@ -1884,6 +1966,9 @@ int getchoice(){
     cout<<"14 : Two sum equal to given number"<<endl;
     cout<<"15 : Create BT from Preorder and Inorder"<<endl;
     cout<<"16 : Create BT from postorder and inorder"<<endl;
+    cout<<"17 : Maximum Path Sum"<<endl;
+    cout<<"18 : Path Exists"<<endl;
+    cout<<"19 : Path sums any"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -2060,7 +2145,27 @@ int main(){
                 cout<<"AFter creating the tree looks like : "<<endl;
                 preetyDisplayRight(root);
             }   
-
+            else if(choice==17){
+                int ans=dfs.maxPathSum(root);
+                cout<<"Ans = "<<ans<<endl;
+            }
+            else if(choice==18){
+                int n;
+                cout<<"ENter size of array path : ";
+                cin>>n;
+                vector<int>path(n);
+                cout<<"Enter path data one by one : ";
+                for(int i=0;i<n;i++)cin>>path[i];
+                bool ans=dfs.pathExists(root,path);
+                if(ans)cout<<"Exists"<<endl;
+                else cout<<"Does not exists"<<endl;
+            }
+            else if(choice==19){
+                int target;
+                cout<<"Enter target : ";
+                cin>>target;
+                dfs.pathSumAnyPresent(root,target);
+            }
         }
 
     } catch(...){
