@@ -4,7 +4,7 @@ using namespace std;
 
 class node{
     public:
-        int data,height;
+        int data,height,cnt=0;
         node*left,*right,*next;
         node(int data){
             this->data=data;
@@ -22,6 +22,23 @@ class BFS{
     public:
         vector<node*>extra;
         node* parent,*child,*grandchild;
+        void invertTreeUsingBFS(node*&root){
+            if(!root)return;
+            queue<node*>loc;
+            loc.push(root);
+            while(!loc.empty()){
+                int size=loc.size();
+                for(int i=0;i<size;i++){
+                    auto it=loc.front();
+                    node*temp=it->left;
+                    it->left=it->right;
+                    it->right=temp;
+                    addAddrInQueue(it,loc);
+                    loc.pop();
+                }
+            }
+        }
+
         void printBFS(vector<node*>&loc){
             if(loc.empty()){
                 // cout<<"Returnign because loc vector is empty"<<endl;
@@ -1007,6 +1024,685 @@ class BFS{
         }
 };
 
+
+class DFS{
+    public:
+        void preorder(node*&one_node){
+            if(!one_node)return;
+            cout<<one_node->data<<" ";
+            preorder(one_node->left);
+            preorder(one_node->right);
+        }
+
+        void inorder(node*&one_node){
+            if(!one_node)return;
+            cout<<one_node->data<<" ";
+            inorder(one_node->left);
+            inorder(one_node->right);
+        }
+
+        void postorder(node*&one_node){
+            if(!one_node)return;
+            cout<<one_node->data<<" ";
+            postorder(one_node->left);
+            postorder(one_node->right);
+        }
+
+        int maxDiameterHelper(node*&one_node,int&d_max){
+            if(!one_node)return 0;
+            int d;
+            int left = maxDiameterHelper(one_node->left,d_max);
+            int right=maxDiameterHelper(one_node->right,d_max);
+            d=left+right;
+            if(d>d_max){
+                d_max=d;
+                cout<<"d_max modified to : "<<d_max<<" at "<<one_node->data<<endl;
+            }
+            return max(left,right)+1;
+        }
+        
+        int maxDiameter(node*&root){
+            int d_max=1;
+            maxDiameterHelper(root,d_max);
+            return d_max;
+        }
+
+        void invertTreeUsingDFSPostorder(node*&one_node){
+            if(!one_node)return;
+            invertTreeUsingDFSPostorder(one_node->left);
+            invertTreeUsingDFSPostorder(one_node->right);
+            if(one_node->left&&one_node->right)cout<<"Interchanging "<<one_node->left->data<<" with "<<one_node->right->data<<endl;
+            node*temp=one_node->left;
+            one_node->left=one_node->right;
+            one_node->right=temp;
+        }
+
+        void invertTreeUsingDFSPreorder(node*&one_node){
+            if(!one_node)return;
+            if(one_node->left&&one_node->right)cout<<"Interchanging "<<one_node->left->data<<" with "<<one_node->right->data<<endl;
+            node*temp=one_node->left;
+            one_node->left=one_node->right;
+            one_node->right=temp;
+            invertTreeUsingDFSPreorder(one_node->left);
+            invertTreeUsingDFSPreorder(one_node->right);
+        }
+
+        node* invertTreeUsingDFSPostorderReturningPtr(node*&one_node){
+            if(!one_node)return nullptr;
+            node*temp=one_node->right;
+            one_node->right=invertTreeUsingDFSPostorderReturningPtr(one_node->left);
+            one_node->left= invertTreeUsingDFSPostorderReturningPtr(temp);     
+            // one_node->right=right;
+            // one_node->left=left;
+            return one_node;
+        }
+
+        void invertTreeUsingDFSInorder(node*&one_node){
+            if(!one_node)return;
+            invertTreeUsingDFSInorder(one_node->left);
+            node*temp=one_node->left;
+            one_node->left=one_node->right;
+            one_node->right=temp;
+            invertTreeUsingDFSInorder(one_node->left);
+        } 
+
+       node* invertTreeUsingDFSInorderReturningPtr(node*&one_node){
+            if(!one_node)return nullptr;
+            node*temp=one_node->right;
+            one_node->right=invertTreeUsingDFSInorderReturningPtr(one_node->left);
+            one_node->left=invertTreeUsingDFSInorderReturningPtr(temp);
+            return one_node;
+        } 
+
+        void createBSTFromSortedArray(vector<int>&nums,int st,int end,node*&one_node,int cnt=0){
+            if(st>end)return;
+            int mid=st+(end-st)/2;
+            if(!one_node){
+                one_node=new node(nums[mid]);
+                createBSTFromSortedArray(nums,st,mid-1,one_node,0);
+                createBSTFromSortedArray(nums,mid+1,end,one_node,1);
+                return;
+            }
+            else if(cnt==0) {
+                cout<<"Created "<<nums[mid]<<" to the left of "<<one_node->data<<endl;
+                one_node->left=new node(nums[mid]);
+                createBSTFromSortedArray(nums,st,mid-1,one_node->left,0);
+                createBSTFromSortedArray(nums,mid+1,end,one_node->left,1);
+            }
+            else if(cnt==1) {
+                cout<<"Created "<<nums[mid]<<" to the right of "<<one_node->data<<endl;
+                one_node->right=new node(nums[mid]);
+                createBSTFromSortedArray(nums,st,mid-1,one_node->right,0);
+                createBSTFromSortedArray(nums,mid+1,end,one_node->right,1);
+            }
+        }
+
+        node* create_BST_From_Sorted_Array_Returning_Ptr(vector<int>&nums,int st,int end){
+            if(st>end)return nullptr;
+            int mid=st+(end-st)/2;
+            node*one_node=new node(nums[mid]);
+            one_node->left=create_BST_From_Sorted_Array_Returning_Ptr(nums,st,mid-1);
+            one_node->right=create_BST_From_Sorted_Array_Returning_Ptr(nums,mid+1,end);
+            return one_node;
+        }
+
+        node*ts=nullptr;
+        void flattenTree(node*&t){
+            if(!t)return;
+            cout<<"Checkign for "<<t->data<<endl;
+            node*t1=t->left,*t2=t->right;
+            if(!t1&&!t2){
+                ts=t;
+                return;
+            }
+            flattenTree(t->left);
+            if(ts&&t2){
+                ts->right=t2;
+                cout<<"ts("<<ts->data<<") pointing right to "<<ts->right->data<<endl;
+                ts=nullptr;
+            }
+            else cout<<"ts if nullptr"<<endl;
+            
+            flattenTree(t->right);
+            if(t1){
+                t->right=t1;
+                t->left=nullptr;
+                cout<<t->data<<" pointing to right side : "<<t1->data<<endl;
+            }
+        }
+
+        void putToRightMost(node*&one_node,node*&t2){
+            if(!one_node->right){
+                one_node->right=t2;
+            } else putToRightMost(one_node->right,t2);
+        }
+
+        void flattenTreeMethod2(node*&root){
+            node*t=root;
+            while(t){
+                if(t->left){
+                    putToRightMost(t->left,t->right);
+                    t->right=t->left;
+                    t->left=nullptr;
+                }
+                t=t->right;
+            }
+            cout<<"Tree flattened"<<endl;
+        }
+
+        bool isNodeValid(node*&one_node){
+            if(!one_node)return true;
+            int curr_data=one_node->data;
+            bool left=true,right=true;
+            if(one_node->left){
+                int left_data=one_node->left->data;
+                left= left && left_data<curr_data;
+                if(one_node->left->left){
+                    int left_left_data=one_node->left->left->data;
+                    left=left && left_left_data<left_data;
+                }
+
+                if(one_node->left->right){
+                    int left_right_data=one_node->left->right->data;
+                    left = left && left_right_data > left_data && left_right_data< curr_data;
+                }
+            }
+
+            if(one_node->right){
+                int right_data=one_node->right->data;
+                right = right && right_data> curr_data;
+                if(one_node->right->left){
+                    int right_left_data=one_node->right->left->data;
+                    right = right && right_left_data<right_data && right_left_data >curr_data;
+                }
+                if(one_node->right->right){
+                    int right_right_data=one_node->right->right->data;
+                    right = right && right_right_data>right_data;
+                    // & right_right_data>curr_data
+                }
+            }
+            return left && right;
+        }
+
+        //in question the answer is expecte to have only less than elements in the left 
+        //and only greater than in the right
+        bool isValid=true;
+        vector<int>GiveMinMax(node*one_node){
+            if(!one_node->left&&!one_node->right){
+                vector<int>minmax;
+                minmax.push_back(one_node->data);
+                minmax.push_back(one_node->data);
+                return minmax;
+            }
+            vector<int>returnMinMax(2);
+            int curr=one_node->data;
+            if(one_node->left){
+                vector<int>LeftMinMax=GiveMinMax(one_node->left);
+                int leftmin=LeftMinMax[0];
+                int leftmax=LeftMinMax[1];
+                if(!isValid){
+                    // cout<<"isValid already found false for "<<one_node->data<<endl;
+                }
+                isValid =isValid && curr>=leftmin && curr>=leftmax;
+                if(!isValid){
+                    // cout<<"Invalid found for "<<one_node->data<<endl;
+                    return LeftMinMax;
+                }
+                returnMinMax[0]=leftmin;
+            } else {
+                returnMinMax[0]=curr;
+            }
+            if(one_node->right){
+                vector<int>RightMinMax=GiveMinMax(one_node->right);
+                if(!isValid){
+                    // cout<<"isValid already found false for "<<one_node->data<<endl;
+                }
+                int rightmin=RightMinMax[0];
+                int rightmax=RightMinMax[1];
+                isValid= isValid && curr<= rightmin && curr <= rightmax;
+                if(!isValid){
+                    // cout<<"Invalid found for "<<one_node->data<<endl;
+                    return RightMinMax;
+                }
+                returnMinMax[1]=rightmax;
+            } else {
+                returnMinMax[1]=curr;
+            }
+            return returnMinMax;
+        }
+
+        bool isValidFind(node*&one_node){
+           if(!one_node)return true;
+           int curr=one_node->data;
+            if(one_node->left){
+                vector<int>LeftMinMax=GiveMinMax(one_node->left);
+                int leftmin=LeftMinMax[0];
+                int leftmax=LeftMinMax[1];
+                if(!isValid){
+                    // cout<<"isValid already found false for "<<one_node->data<<endl;
+                }
+                isValid =isValid && curr>=leftmin && curr>=leftmax;
+                if(!isValid){
+                    // cout<<"Returning false from main left"<<endl;
+                    return false;
+                }
+            } 
+
+            if(one_node->right){
+                // cout<<"Hi"<<endl;
+                vector<int>RightMinMax=GiveMinMax(one_node->right);
+                if(!isValid){
+                    // cout<<"isValid already found false for "<<one_node->data<<endl;
+                } 
+                int rightmin=RightMinMax[0];
+                int rightmax=RightMinMax[1];
+                // cout<<"Right side : "<<rightmin<<" & "<<rightmax;
+                isValid= isValid && curr<= rightmin && curr <= rightmax;
+                if(!isValid){
+                    // cout<<"Returning false from right"<<endl;
+                    return false;
+                }
+            } 
+            // cout<<"Tree is valid"<<endl;
+            return isValid;
+        }
+
+        bool helperisValild(node*&t1,node*&t2,int cnt=0){
+            if(!t2)return true;
+            bool curr=true;
+            if(t1!=t2){
+                
+                if(cnt==0){
+                    curr = curr && t2->data<t1->data;
+                } else if(cnt==1){
+                    curr = curr && t2->data>t1->data;
+                }
+
+                if(!curr){
+                    cout<<"Tree not valid found at "<<t2->data<<" main check t1 = "<<t1->data<<endl;
+                    return false;
+                }
+
+                if(t2->left){
+                    if(cnt==0){
+                        curr =curr && t2->left->data<t2->data;
+                    } else if(cnt==1){
+                        curr =curr && t2->left->data<t2->data && t2->left->data>t1->data;
+                    }
+                    if(!curr){
+                        cout<<"Tree not valid found at "<<t2->data<<endl;
+                        return false;
+                    }
+                }
+
+                if(t2->right){
+                    if(cnt==0){
+                        curr =curr & t2->right->data > t2->data && t2->right->data<t1->data;
+                    } else if(cnt==1){
+                        curr= curr && t2->right->data>t2->data;
+                    }
+                    if(!curr){
+                        cout<<"Tree not valid found at "<<t2->data<<endl;
+                        return false;
+                    }
+                }
+            }
+            bool left= helperisValild(t2,t2->left,0);
+            bool right = helperisValild(t2,t2->right,1);
+
+            return left && right;
+        }
+
+        //not accepted
+        bool isValidTry2(node*&one_node){
+            if(!one_node)return true;
+            bool ans=helperisValild(one_node,one_node,0);
+            return ans;
+        }
+
+        bool helperisValidTry3(node*&one_node,int wheneverLeft,int wheneverRight){
+            if(!one_node)return true;
+            int curr=one_node->data;
+            if((curr>=wheneverLeft||curr<=wheneverRight)){
+                cout<<"Not valid found at "<<curr<<endl;
+                return false;
+            }
+            bool left=helperisValidTry3(one_node->left,curr,wheneverRight);
+            bool right=helperisValidTry3(one_node->right,wheneverLeft,curr);
+            return left && right;
+        }
+
+        bool isValidTry3(node*&one_node){
+            bool ans=helperisValidTry3(one_node,INT16_MAX,INT_MIN);
+            return ans;
+        }
+
+        bool helperisValidTry4(node*&one_node,long long low,long long high){
+            if(!one_node)return true;
+            int curr=one_node->data;
+            cout<<"For "<<curr<<" low = "<<low<<" & high = "<<high<<endl;
+            if(curr<=low||curr>=high){
+                cout<<"Not valid found "<<one_node->data<<endl;
+                cout<<"low = "<<low<<" & high = "<<high<<endl;
+                return false;
+            }
+            bool left=helperisValidTry4(one_node->left,low,curr);
+            bool right=helperisValidTry4(one_node->right,curr,high);
+            return left && right;
+        }
+        
+        bool isValidTry4(node*&one_node){
+            int low=INT16_MIN;
+            int high=INT16_MAX;
+            cout<<INT16_MIN<<endl;
+            cout<<INT16_MAX<<endl;
+            bool ans=helperisValidTry4(one_node,LLONG_MIN,LLONG_MAX);
+            return ans;
+        }
+
+        node* findInTree(node*&one_node,int toFind){
+            if(!one_node)return nullptr;
+            if(one_node->data==toFind)return one_node;
+            node* answer=findInTree(one_node->left,toFind);
+            if(answer)return answer;
+            answer=findInTree(one_node->right,toFind);
+            return answer;
+        }
+
+        bool found1=false;
+        node* foundNode=nullptr,*notFoundNode=nullptr,*answer=nullptr;
+        bool isPresent(node*&one_node,node*&toFind){
+            if(!one_node)return false;
+            if(one_node==toFind)return true;
+            return isPresent(one_node->left,toFind) || isPresent(one_node->right,toFind);
+        }
+       
+        bool isPresent(node*&one_node,int toFind){
+            if(!one_node)return false;
+            if(one_node->data==toFind)return true;
+            return isPresent(one_node->left,toFind) || isPresent(one_node->right,toFind);
+        }
+        void helperLowestAncestorFind(node*&one_node,node*&p,node*&q){
+            if(!one_node)return;
+            node*ans=nullptr;
+            if(one_node==p){
+                cout<<"found 1 is : "<<one_node->data<<endl;
+                foundNode=p;
+                notFoundNode=q;
+                found1=true;
+                return;
+            }else if(one_node==q){
+                cout<<"found 1 is : "<<one_node->data<<endl;
+                foundNode=q;
+                notFoundNode=p;
+                found1=true;
+                return;
+            }
+            helperLowestAncestorFind(one_node->left,p,q);
+            if(!found1)helperLowestAncestorFind(one_node->right,p,q);
+            if(answer)return;
+            if(found1){
+                bool right;
+                if(notFoundNode==p){
+                    right=isPresent(one_node->right,p);
+                }else {
+                    right=isPresent(one_node->right,q);
+                }
+                if(right){
+                    answer=one_node;
+                    cout<<"First answer found at : "<<answer->data<<endl;
+                }
+            }
+        }
+
+        node* lowestCommonAncestor(node*&root){
+            if(!root)return root;
+            found1=false;
+            notFoundNode=nullptr;
+            foundNode=nullptr;
+            answer=nullptr;
+            node*p,*q;
+            int pd,qd;
+            cout<<"Enter p : ";
+            cin>>pd;
+            p=findInTree(root,pd);
+            cout<<"Enter q : ";
+            cin>>qd;
+            q=findInTree(root,qd);
+            cout<<"p pointing at : "<<p->data<<endl;
+            cout<<"q pointing at : "<<q->data<<endl;
+            bool pfindq=isPresent(p,q);
+            bool qfindp=isPresent(q,p);
+            cout<<"Recursive back Search"<<endl;
+            if(pfindq)return p;
+            else if(qfindp)return q;
+            helperLowestAncestorFind(root,p,q);
+            if(answer)cout<<"Answer found as "<<answer->data<<endl;
+            else cout<<"ANwer not found"<<endl;
+            return answer;
+        }
+
+        node*helperLowestCommonAncestorTry3(node*&one_node,node*&p,node*&q){
+            if(!one_node)return nullptr;
+            if(one_node==p|one_node==q)return one_node;
+            node* left=helperLowestCommonAncestorTry3(one_node->left,p,q);
+            node*right=helperLowestCommonAncestorTry3(one_node->right,p,q);
+            if(left&&right)return one_node;
+            else if(left)return left;
+            else return right;
+        }
+
+        node*lowestCommonAncestorTry3(node*&root){
+            node*p,*q;
+            found1=false;
+            notFoundNode=nullptr;
+            foundNode=nullptr;
+            answer=nullptr;
+            int pd,qd;
+            if(!root)return root;
+            else {
+                cout<<"Enter p : ";
+                cin>>pd;
+                p=findInTree(root,pd);
+                cout<<"Enter q : ";
+                cin>>qd;
+                q=findInTree(root,qd);
+                cout<<"p pointing at : "<<p->data<<endl;
+                cout<<"q pointing at : "<<q->data<<endl;
+            }
+            return helperLowestCommonAncestorTry3(root,p,q);
+        }
+
+        bool discover1=false,discover2=false;
+
+        void isBothPresent(node*&one_node,node*p,node*q){
+            if(!one_node)return;
+            if(one_node==p|| one_node==q){
+                if(discover1){
+                    discover2=true;
+                    return;
+                }
+                else discover1=true;
+            }
+            isBothPresent(one_node->left,p,q);
+            if(discover2)return;
+            isBothPresent(one_node->right,p,q);
+        }
+        
+        int helperisBothPresent(node*&one_node,node*p,node*q){
+                discover1=false;
+                discover2=false;
+                isBothPresent(one_node,p,q);
+
+                if(discover2)cout<<"Discover2 : true"<<endl;
+                else cout<<"Discover2 : false"<<endl;
+                if(discover1)cout<<"discover1 : true"<<endl;
+                else cout<<"Discover1 : false"<<endl;
+
+                if(discover2)return 2;
+                else if(discover1)return 1;
+                else return 0;
+        }
+        
+        node* lowestCommonAncestorTry2(node*&root){
+            if(!root)return root;
+            found1=false;
+            notFoundNode=nullptr;
+            foundNode=nullptr;
+            answer=nullptr;
+            node*p,*q;
+            int pd,qd;
+            cout<<"Enter p : ";
+            cin>>pd;
+            p=findInTree(root,pd);
+            cout<<"Enter q : ";
+            cin>>qd;
+            q=findInTree(root,qd);
+            cout<<"p pointing at : "<<p->data<<endl;
+            cout<<"q pointing at : "<<q->data<<endl;
+            node*one_node = root;
+            while(1){
+                int leftcnt=helperisBothPresent(one_node->left,p,q);
+                int rightcnt=helperisBothPresent(one_node->right,p,q);
+                if(leftcnt==1&&rightcnt==1){return one_node;}
+                else if(leftcnt==2&&rightcnt==0){
+                    one_node=one_node->left;
+                } else if(rightcnt==2&&leftcnt==0){
+                    one_node=one_node->right;
+                } else {
+                    cout<<"leftcount = "<<leftcnt<<" & rightcount = "<<rightcnt<<" for "<<one_node->data<<endl;
+                    return one_node;
+                }
+            }
+        }
+
+        void isBothPresent(node*&one_node,int k1,int k2){
+            if(!one_node)return;
+            if(one_node->data==k1||one_node->data==k2){
+                // cout<<"Found "<<one_node->data<<endl;
+                // cout<<"k1 = "<<k1<<endl;
+                if(discover1){
+                    discover2=true;
+                    return;
+                } else discover1=true;
+            }
+            if(discover2)return;
+            isBothPresent(one_node->left,k1,k2);
+            if(discover2)return;
+            isBothPresent(one_node->right,k1,k2);
+        }
+
+        bool helperisBothPresent(node*&one_node,int k1,int k2){
+            discover1=false;
+            discover2=false;
+            isBothPresent(one_node,k1,k2);
+            if(discover2)return true;
+            else return false;
+        }
+
+        bool TwoSums(node*&one_node,int k){
+            for(int i=k-1;i>=k/2;i--){
+              bool bothPresent=helperisBothPresent(one_node,i,k-i);
+              if(bothPresent)return true;
+            }
+            return false;
+        }
+
+        void preOrderPlusSearch(node*&one_node,node*root,int k){
+            if(!one_node)return;
+            if(isPresent(root,k-one_node->data)){
+                found=true;
+                return;
+            } 
+            preOrderPlusSearch(one_node->left,root,k);
+            if(found)return;
+            preOrderPlusSearch(one_node,root,k);
+        }
+        bool found=false;
+        //best time complexity
+        bool twoSumsTry2(node*&root,int k){
+            if(!root)return false;
+            found=false;
+            preOrderPlusSearch(root,root,k);
+            return found;
+        }
+        // bool found=false;
+        int helperKthSmallestElement(node*one_node,int &cnt,int k){
+            if(!one_node)return 0;
+            int ret=helperKthSmallestElement(one_node->left,cnt,k);
+            if(found)return ret;
+            cnt++;
+            if(cnt==k){
+                found=true;
+                cout<<"Found "<<one_node->data<<" as the "<<cnt<<"th smallest element"<<endl;
+                return one_node->data;
+            }
+            return helperKthSmallestElement(one_node->right,cnt,k);
+        }
+        
+        node* helperKthSmallestElementReturnNode(node*one_node,int &cnt,int k){
+            if(!one_node)return 0;
+            node*ret=helperKthSmallestElementReturnNode(one_node->left,cnt,k);
+            if(found)return ret;
+            cnt++;
+            if(cnt==k){
+                found=true;
+                cout<<"Found "<<one_node->data<<" as the "<<cnt<<"th smallest element"<<endl;
+                return one_node;
+            }
+            return helperKthSmallestElementReturnNode(one_node->right,cnt,k);
+        }
+
+        int kthSmallestElementInBST(node*&root,int k){
+            int cnt=0;
+            if(!root)return -1;
+            return helperKthSmallestElement(root,cnt,k);
+        }
+
+        node* helperCreateBTFromPreordeAndInorder(node*one_node,vector<int>preorder,vector<int>inorder){
+            if(preorder.empty())return nullptr;
+            one_node=new node(preorder.front());
+            auto it=find(inorder.begin(),inorder.end(),preorder.front());
+            int index=distance(inorder.begin(),it);
+            vector<int>preorderLeft(preorder.begin()+1,preorder.begin()+1+index);
+            vector<int>inorderLeft(inorder.begin(),inorder.begin()+index);
+            one_node->left=helperCreateBTFromPreordeAndInorder(one_node->left,preorderLeft,inorderLeft);
+            vector<int>preorderRight(preorder.begin()+1+index,preorder.end());
+            vector<int>inorderRight(inorder.begin()+index+1,inorder.end());
+            one_node->right=helperCreateBTFromPreordeAndInorder(one_node->right,preorderRight,inorderRight);
+            return one_node;
+        }
+
+        node* createBTFromPreorderAndInorder(node*&root,vector<int>&preorder,vector<int>&inorder){
+            root=helperCreateBTFromPreordeAndInorder(root,preorder,inorder);
+            return root;
+        }
+        
+        int cnt=0;
+        node* helperCreateBTFromPostorderAndInorder(vector<int>postorder,vector<int>inorder){
+            cnt++;
+            if(cnt>=30)return nullptr;
+            if(postorder.empty())return nullptr;
+            node*one_node=new node(postorder.back());
+            cout<<one_node->data<<" is created"<<endl;
+            auto it=find(inorder.begin(),inorder.end(),postorder.back());
+            int index=distance(inorder.begin(),it);
+            vector<int>postorderLeft(postorder.begin(),postorder.begin()+index);
+            vector<int>inorderLeft(inorder.begin(),inorder.begin()+index);
+            one_node->left=helperCreateBTFromPostorderAndInorder(postorderLeft,inorderLeft);
+            postorder.pop_back();
+            vector<int>postorderRight(postorder.begin()+index,postorder.end());
+            vector<int>inorderRight(inorder.begin()+index+1,inorder.end());
+            one_node->right=helperCreateBTFromPostorderAndInorder(postorderRight,inorderRight);
+            return one_node;
+        }
+
+        node* createBTFromPostorderAndInorder(vector<int>postorder,vector<int>inorder){
+            if(postorder.empty())return nullptr;
+            return helperCreateBTFromPostorderAndInorder(postorder,inorder);
+        }
+}; 
+
 void addNextAdd(node*& one_node,queue<node*>&loc){
     if(!one_node)return;
     loc.push(one_node->left);
@@ -1014,9 +1710,12 @@ void addNextAdd(node*& one_node,queue<node*>&loc){
     cout<<"Pushed left right of "<<one_node->data<<endl;
 }
 
+
 void createNormalTree(queue<node*>&parent,int data){
     static int cnt=0;
-    node*one_node=new node(data);
+    node*one_node;
+    if(data==-5)one_node=nullptr;
+    else one_node=new node(data);
     cout<<"cnt = "<<cnt<<endl;
     if(cnt==0){
         parent.front()->left=one_node;
@@ -1026,7 +1725,7 @@ void createNormalTree(queue<node*>&parent,int data){
         cnt=0;
         parent.pop();
     }
-    parent.push(one_node);
+    if(data!=-5)parent.push(one_node);
 }
 
 void printHeights(node*&one_node){
@@ -1172,26 +1871,19 @@ int getchoice(){
     cout<<"1 : Add node\n";
     cout<<"2 : Display\n";
     cout<<"3 : Print heights\n";
-    cout<<"4 : Print BFS\n";
-    cout<<"5 : Print BFS using Queue\n";
-    cout<<"6 : Find sum at every level\n";
-    cout<<"7 : Find rigth next to right node"<<endl;
-    cout<<"8 : Print BFS using Queue using While loop"<<endl;
-    cout<<"9 : Binary ZigZag level order traversal"<<endl;
-    cout<<"10 : Get BFS in reverse level order"<<endl;
-    cout<<"11 : Modify each node to point at right next node to it"<<endl;
-    cout<<"12 : Modify each node to point at right next node to it  (Using Pointers)"<<endl;
-    cout<<"13 : Modify each node to point at right next node to it (116) (Using Pointers)"<<endl;
-    cout<<"14 : Create BST"<<endl;
-    cout<<"15 : isCoursins"<<endl;
-    cout<<"16 : is symmetric"<<endl;
-    cout<<"17 : Create BST with BFS"<<endl;
-    cout<<"18 : Print heights using preetyDisplay"<<endl;
-    cout<<"19 : create BST using returning ptr and BFS"<<endl;
-    cout<<"20 : isSymmetric"<<endl;
-    cout<<"21 : isSymmetric method2"<<endl;
-    cout<<"22 : Maximum depth"<<endl;
-    cout<<"23 : Has path sum equal to target sum"<<endl;
+    cout<<"4 : preorder"<<endl;
+    cout<<"5 : inorder"<<endl;
+    cout<<"6 : postorder"<<endl;
+    cout<<"7 : "<<endl;
+    cout<<"8 : Invert BT using DFS"<<endl;
+    cout<<"9 : Invert a tree BFS"<<endl;
+    cout<<"10 : create BT using sorted array"<<endl;
+    cout<<"11 : Flatten the tree"<<endl;
+    cout<<"12 : is Tree Valid"<<endl;
+    cout<<"13 : Find Lowest Common Ancestor"<<endl;
+    cout<<"14 : Two sum equal to given number"<<endl;
+    cout<<"15 : Create BT from Preorder and Inorder"<<endl;
+    cout<<"16 : Create BT from postorder and inorder"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -1200,17 +1892,16 @@ int getchoice(){
 int main(){
     int choice=1,data;
     node*root=nullptr;
+    DFS dfs;
     BFS bfs;
     queue<node*>loc;
     try{
-        //
         while(choice){
             choice=getchoice();
             if(choice==1){
                 cout<<"Enter data : ";
                 cin>>data;
-
-                int m=2;
+                int m=1;
                 if(m==1){
                     if(!root){
                         root=new node(data);
@@ -1238,246 +1929,143 @@ int main(){
                 } catch(...){
                     cout<<"Error occured"<<endl;
                 }
-            } else if(choice==3){
-                printHeights(root);
-            }else if(choice==4){
-                vector<node*>loc={root};
-                bfs.printBFS(loc);
+            } else if(choice==4){
+                dfs.preorder(root);
             } else if(choice==5){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bfs.printBFSUsingQueue(loc);
-            }else if(choice==6){
-                vector<node*>loc={root};
-                vector<int>SumAtEveryLevel;
-                bfs.findSumAtEveryLevel(loc,SumAtEveryLevel);
-                cout<<"Sums at every level are : ";
-                for(int i : SumAtEveryLevel)cout<<i<<" ";
-                cout<<endl;
+                dfs.inorder(root);
+            } else if(choice==6){
+                dfs.postorder(root);
             }
             else if(choice==7){
-                int find;
-                bfs.clearQueue(loc);
-                loc.push(root);
-                cout<<"ENter the data to find rigth next node from : ";
-                cin>>find;
-                node* answer=bfs.findRightNextNode(loc,find);
-                if(answer)cout<<"Answer received : "<<answer->data<<endl;
-                else cout<<"node with data "<<find<<" not found"<<endl;
-            }    
+                int d_max=dfs.maxDiameter(root);
+                cout<<"Maximum diameter possible : "<<d_max<<endl;
+            }
             else if(choice==8){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bfs.printBFSUsingQueueWhileLoop(loc);
+                int m;
+                cout<<"Whcih method to use for inverting BT :\n1 : preorder\n2 : post-order\n3 : Inorder\n4 : Post-order returning ptr\n6 : Inorde returning ptr\nYour choice : ";
+                cin>>m;
+                if(m==1){
+                    dfs.invertTreeUsingDFSPreorder(root);
+                } else if(m==2){
+                    dfs.invertTreeUsingDFSPostorder(root);
+                } else if(m==3){
+                    dfs.invertTreeUsingDFSInorder(root);
+                } else if(m==4){
+                    root=dfs.invertTreeUsingDFSPostorderReturningPtr(root);
+                } else if(m==6){
+                    root=dfs.invertTreeUsingDFSInorderReturningPtr(root);
+                }
+                cout<<"After inverting tree loks like : "<<endl;
+                preetyDisplayRight(root);
             }
             else if(choice==9){
-                vector<vector<int>>answer;
-                int methodChoice;
-                cout<<"WHich method to use\n1 : Using stack\n2 : USing queue3 : Using Dequeue\nYour choice : ";
-                cin>>methodChoice;
-                if(methodChoice==1){
-                    vector<int>temp;
-                    temp.push_back(root->data);
-                    answer.push_back(temp);
-                    stack<node*>loc;
-                    loc.push(root);
-                    answer=bfs.ZigZagTraversal103(loc,answer,false);
-                } else if(methodChoice==2){
-                    queue<node*>loc;
-                    loc.push(root);
-                    answer=bfs.ZigZagTraversal103_withQueue(loc,answer,false);
-                } else if(methodChoice==3){
-                    deque<node*>loc;
-                    loc.push_back(root);
-                    answer=bfs.ZigZagTraversal103_withDeque(loc,answer,true);
-                }
-                cout<<"Answer receievd from ZigZag traversal is : "<<endl;
-                for(int i=0;i<answer.size();i++){
-                    for(int j=0;j<answer[i].size();j++){
-                        cout<<answer[i][j]<<" ";
-                    }
-                    cout<<endl;
-                }
+                bfs.invertTreeUsingBFS(root);
+                cout<<"After inverting tree loks like : "<<endl;
+                preetyDisplayRight(root);
             }
             else if(choice==10){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                vector<vector<int>>answer;
-                bfs.levelOrderTraversalReverse(loc,answer);
-                cout<<"Answer receievd from levelOrderTraversalReverse is : "<<endl;
-                for(int i=0;i<answer.size();i++){
-                    for(int j=0;j<answer[i].size();j++){
-                        cout<<answer[i][j]<<" ";
-                    }
-                    cout<<endl;
+                int n;
+                cout<<"Enter size of the array : ";
+                cin>>n;
+                vector<int>nums(n);
+                cout<<"Enter "<<n<<" numbers : "<<endl;
+                for(int i=0;i<n;i++)cin>>nums[i];
+                int m;
+                cout<<"Create BST from sorted array using\n1 : vboid type function\n2 : Returning ptr\nYour choice : ";
+                cin>>m;
+                if(m==1){
+                    dfs.createBSTFromSortedArray(nums,0,n-1,root,0);
+                } else if(m==2){
+                    root=dfs.create_BST_From_Sorted_Array_Returning_Ptr(nums,0,n-1);
                 }
+                cout<<"Created BST from sorted array looks like :"<<endl;
+                preetyDisplayRight(root);
             }
             else if(choice==11){
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bfs.populatingNextRightPointersInEachNode116(loc);
+                int m;
+                cout<<"Enter which method to use\n1 : Postorder method used\n2 : Preorder method used(first modified then went right)\nYour choice : ";
+                cin>>m;
+                if(m==1){
+                    dfs.flattenTree(root);
+                } else if(m==2){
+                    dfs.flattenTreeMethod2(root);
+                }
+                cout<<"After flattenignt he tree looks like :"<<endl;
+                preetyDisplayRight(root);
             }
             else if(choice==12){
-                bfs.try2_populatingNextRightPointersInEachNode116(root);
-                bfs.printNext(root);
-            } else if(choice==13){
-                bfs.try3_populatingNextRightPointersInEachNode116(root);
+                int m;
+                cout<<"Which method to use\n1 : Method-1\n2 : Methond-2\n3 : Method-3\n4 : Method-4\nYour choice : ";
+                cin>>m;
+                bool ans=true;
+                if(m==1){
+                    dfs.isValid=true;
+                    ans=dfs.isValidFind(root);
+                } else if(m==2){
+                    ans=dfs.isValidTry2(root);
+                } else if(m==3){
+                    ans=dfs.isValidTry3(root);
+                } else if(m==4){
+                    ans=dfs.isValidTry4(root);
+                }
+                if(ans)cout<<"Tree is valid"<<endl;
+                else cout<<"Tree not valid"<<endl;
+            }
+            else if(choice==13){
+                int m;
+                cout<<"Enter which method you want to apply\n1 : Method-1\n2 : MEthod-2\n3 : Kunal sir's method\nYour choice : ";
+                cin>>m;
+                node*lowestCommonAncestor;
+                if(m==1){
+                    lowestCommonAncestor=dfs.lowestCommonAncestor(root);
+                } else if(m==2){
+                    lowestCommonAncestor=dfs.lowestCommonAncestorTry2(root);
+                } else if(m==3){
+                    lowestCommonAncestor=dfs.lowestCommonAncestorTry3(root);
+                }
+                if(lowestCommonAncestor)cout<<"Answer received in main : "<<lowestCommonAncestor->data<<endl;
+                else cout<<"Answer not receievd in main"<<endl;
             }
             else if(choice==14){
-                // create_BST()
-            }
-            else if(choice==15){
-                int x,y;
-                cout<<"Enter x : ";
-                cin>>x;
-                cout<<"Enter y : ";
-                cin>>y;
-                bfs.clearQueue(loc);
-                loc.push(root);
-                bool isCousins=bfs.isCousins_try4(loc,x,y);
-                if(isCousins)cout<<x<<" & "<<y<<" are cousins"<<endl;
-                else cout<<x<<" & "<<y<<" are not cousins"<<endl;
-            }
-            else if(choice==16){
-                bfs.clearQueue(loc);
-                bool isSymmetric=bfs.isSymmetric(root);
-                if(isSymmetric)cout<<"Tree is symmetric"<<endl;
-                else cout<<"Tree is not symmetric"<<endl;
-                cout<<"Came out"<<endl;
-            }
-            else if(choice==17){
-                cout<<"Enter data : ";
-                cin>>data;
-                if(!root){
-                    root=new node(data);
-                    cout<<"First node cerated in BST"<<endl;
-                } else {
-                    bfs.createBSTWithBFS(root,data);
-                    cout<<"Came out"<<endl;
-                }
-            }
-            else if(choice==18){
-                preetyDisplayRightHeights(root);
-            } 
-            else if(choice==19){
-                cout<<"Enter data : ";
-                cin>>data;
-                if(!root){
-                    root=new node(data);
-                    cout<<"First node created"<<endl;
-                    continue;
-                }
-                stack<node*>loc;
-                loc.push(root);
-                root=bfs.createBSTWithBFSReturningPtr(loc,data);
-            }
-            else if(choice==20){
-                bool ans=bfs.isSymmetric(root);
-                if(ans)cout<<"Symmetric"<<endl;
-                else cout<<"Not symmetric"<<endl;
-            }
-            else if(choice==21){
-                bool ans=bfs.isSymmetricMethod2(root);
-                if(ans)cout<<"Symmetric"<<endl;
-                else cout<<"Not symmetric"<<endl;
-            }
-            else if(choice==22){
-                int height=bfs.maxDepth(root);
-                cout<<"Maximum height : "<<height<<endl;
-            }
-            else if(choice==23){
-                int targetSum;
-                cout<<"Enter the target : ";
-                cin>>targetSum;
-                bool isPathSum=bfs.hasPathSum(root,targetSum);
-                if(isPathSum)cout<<"Possible"<<endl;
+                int k;
+                cout<<"Enter the targe : ";
+                cin>>k;
+                bool ans=dfs.TwoSums(root,k);
+                if(ans)cout<<"Possible"<<endl;
                 else cout<<"Not possible"<<endl;
             }
+            else if(choice==15){
+                int n;
+                cout<<"Enter size of arrays : ";
+                cin>>n;
+                vector<int>preorder(n),inorder(n);
+                cout<<"Enter "<<n<<" numbers in preorder manner"<<endl;
+                for(int i=0;i<n;i++)cin>>preorder[i];
+                cout<<"Enter "<<n<<" numbers for inorder array : ";
+                for(int i=0;i<n;i++)cin>>inorder[i];
+                root=dfs.createBTFromPreorderAndInorder(root,preorder,inorder);
+                cout<<"AFter creating the tree looks like : "<<endl;
+                preetyDisplayRight(root);
+            }
+            else if(choice==16){
+                int n;
+                cout<<"Enter size of the array : ";
+                cin>>n;
+                vector<int>postorder(n),inorder(n);
+                cout<<"Enter "<<n<<" nuymbers for postorder array : ";
+                for(int i=0;i<n;i++)cin>>postorder[i];
+                cout<<"Enter "<<n<<" numbers for inOrder array"<<endl;
+                for(int i=0;i<n;i++)cin>>inorder[i];
+                root=dfs.createBTFromPostorderAndInorder(postorder,inorder);
+                cout<<"AFter creating the tree looks like : "<<endl;
+                preetyDisplayRight(root);
+            }   
+
         }
 
     } catch(...){
         cout<<"Error occured"<<endl;
     }
     cout<<"Came out"<<endl;
-   delete_nodes(root);
+    delete_nodes(root);
 }    
-
-
-
-   
-    // root=new node(1);
-    // int n;
-    // cout<<"Enter how many numbers you want to insert : ";
-    // cin>>n;
-    // for(int i=0;i<n;i++)root=add(root,root,i);
-    // cout<<"Added "<<n<<endl;
-    // sleep(2);
-    // for(int i=-1;i>-n;i--)root=add(root,root,i);
-
-    // preetyDisplayRight(root);
-    // cout<<"HEight of the tree with "<<n<<" nodes is : "<<root->height<<endl;
-    // return 0;
-
-
-
-// typedef struct TreeNode node;
-// class Solution {
-// public:
-//     void addAddrIsSymmetricLeft(node*&one_node,deque<node*>&temp){
-//             if(!one_node)return;
-//             if(one_node->left){
-//                 temp.push_front(one_node->left);
-//             }
-//             if(one_node->right){
-//                 temp.push_front(one_node->right);
-//             }
-//         }
-
-//         void addAddrIsSymmetricRight(node*&one_node,deque<node*>&temp){
-//             if(!one_node)return;
-//             if(one_node->right){
-//                 temp.push_back(one_node->right);
-//             }
-//             if(one_node->left){
-//                 temp.push_back(one_node->left);
-//             }
-//         }
-
-//         bool isSymettric_helper(node*&root){
-//             if(!root->left&&!root->right){
-//                 return true;
-//             } else if(!root->left||!root->right){
-//                 return false;
-//             }
-//             deque<node*>answer,temp;
-//             answer.push_front(root->left);
-//             answer.push_back(root->right);
-//             while(!answer.empty()){
-//                 int size=answer.size();
-//                 auto left_it=answer.front(),right_it=answer.back();
-//                 for(int i=0;i<size/2;i++){
-//                     left_it=answer.front();
-//                     right_it=answer.back();
-//                     if(left_it->val!=right_it->val){
-//                         return false;
-//                     }
-//                     addAddrIsSymmetricLeft(left_it,temp);
-//                     addAddrIsSymmetricRight(right_it,temp);
-//                     answer.pop_front();
-//                     answer.pop_back();
-//                 }
-//                 answer=temp;
-//                 cout<<"deque is : "<<endl;
-//                 while(!temp.empty()){
-//                     cout<<temp.front()->val<<" ";
-//                     temp.pop_front();
-//                 }
-//                 cout<<endl;
-//             }
-//             return true;
-//         }
-
-//     bool isSymmetric(TreeNode* root) {
-//         return isSymettric_helper(root);
-//     }
-// };
