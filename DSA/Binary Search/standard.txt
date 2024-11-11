@@ -1,0 +1,13 @@
+#include<iostream>
+#include<vector>
+int main(){
+    int n;
+    cout<<"ENter size of array 1 : ";
+    cin>>n;
+    cout<<"ENter "<<n<<" numbers of array 1 : ";
+    int temp;
+    vector<int>nums(n,0);
+    for(int i=0;i<n;i++){
+        cin>>nums[i];
+    }
+}
