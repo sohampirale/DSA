@@ -1028,7 +1028,7 @@ class BFS{
 class DFS{
     public:
 
-    
+
         void preorder(node*&one_node){
             if(!one_node)return;
             cout<<one_node->data<<" ";
@@ -1895,7 +1895,13 @@ class DFS{
 
 
 
+        int helperMaxWidth(node*&one_node,int maxx){
+            
+        }
 
+        int maxWidth(node*&root){
+
+        }
 
 }; 
 
