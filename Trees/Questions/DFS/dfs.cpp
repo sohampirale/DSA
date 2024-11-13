@@ -1027,6 +1027,8 @@ class BFS{
 
 class DFS{
     public:
+
+    
         void preorder(node*&one_node){
             if(!one_node)return;
             cout<<one_node->data<<" ";
@@ -1224,7 +1226,7 @@ class DFS{
             return left && right;
         }
 
-        //in question the answer is expecte to have only less than elements in the left 
+        //in question the answer is expected to have only less than elements in the left 
         //and only greater than in the right
         bool isValid=true;
         vector<int>GiveMinMax(node*one_node){
@@ -1679,28 +1681,27 @@ class DFS{
         }
         
         int cnt=0;
-        node* helperCreateBTFromPostorderAndInorder(vector<int>postorder,vector<int>inorder){
-            cnt++;
-            if(cnt>=30)return nullptr;
-            if(postorder.empty())return nullptr;
-            node*one_node=new node(postorder.back());
-            cout<<one_node->data<<" is created"<<endl;
-            auto it=find(inorder.begin(),inorder.end(),postorder.back());
-            int index=distance(inorder.begin(),it);
-            vector<int>postorderLeft(postorder.begin(),postorder.begin()+index);
-            vector<int>inorderLeft(inorder.begin(),inorder.begin()+index);
-            one_node->left=helperCreateBTFromPostorderAndInorder(postorderLeft,inorderLeft);
-            postorder.pop_back();
-            vector<int>postorderRight(postorder.begin()+index,postorder.end());
-            vector<int>inorderRight(inorder.begin()+index+1,inorder.end());
-            one_node->right=helperCreateBTFromPostorderAndInorder(postorderRight,inorderRight);
+        node* helperCreateBTFromPostorderAndInorder(vector<int>::iterator postorderBegin,vector<int>::iterator postorderEnd,vector<int>::iterator inorderBegin,vector<int>::iterator inorderEnd){
+            if(postorderBegin==postorderEnd){
+            cout<<"Returning"<<endl;
+            return nullptr;
+            }
+            node*one_node=new node(*(postorderEnd-1));
+            cout<<"Created : "<<one_node->data<<endl;
+            postorderEnd--;
+            inorderBegin++;
+            auto it=find(inorderBegin,inorderEnd,*(postorderEnd-1));
+            int distFromBack=distance(it,inorderEnd);
+            one_node->right=helperCreateBTFromPostorderAndInorder((postorderEnd-distFromBack),postorderEnd,inorderEnd-distFromBack,inorderEnd);
+            one_node->left=helperCreateBTFromPostorderAndInorder(postorderBegin,postorderEnd-distFromBack,inorderBegin,inorderEnd-distFromBack);
             return one_node;
         }
 
         node* createBTFromPostorderAndInorder(vector<int>postorder,vector<int>inorder){
             if(postorder.empty())return nullptr;
-            return helperCreateBTFromPostorderAndInorder(postorder,inorder);
+            return helperCreateBTFromPostorderAndInorder(postorder.begin(),postorder.end(),inorder.begin(),inorder.end());
         }
+        
         int maxx=INT_MIN;
         int helperMaxPathSum(node*&one_node){
             if(!one_node)return 0;
@@ -1840,6 +1841,62 @@ class DFS{
             }
             cout<<endl;
         }
+
+        bool  helperTwoSumsTry3(node*&one_node,int target){
+            if(!one_node)return false;
+            int need=target-one_node->data;
+            if(need<one_node->data){
+                bool find= isPresent(one_node->left,target);
+                if(find)return true;
+            } else {
+                bool find= isPresent(one_node->right,target);
+                if(find)return true;
+            }
+            return helperTwoSumsTry3(one_node->left,target) || helperTwoSumsTry3(one_node->right,target);
+        }
+        
+
+        bool twoSumTry3(node*&root,int target){
+            return helperTwoSumsTry3(root,target);
+        }
+
+        void helperPathSum2(node*&one_node,int target,int sum,vector<int>path,vector<vector<int>>&allPaths){
+            if(!one_node){
+                return;
+            }
+            path.push_back(one_node->data);
+            sum+=one_node->data;
+            if(!one_node->left&&!one_node->right){
+                if(sum==target){
+                    allPaths.push_back(path);
+                    return;
+                }
+                else {
+                    return;
+                }
+            }
+            helperPathSum2(one_node->left,target,sum,path,allPaths);
+            helperPathSum2(one_node->right,target,sum,path,allPaths);
+        }
+
+        vector<vector<int>> pathSum2(node*&root,int target){
+            vector<vector<int>>allPaths;
+            vector<int>path;
+            helperPathSum2(root,target,0,path,allPaths);
+            return allPaths;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 }; 
 
 void addNextAdd(node*& one_node,queue<node*>&loc){
@@ -1848,7 +1905,6 @@ void addNextAdd(node*& one_node,queue<node*>&loc){
     loc.push(one_node->right);
     cout<<"Pushed left right of "<<one_node->data<<endl;
 }
-
 
 void createNormalTree(queue<node*>&parent,int data){
     static int cnt=0;
@@ -2027,13 +2083,44 @@ int getchoice(){
     cout<<"18 : Path Exists"<<endl;
     cout<<"19 : Path sums any"<<endl;
     cout<<"20 : Inorder using Stack"<<endl;
+    cout<<"21 : Two sums equal to target Try2"<<endl;
+    cout<<"22 : Path Sum 2"<<endl;
+    cout<<"23 : Maximumn width of the binary tree"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
 }
 
 int main(){
-   
+    node* test1=new node(10);
+    node*test2=new node(20);
+    deque<node*>loc2;
+    loc2.push_back(nullptr);
+    loc2.push_back(test1);
+    loc2.push_back(nullptr);
+    loc2.push_back(nullptr);
+    loc2.push_back(nullptr);
+    loc2.push_back(test2);
+    loc2.push_back(nullptr);
+    auto itst=loc2.begin();
+    auto itend=loc2.end();
+    --itend;
+    while(!*itst)itst++;
+    cout<<"HI"<<endl;
+    while(!*itend)itend--;
+    cout<<"Hello"<<endl;
+    cout<<"itst = "<<((*itst)->data)<<endl;
+    cout<<"itend = "<<(*itend)->data<<endl;
+    int dist1=distance(loc2.begin(),itst);
+    int dist2=distance(loc2.begin(),itend);
+    cout<<dist1<<endl;
+    cout<<dist2<<endl;
+
+    delete test1;
+    delete test2;
+    return 0;
+
+
     int choice=1,data;
     node*root=nullptr;
     DFS dfs;
@@ -2200,7 +2287,7 @@ int main(){
                 cout<<"Enter size of the array : ";
                 cin>>n;
                 vector<int>postorder(n),inorder(n);
-                cout<<"Enter "<<n<<" nuymbers for postorder array : ";
+                cout<<"Enter "<<n<<" numbers for postorder array : ";
                 for(int i=0;i<n;i++)cin>>postorder[i];
                 cout<<"Enter "<<n<<" numbers for inOrder array"<<endl;
                 for(int i=0;i<n;i++)cin>>inorder[i];
@@ -2234,6 +2321,18 @@ int main(){
                 stack<node*>loc;
                 loc.push(root);
                 dfs.inorderUsingStack(root);
+            }
+            else if(choice==21){
+                //not working
+                int target;
+                cout<<"Enter target : ";
+                cin>>target;
+                bool ans=dfs.twoSumTry3(root,target);
+                if(ans)cout<<"Possible"<<endl;
+                else cout<<"Not possible"<<endl;
+            }
+            else if(choice==23){
+
             }
         }
 
