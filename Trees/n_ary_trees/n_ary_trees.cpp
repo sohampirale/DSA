@@ -11,21 +11,23 @@ class node{
         cout<<"Deleting "<<person<<endl;
     }
 };
+vector<string>allPaths;
 node* work(vector<string>people,string nodeString,string path=""){
     node*one_node=new node(nodeString);
     if(people.empty()){
         cout<<"All people did sit"<<endl;
         cout<<"Path = "<<path<<endl;
+        allPaths.push_back(path);
         return one_node;
     }
     int size=people.size();
     for(int i=0;i<size;i++){
-        cout<<"Calling child of "<<one_node->person<<" & people.size() = "<<people.size()<<endl;
+        // cout<<"Calling child of "<<one_node->person<<" & people.size() = "<<people.size()<<endl;
 
         vector<string>temp=people;
         string nextperson=people[i];
         temp.erase(temp.begin()+i);
-        cout<<"Passing : "<<nextperson<<endl;
+        // cout<<"Passing : "<<nextperson<<endl;
         one_node->child.push_back(work(temp,nextperson,path+"->"+nextperson));
     }
 
@@ -53,7 +55,7 @@ void delete_all_node(node*&one_node){
 }
 int main(){
     int n;
-    cout<<"ENter n :";
+    cout<<"Enter n :";
     cin>>n;
     cout<<"Enter "<<n<<" people : ";
     string temp;
@@ -62,6 +64,6 @@ int main(){
         cin>>people[i];
     }
     node*root=work(people,"root");
-    inorder(root);
+    // inorder(root);
     delete_all_node(root);
 }
