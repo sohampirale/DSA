@@ -1886,20 +1886,52 @@ class DFS{
             return allPaths;
         }
 
+        void addAddrInQueueIncludingNullptr(node*&one_node,deque<node*>&loc){
+            if(!one_node){
+                loc.push_back(nullptr);
+                loc.push_back(nullptr);
+                return;
+            } else {
+                loc.push_back(one_node->left);
+                loc.push_back(one_node->right);
+            }
+        }
 
+        void helperMaxWidth(deque<node*>&loc,int& maxx){
+            cout<<"Inside the helper fucntion"<<endl;
+            while(1){
+                auto itst=loc.begin(),itend=loc.end();
+                itend--;
+                while(!*itst&&itst!=loc.end())itst++;
+                while(!*itend&&itend!=loc.begin())itend--;
+                if(itst==loc.end())break;
+                int distFromFront=distance(loc.begin(),itst);
+                int distAtLast=distance(loc.begin(),itend);
+                int levelmax=(distAtLast-distFromFront)+1;
+                cout<<"levelMax = "<<levelmax<<endl;
+                if(levelmax>maxx)maxx=levelmax;
 
-
-
-
-
-
-
-
-        int helperMaxWidth(node*&one_node,int maxx){
-            
+                int size=loc.size();
+                for(int i=0;i<size;i++){
+                    addAddrInQueueIncludingNullptr(loc.front(),loc);
+                    loc.pop_front();
+                }
+            }
         }
 
         int maxWidth(node*&root){
+            if(!root)return 0;
+            int maxx=root->data;
+            deque<node*>loc;
+            loc.push_back(root);
+            helperMaxWidth(loc,maxx);
+            return maxx;
+        }
+
+        void helperMaxWidthTry2(node*&one_node,int&max){
+            
+        }
+        int maxWidthTry2(node*&root){
 
         }
 
@@ -2098,35 +2130,6 @@ int getchoice(){
 }
 
 int main(){
-    node* test1=new node(10);
-    node*test2=new node(20);
-    deque<node*>loc2;
-    loc2.push_back(nullptr);
-    loc2.push_back(test1);
-    loc2.push_back(nullptr);
-    loc2.push_back(nullptr);
-    loc2.push_back(nullptr);
-    loc2.push_back(test2);
-    loc2.push_back(nullptr);
-    auto itst=loc2.begin();
-    auto itend=loc2.end();
-    --itend;
-    while(!*itst)itst++;
-    cout<<"HI"<<endl;
-    while(!*itend)itend--;
-    cout<<"Hello"<<endl;
-    cout<<"itst = "<<((*itst)->data)<<endl;
-    cout<<"itend = "<<(*itend)->data<<endl;
-    int dist1=distance(loc2.begin(),itst);
-    int dist2=distance(loc2.begin(),itend);
-    cout<<dist1<<endl;
-    cout<<dist2<<endl;
-
-    delete test1;
-    delete test2;
-    return 0;
-
-
     int choice=1,data;
     node*root=nullptr;
     DFS dfs;
@@ -2338,7 +2341,8 @@ int main(){
                 else cout<<"Not possible"<<endl;
             }
             else if(choice==23){
-
+                int maxWidth=dfs.maxWidth(root);
+                cout<<"Max width = "<<maxWidth<<endl;
             }
         }
 
