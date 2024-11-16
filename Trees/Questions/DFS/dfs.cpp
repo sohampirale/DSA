@@ -1,5 +1,4 @@
 #include<bits/stdc++.h>
-
 using namespace std;
 
 class node{
@@ -1024,7 +1023,6 @@ class BFS{
         }
 };
 
-
 class DFS{
     public:
 
@@ -1424,6 +1422,7 @@ class DFS{
             if(one_node->data==toFind)return true;
             return isPresent(one_node->left,toFind) || isPresent(one_node->right,toFind);
         }
+        
         void helperLowestAncestorFind(node*&one_node,node*&p,node*&q){
             if(!one_node)return;
             node*ans=nullptr;
@@ -1484,17 +1483,35 @@ class DFS{
             return answer;
         }
 
-        node*helperLowestCommonAncestorTry3(node*&one_node,node*&p,node*&q){
+        // node*helperLowestCommonAncestorTry3(node*&one_node,node*&p,node*&q){
+        //     if(!one_node)return nullptr;
+        //     if(one_node==p|one_node==q)return one_node;
+        //     node* left=helperLowestCommonAncestorTry3(one_node->left,p,q);
+        //     node*right=helperLowestCommonAncestorTry3(one_node->right,p,q);
+        //     if(left&&right)return one_node;
+        //     else if(left)return left;
+        //     else return right;
+        // }
+        int foundside=0;
+        node* helperLowestCommonAncestorTry3(node*&one_node,node*&p,node*&q){
             if(!one_node)return nullptr;
-            if(one_node==p|one_node==q)return one_node;
+            if(one_node==p||one_node==q)return one_node;
             node* left=helperLowestCommonAncestorTry3(one_node->left,p,q);
-            node*right=helperLowestCommonAncestorTry3(one_node->right,p,q);
-            if(left&&right)return one_node;
+            if(found){
+                if(left)return left;
+            }
+            node* right=helperLowestCommonAncestorTry3(one_node->right,p,q);
+         
+            if(left&&right){
+                found=true;
+                return one_node;
+            }
             else if(left)return left;
             else return right;
         }
-
+        
         node*lowestCommonAncestorTry3(node*&root){
+            found=0;
             node*p,*q;
             found1=false;
             notFoundNode=nullptr;
@@ -2099,6 +2116,26 @@ void create_BST(queue<node*>loc,int data){
     }
 }
 
+node*createBTfromPreorderandInorder(vector<int>::iterator preorderBegin,vector<int>::iterator preorderEnd,vector<int>::iterator inorderBegin,vector<int>::iterator inorderEnd){
+    if(preorderBegin==preorderEnd){
+        cout<<"preorderBegin==preorderEnd for "<<endl;
+        cout<<"*preorderBegin = "<<*preorderBegin;
+        cout<<" & *preorderEnd = "<<*preorderEnd<<endl;
+        return nullptr;
+    }
+    if(preorderEnd+1==preorderBegin){
+        cout<<"Returning from here"<<endl;
+        return nullptr;
+    }
+    node* one_node=new node(*preorderBegin);
+    cout<<"Created "<<one_node->data<<endl;
+    auto it=find(inorderBegin,inorderEnd,*preorderBegin);
+    int index=distance(inorderBegin,it);
+    one_node->left=createBTfromPreorderandInorder(preorderBegin+1,preorderBegin+index+1,inorderBegin,inorderBegin+index);
+    one_node->right=createBTfromPreorderandInorder(preorderBegin+1+index,preorderEnd,inorderBegin+index+1,inorderEnd);
+    return one_node;
+}
+
 int getchoice(){
     int choice;
     cout<<"1 : Add node\n";
@@ -2119,7 +2156,7 @@ int getchoice(){
     cout<<"16 : Create BT from postorder and inorder"<<endl;
     cout<<"17 : Maximum Path Sum"<<endl;
     cout<<"18 : Path Exists"<<endl;
-    cout<<"19 : Path sums any"<<endl;
+    cout<<"19 : Path sums any (not necesarily needed to reach leaf)"<<endl;
     cout<<"20 : Inorder using Stack"<<endl;
     cout<<"21 : Two sums equal to target Try2"<<endl;
     cout<<"22 : Path Sum 2"<<endl;
