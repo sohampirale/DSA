@@ -66,20 +66,28 @@ int main(){
     while(choice){
         cout<<"Enter your choice :\n1 : Owner\n2 : Customer\nYour choice : ";
         cin>>choice;
-        if(choice==1){
-            store.add_item();
-        } else if(choice==2){
-            int bill=0,buy_choice=1;
-            while(buy_choice){
-                try{
-                    bill+=store.buy();
-                } catch(...){
-                    cout<<"Error occured"<<endl;
+        try{
+            if(choice==1){
+                store.add_item();
+            } else if(choice==2){
+                int bill=0,buy_choice=1;
+                while(buy_choice){
+                    try{
+                        bill+=store.buy();
+                    } catch(...){
+                        cout<<"Error occured"<<endl;
+                    }
+                    cout<<"Do you want to buy (1 : yes 0 : NO) : ";
+                    cin>>buy_choice;
                 }
-                cout<<"Do you want to buy (1 : yes 0 : NO) : ";
-                cin>>buy_choice;
+                cout<<"Your bill is : "<<bill<<endl;
+                bool payment;
+                cout<<"is payment successfull ?1 : yes 0 : no\nYour choice : ";
+                cin>>payment;
+                if(!payment)throw string("Payment failed!");
             }
-            cout<<"Your bill is : "<<bill<<endl;
+        } catch(const string& str){
+            cout<<"Error found : "<<str<<endl;
         }
     }
 }
