@@ -5,7 +5,10 @@
 #include<stack>
 #include<queue>
 #include<climits>
+#include<fstream>
+#include<sstream>
 using namespace std;
+
 class node{
     public:
         int data;
@@ -72,6 +75,7 @@ class Graph{
         unordered_map<int,node*>all_nodes;
         vector<string>all_paths;
         int min_cost=0;
+
         void addAddrInQueue(node*&one_node,queue<node*>&loc,queue<int>&costs,int cost){
             if(!one_node)return;
             unordered_map<int,pair<node*,int>>&connections_map=one_node->connections_map;
@@ -130,7 +134,7 @@ class Graph{
             cout<<"All nodes connected"<<endl;
         }
 
-        void create_graph(unordered_map<int,node*>&all_nodes){
+        void create_graph_manually(unordered_map<int,node*>&all_nodes){
             int n;
             cout<<"How many nodes you have : ";
             cin>>n;
@@ -147,7 +151,71 @@ class Graph{
             this->all_nodes=all_nodes;
             connect_all_nodes(all_nodes);
             display_all_connections(all_nodes);
+        }
 
+        void create_graph(unordered_map<int,node*>&all_nodes,int choice=2){
+            if(choice==1){
+                create_graph_manually(all_nodes);
+            } else if(choice==2){
+                extract_data_from_files(all_nodes);
+            }
+        }
+
+        void extract_data_from_files(unordered_map<int,node*>&all_nodes){
+            fstream file;
+            file.open("file_data/first_data.txt",ios::in);
+            int n,neighbours,node_data,dist;
+            string line;
+            if(!file.is_open()){
+                cout<<"Error opening the file"<<endl;
+                return;
+            }
+            while(getline(file,line)){
+                if(line.empty()||line[0]=='#')continue;
+                stringstream ss(line);
+                ss>>n;
+                cout<<"n = "<<n<<endl;
+                break;
+            }
+
+            vector<int>data(n);
+            cout<<"Data : ";
+            while(getline(file,line)){
+                if(line.empty()||line[0]=='#')continue;
+                stringstream ss(line);
+                for(int i=0;i<n;i++){
+                    ss>>data[i];
+                    cout<<data[i]<<" ";
+                }
+                cout<<endl;
+                break;
+            }
+
+            for(int i=0;i<n;i++){
+                node*one_node=new node(data[i]);
+                all_nodes[data[i]]=one_node;
+            }
+
+            auto connector=all_nodes.begin();
+            while(getline(file,line)){
+                stringstream ss(line);
+                ss>>neighbours;
+                if(neighbours){
+                    cout<<"Lets connect "<<connector->first<<" with "<<neighbours<<" neighbours"<<endl;
+                    for(int i=0;i<neighbours;i++){
+                        ss>>node_data>>dist;
+                        node*&one_node=all_nodes[node_data];
+                        connector->second->connect_to(one_node,dist);
+                    }
+                } else {
+                    cout<<connector->first<<" has no neighbours"<<endl;
+                }
+                connector++;
+                if(connector==all_nodes.end())break;
+            }
+            cout<<"Extracting file process finished"<<endl;
+            file.close();
+            this->all_nodes=all_nodes;
         }
 
         void display_all_connections(unordered_map<int,node*>&all_nodes){
@@ -171,9 +239,9 @@ class Graph{
             } else if(it==target){
                 cout<<"Found target by path : "<<path+add<<" and with cost = "<<cost<<endl;
                 all_paths.push_back(path+add);
-                cout<<"before min cost = "<<min_cost<<endl;
+                // cout<<"before min cost = "<<min_cost<<endl;
                 if(cost<min_cost)min_cost=cost;
-                cout<<"after min cost = "<<min_cost<<endl;
+                // cout<<"after min cost = "<<min_cost<<endl;
                 return;
             }
             it->traversed=true;            
@@ -267,9 +335,9 @@ int main(){
     vector<string>all_paths;
     unordered_map<int,node*>all_nodes;
     Graph graph;
-    graph.create_graph(all_nodes);
-
     int choice=1;
+    graph.create_graph(all_nodes,1);
+
     while(choice){
         choice=getChoice();
         if(choice==1){
