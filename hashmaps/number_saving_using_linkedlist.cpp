@@ -16,6 +16,7 @@ class student{
 void save(vector<list<student>>&lists,string name,int rollno){
     lists[rollno%10].push_back(student(rollno,name));
 }
+
 int cnt=0;
 student& retrive(vector<list<student>>&lists,int rollno){
     cnt=0;
@@ -33,6 +34,7 @@ student& retrive(vector<list<student>>&lists,int rollno){
     static student temp;
     return temp;
 }
+
 int main(){
     vector<list<student>>lists(10);
     int choice=1,rollno;
