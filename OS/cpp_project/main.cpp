@@ -4,13 +4,7 @@
 #include<fstream>
 #include<algorithm>
 #include<unistd.h>
-
 using namespace std;
-// #include "process.h"
-// #include "resource.h"
-// #include "batch.h"
-// #include "loadFromFile.h"
-// #include "processUsingResource.h"
 
 class process;
 class core;
@@ -315,6 +309,7 @@ void load_processes_using_resources_from_file(vector<resource>&all_resources,vec
            reverse(allocated.begin(),allocated.end());
            process_using_resource p(PId,bt,memory,total_need,allocated); 
            all_processes_using_resources.push_back(p);
+           cout<<p.PId<<" is fetched that will be using resources : "<<i<<" resources"<<endl;
         }
         file.close();
     } else {
@@ -409,7 +404,7 @@ void create_batches(vector<batch>&batches){
    
 }
 
-int start(){
+int getChoice(){
     int choice;
     cout<<"Enter your choice :\n1 : Enter data manually\n2 : Load Data\nYour choice : ";
     cin>>choice;
@@ -545,10 +540,11 @@ int main(){
     vector<core>all_cores;
     vector<string>filenames={""};
     vector<process*>all_working_processes(4,nullptr);
+
     create_batches(all_batches);
     create_cores(all_cores,all_batches);
 
-    int choice=start();
+    int choice=getChoice();
     if(choice==1){
         load_manually(k_needed,k_allocated,all_resources,all_processes,all_processes_using_resources);
     } else if(choice==2){
