@@ -136,16 +136,22 @@ class batch{
         void add(process&one_process){
             if(this->batch_name=="SJF"){
                 if(one_process.memory<=8){
+                    cout<<"Stored "<<one_process.pid<<" in SJF batch (8KB)"<<endl;
                     system[0].push(one_process);
                 } else if(one_process.memory<=16){
+                    cout<<"Stored "<<one_process.pid<<" in SJF batch (16KB)"<<endl;
                     system[1].push(one_process);
                 } else if(one_process.memory<=32){
+                    cout<<"Stored "<<one_process.pid<<" in SJF batch (32KB)"<<endl;
                     system[2].push(one_process);
                 } else if(one_process.memory<=64){
+                    cout<<"Stored "<<one_process.pid<<" in SJF batch (64KB)"<<endl;
                     system[3].push(one_process);
                 } else if(one_process.memory<=128){
+                    cout<<"Stored "<<one_process.pid<<" in SJF batch (128KB)"<<endl;
                     system[4].push(one_process);
                 } else if(one_process.memory<=256){
+                    cout<<"Stored "<<one_process.pid<<" in SJF batch (256KB)"<<endl;
                     system[5].push(one_process);
                 } else {
                     cout<<"Memory cannot be greater than 256kb"<<endl;
@@ -153,16 +159,22 @@ class batch{
                 }
             } else if(this->batch_name=="RR"){
                 if(one_process.memory<=8){
+                    cout<<"Stored "<<one_process.pid<<" in Round Robbin batch (16KB)"<<endl;
                     Queue[0].push(one_process);
                 } else if(one_process.memory<=16){
+                    cout<<"Stored "<<one_process.pid<<" in Round Robbin batch (16KB)"<<endl;
                     Queue[1].push(one_process);
                 } else if(one_process.memory<=32){
+                    cout<<"Stored "<<one_process.pid<<" in Round Robbin batch (16KB)"<<endl;
                     Queue[2].push(one_process);
                 } else if(one_process.memory<=64){
+                    cout<<"Stored "<<one_process.pid<<" in Round Robbin batch (16KB)"<<endl;
                     Queue[3].push(one_process);
                 } else if(one_process.memory<=128){
+                    cout<<"Stored "<<one_process.pid<<" in Round Robbin batch (16KB)"<<endl;
                     Queue[4].push(one_process);
                 } else if(one_process.memory<=256){
+                    cout<<"Stored "<<one_process.pid<<" in Round Robbin batch (16KB)"<<endl;
                     Queue[5].push(one_process);
                 } else {
                     cout<<"Memory cannot be greater than 256kb"<<endl;
@@ -174,7 +186,10 @@ class batch{
 
         void add_Imp(process&one_process){
             // cout<<one_process.pid<<" added in priorioty batch"<<endl;
-            if(one_process.priority==1)Queue[0].push(one_process);
+            cout<<one_process.pid<<" is stored in priority bacth"<<endl;
+            if(one_process.priority==1){
+                Queue[0].push(one_process);
+            }
             else if(one_process.priority==2) Queue[1].push(one_process);
         }
 
