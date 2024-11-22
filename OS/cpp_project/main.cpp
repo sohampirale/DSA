@@ -203,32 +203,90 @@ class batch{
                     return;
             }
             string receiverBatchName=receiver.workingBatch->batch_name;
+            // cout<<" in batch : "<<this->batch_name<<endl;
             if(receiverBatchName=="SJF"){
                 if(!alreadyWokring(receiver)){
-                    cout<<"Call for process received form "<<receiver.coreName<<endl;
+                    cout<<receiver.coreName<<" is not currently working"<<endl;
+                    // cout<<"Call for process received form "<<receiver.coreName;
                     for(int i=0;i<6;i++){
+                        // cout<<"In SJF"<<endl;
                         if(!system[i].empty()){
+                            // cout<<"PQ not empty for i = "<<i<<endl;
                             process* p=new process(this->system[i].top().bt,this->system[i].top().pid);
+                            // process p(this->system[i].top().bt,this->system[i].top().pid);
                             receiver.workingProcessPtr=p;
-                            cout<<"popping the process : "<<system[i].top().pid<<" from prioroity queue : "<<endl;
+                            // cout<<"p.pid = "<<p.pid<<endl;
+                            // cout<<"popping the process : "<<system[i].top().pid<<" from prioroity queue : "<<endl;
+                            // cout<<"receiver.workingProcessPtr.pid = "<<receiver.workingProcessPtr->pid<<endl;
                             system[i].pop();
-                            break;
+                            return;
+                        } else {
+                            // cout<<"Empty PQ for i = "<<i<<endl;
                         }
                     }
-                    cout<<"No process is availaible in the SJF batch"<<endl;
+                    cout<<"No process is availaible in the batch"<<endl;
+                    receiver.workingProcessPtr=nullptr;
                 } else {
                     cout<<receiver.coreName<<" is already wokring on a process : "<<receiver.workingProcessPtr->pid<<endl;
                 }
             } else if(receiverBatchName=="RR"){
-                receiver.workingProcessPtr=&Queue[this->RR_row].front();
+                // if(!alreadyWokring(receiver)){
+                    for(int i=0;i<6;i++){
+                        // cout<<"Size of queue = "<<Queue.size()<<endl;
+                        if(!Queue[i].empty()){
+                            // cout<<"Queue no - "<<i+1<<" is not empty so assigning the topmost process to the "<<receiver.coreName<<endl;
+                            receiver.workingProcessPtr = &Queue[i].front();
+                            // cout<<receiver.coreName<<" is assinged to process with PID : "<<receiver.workingProcessPtr->pid<<endl;
+                            if(Queue[i].front().bt!=1)Queue[i].push(Queue[i].front());
+                            Queue[i].pop();
+                            return;
+                        } else {
+                            // cout<<"Queue["<<i<<"] is empty"<<endl;
+                        }
+                    }
+                // } else {
+                    // cout<<receiver.coreName<<" is already wokring on a process : "<<receiver.workingProcessPtr->pid<<endl;
+                // }
+                    cout<<"No process is availaible in the RR batch"<<endl;
+                    receiver.workingProcessPtr=nullptr;
             } else if(receiverBatchName=="Priority"){
-                cout<<"Call for process received form "<<receiver.coreName<<endl;
-                for(int i=0;i<6;i++){
-                    if(!system[i].empty()){
-                        receiver.workingProcessRef = &this->system[i].top();
-                        break;
+                if(receiver.coreName=="core3"){
+                    if(!Queue[0].empty()){
+                        receiver.workingProcessPtr=&Queue[0].front();
+                        Queue[0].push(Queue[0].front());
+                        Queue[0].pop();
+                        return;
+                    } else {
+                        cout<<"Highest priority Queue is empty so assigning mid prioroity processes to core3"<<endl;
+                        if(!Queue[1].empty()){
+                            receiver.workingProcessPtr=&Queue[1].front();
+                            Queue[1].push(Queue[1].front());
+                            Queue[1].pop();
+                            return;
+                        } else {
+                            cout<<"Mid priority processes Queue is also empty"<<endl;
+                        }
+                    }
+                } else if(receiver.coreName=="core4"){
+                    if(!Queue[1].empty()){
+                        receiver.workingProcessPtr=&Queue[1].front();
+                        Queue[1].push(Queue[1].front());
+                        Queue[1].pop();
+                        return;
+                    } else {
+                        cout<<"Medium priority Queue is empty so assigning highest prioroity processes to core4"<<endl;
+                        if(!Queue[0].empty()){
+                            receiver.workingProcessPtr=&Queue[0].front();
+                            Queue[0].push(Queue[0].front());
+                            Queue[0].pop();
+                            return;
+                        } else {
+                            cout<<"Mid priority processes Queue is also empty"<<endl;
+                        }
                     }
                 }
+                cout<<"No process is availaible in the Priority batch"<<endl;
+                receiver.workingProcessPtr=nullptr;
             } else{
                 cout<<"Invalid"<<endl;
             } 
@@ -514,8 +572,14 @@ void assignProcessesToCores(vector<batch>&all_batches,vector<core>&all_cores){
     vector<int>temp={0,1,2,2};
     for(int i=0;i<4;i++){
         all_batches[temp[i]].assignProcess(all_cores[i]);
-        // process* p=new process(all_cores[i].workingProcessRef->bt,all_cores[i].workingProcessRef->pid);
-        cout<<all_cores[i].coreName<<" is working on : "<<endl;
+        if(all_cores[i].workingProcessPtr!=nullptr){
+            cout<<all_cores[i].coreName<<" is working on : "<<all_cores[i].workingProcessPtr->pid<<endl;
+            all_cores[i].workingProcessPtr->bt--;
+            if(all_cores[i].workingProcessPtr->bt==0){
+                cout<<"Process : "<<all_cores[i].workingProcessPtr->pid<<" is executed successfully"<<endl;
+                all_cores[i].workingProcessPtr=nullptr;
+            }
+        }
         // all_working_processes[i]=p;
     }
 }
@@ -555,6 +619,8 @@ int main(){
     cout<<"Stored everythign in batches"<<endl;
 
     while(1){
+        work(all_batches,all_cores,all_resources,all_working_processes);
+        cout<<"Came out of work fucntion"<<endl;
         runtime_fetching(all_batches,all_resources);
         sleep(1);
         cout<<"Fetching processes on runtime"<<endl;
