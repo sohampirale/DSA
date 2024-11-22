@@ -376,7 +376,7 @@ int main(){
     unordered_map<node*,list<pair<node*,int>>>adjacancy_list;
     for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
         for(auto neighbour=it->second->connections_map.begin();neighbour!=it->second->connections_map.end();neighbour++){
-            adjacancy_list[it]={neighbour->second.first,it->second->connections_map[neighbour->second.second]};
+            // adjacancy_list[it]={neighbour->second.first,it->second->connections_map[neighbour->second.second]};
         }
     }
     while(choice){
@@ -393,7 +393,6 @@ int main(){
             graph.BFS(start,target);
         }
         else if(choice==3){
-            // graph.
         }
     }
     delete_all_nodes(all_nodes);
