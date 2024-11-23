@@ -20,10 +20,12 @@ class core{
         batch* workingBatch;
         const process* workingProcessRef;
         process* workingProcessPtr;
+        process_using_resource* ;
         core(string coreName){
             this->coreName=coreName;
             this->workingProcessPtr=nullptr;
             this->workingProcessRef=nullptr;
+            this-
         }
         void setBatch(vector<batch>&all_batches,int batchIndex){
             this->workingBatch=&all_batches[batchIndex];
@@ -284,10 +286,26 @@ class batch{
                             cout<<"Mid priority processes Queue is also empty"<<endl;
                         }
                     }
-                }
+                } 
                 cout<<"No process is availaible in the Priority batch"<<endl;
                 receiver.workingProcessPtr=nullptr;
-            } else{
+            } else if(receiverBatchName=="Process_Resource"){
+                if(!alreadyWokring(receiver)){
+                    if(receiver.coreName=="core5"){
+                        auto it=ProcessAllocation[0].top();
+                        process* p=new process(it.bt,it.PId);
+                        receiver.workingProcessPtr=p;
+                        ProcessAllocation[0].push(ProcessAllocation[0].top());
+                        ProcessAllocation[0].pop();
+                    } else if(receiver.coreName=="core6"){
+                        auto it=ProcessAllocation[1].top();
+                        process* p=new process(it.bt,it.PId);
+                        receiver.workingProcessPtr=p;
+                        ProcessAllocation[1].push(ProcessAllocation[1].top());
+                        ProcessAllocation[1].pop();
+                    }
+                }
+            } else {
                 cout<<"Invalid"<<endl;
             } 
         }
@@ -569,8 +587,8 @@ const process& SJF_take(batch& SJF){
 // }
 
 void assignProcessesToCores(vector<batch>&all_batches,vector<core>&all_cores){
-    vector<int>temp={0,1,2,2};
-    for(int i=0;i<4;i++){
+    vector<int>temp={0,1,2,2,3,3};
+    for(int i=0;i<6;i++){
         all_batches[temp[i]].assignProcess(all_cores[i]);
         if(all_cores[i].workingProcessPtr!=nullptr){
             cout<<all_cores[i].coreName<<" is working on : "<<all_cores[i].workingProcessPtr->pid<<endl;
