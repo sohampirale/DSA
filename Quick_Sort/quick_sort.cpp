@@ -1,12 +1,12 @@
 #include<iostream>
 #include<vector>
 using namespace std;
-//wokring
+
 void quick_sort_pivot_at_end(vector<int>&nums,int low,int high){
     if(low>=high)return;
     int pivot=nums[high];
     int st=low,end=high;//gg
-    cout<<"low = "<<low<<" & high = "<<high<<endl;
+    // cout<<"low = "<<low<<" & high = "<<high<<endl;
     while(st<=end){
         while(nums[st]<pivot){
             st++;
@@ -23,9 +23,9 @@ void quick_sort_pivot_at_end(vector<int>&nums,int low,int high){
         for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
         cout<<endl;
     }
-    cout<<"Array modified to : ";
-    for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
-    cout<<endl;
+    // cout<<"Array modified to : ";
+    // for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
+    // cout<<endl;
     quick_sort_pivot_at_end(nums,low,end);
     quick_sort_pivot_at_end(nums,st,high);
 }
@@ -33,7 +33,7 @@ void quick_sort_pivot_at_end(vector<int>&nums,int low,int high){
 void quick_sort_pivot_at_mid(vector<int>&nums,int low,int high){
     if(low>high)return;
     if(low==high){
-        cout<<"low = "<<low<<" & high = "<<high<<endl;
+        // cout<<"low = "<<low<<" & high = "<<high<<endl;
         return;
     }
     int st=low,end=high;
@@ -52,11 +52,11 @@ void quick_sort_pivot_at_mid(vector<int>&nums,int low,int high){
             st++;
             end--;
         } 
-        cout<<"Array modified to : ";
-        for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
-        cout<<endl;
+        // cout<<"Array modified to : ";
+        // for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
+        // cout<<endl;
     }
-    cout<<"Came out at st = "<<st<<" & end = "<<end<<endl;
+    // cout<<"Came out at st = "<<st<<" & end = "<<end<<endl;
     quick_sort_pivot_at_mid(nums,low,end);
     quick_sort_pivot_at_mid(nums,st,high);
 }
@@ -67,7 +67,7 @@ void quick_sort_pivot_at_mid(vector<int>&nums,int low,int high){
 void quick_sort_pivot_at_mid_removed_equal_to_check(vector<int>&nums,int low,int high){
     if(low>high)return;
     if(low==high){
-        cout<<"low = "<<low<<" & high = "<<high<<endl;
+        // cout<<"low = "<<low<<" & high = "<<high<<endl;
         return;
     }
     int st=low,end=high;
@@ -86,11 +86,11 @@ void quick_sort_pivot_at_mid_removed_equal_to_check(vector<int>&nums,int low,int
             st++;
             end--;
         } 
-        cout<<"Array modified to : ";
-        for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
-        cout<<endl;
+        // cout<<"Array modified to : ";
+        // for(int i=0;i<nums.size();i++)cout<<nums[i]<<" ";
+        // cout<<endl;
     }
-    cout<<"Came out at st = "<<st<<" & end = "<<end<<endl;
+    // cout<<"Came out at st = "<<st<<" & end = "<<end<<endl;
     quick_sort_pivot_at_mid(nums,low,end);
     quick_sort_pivot_at_mid(nums,st,high);
 }
@@ -99,9 +99,7 @@ void quick_sort_pivot_at_mid_removed_equal_to_check(vector<int>&nums,int low,int
 void quick_sort_brocode(vector<int>&nums,int low,int high){
     if(low>=high)return;
     int i=low-1,j=low;
-    cout<<"hi"<<endl;
     int pivot=nums[high];
-    cout<<"hi"<<endl;
     while(j!=high){
        if(nums[j]<pivot){
         int temp=nums[j];
@@ -142,6 +140,8 @@ int main(){
     cout<<"After calling the quick sort fucntion the original array becomes : ";
     for(int i=0;i<n;i++)cout<<nums[i]<<" ";
 }
+
+
 
 //not working
 // void quick_sort(vector<int>&nums,int low,int high){

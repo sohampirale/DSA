@@ -1,0 +1,6 @@
+P9      23        26        224           121
+P10     2         126       213           201
+P11     28        6         314           221
+PId     bt      memory    total_need      allocated 
+                           r1,r2,r3
+(directly no of resources required are written without giving spaces)
