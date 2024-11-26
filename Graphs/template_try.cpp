@@ -7,27 +7,24 @@
 #include<climits>
 #include<fstream>
 #include<sstream>
-#include<list>
 using namespace std;
-bool bidirectional=false;
+template<typename t>
 class node{
     public:
-        int data;
+        t data;
+        // t ex;
         bool traversed=false;
         // vector<node*>connections;
-        //              data    addr,dist
         unordered_map<int,pair<node*,int>>connections_map;
-        node(int data):data(data){
+        node(t data):data(data){
             cout<<data<<" created"<<endl;
         }
         
-        void connect_to(node*one_node,int dist){
+        void connect_to(node<t>*one_node,int dist){
             if(connections_map.find(one_node->data)==connections_map.end()){
                 pair<node*,int>temp={one_node,dist};
                 connections_map[one_node->data]=temp;
                 cout<<this->data<<" is connected with "<<one_node->data<<" with distance : "<<temp.second<<endl;
-                if(bidirectional)one_node->connect_to(this,dist);
-
             } else {
                 cout<<"connection of "<<this->data<<" already exists with "<<one_node->data<<endl;
             }
@@ -41,7 +38,7 @@ class node{
             cout<<endl;
         }
        
-        node* find(vector<node*>&all_nodes,int data){
+        node* find(vector<node<t>*>&all_nodes,t data){
             for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
                 if((*it)->data==data){
                     return *it;
@@ -73,18 +70,16 @@ class node{
         }
 
 };
-
-
+template <typename T>
 class Graph{
     public:
-        unordered_map<int,node*>all_nodes;
-        unordered_map<node*,list<node*>>adjacancy_list;
+        unordered_map<int,node<T>*>all_nodes;
         vector<string>all_paths;
         int min_cost=0;
         string path_with_min_cost;
-        void addAddrInQueue(node*&one_node,queue<node*>&loc,queue<int>&costs,int cost){
+        void addAddrInQueue(node*&one_node,queue<node<T>*>&loc,queue<int>&costs,int cost){
             if(!one_node)return;
-            unordered_map<int,pair<node*,int>>&connections_map=one_node->connections_map;
+            unordered_map<<T>,pair<node<T>*,int>>&connections_map=one_node->connections_map;
             int size=connections_map.size();
             for(auto it=connections_map.begin();it!=connections_map.end();it++){
                 loc.push(it->second.first);
@@ -92,7 +87,7 @@ class Graph{
             }
         }
 
-        void BFS_helper(queue<node*>&loc,node*&target,queue<int>&costs,string path="->"){
+        void BFS_helper(queue<node<T>*>&loc,node*&target,queue<int>&costs,string path="->"){
             cout<<"Path : "<<path<<endl;
             if(loc.empty()){
                 return;
@@ -109,6 +104,7 @@ class Graph{
                 all_paths.push_back(path+add);
                 return;
             }
+            it->traversed=true;
             int size=loc.size();
             for(int i=0;i<size;i++){
                 auto front=loc.front();
@@ -116,15 +112,14 @@ class Graph{
                 loc.pop();
                 costs.pop();
                 BFS_helper(loc,target,costs,path+add+"->");
-                it->traversed=true;
             }
             it->traversed=false;
         }
 
-        void BFS(node*&start,node*&target){
+        void BFS(node<T>*&start,node<T>*&target){
             min_cost=INT_MAX;
             all_paths.clear();
-            queue<node*>loc;
+            queue<node<T>*>loc;
             queue<int>costs;
             costs.push(0);
             loc.push(start);
@@ -133,14 +128,14 @@ class Graph{
             cout<<"Minimum cost required was : "<<min_cost<<endl;
         }
 
-        void connect_all_nodes(unordered_map<int,node*>&all_nodes){
+        void connect_all_nodes(unordered_map<int,node<T>*>&all_nodes){
             for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
                     it->second->connect_to_helper(all_nodes);
             }
             cout<<"All nodes connected"<<endl;
         }
 
-        void create_graph_manually(unordered_map<int,node*>&all_nodes){
+        void create_graph_manually(unordered_map<int,node<T>*>&all_nodes){
             int n;
             cout<<"How many nodes you have : ";
             cin>>n;
@@ -150,7 +145,7 @@ class Graph{
                 cin>>data[i];
             }
             for(int i=0;i<n;i++){
-                node*one_node=new node(data[i]);
+                node<T>*one_node=new node<T>(data[i]);
                 all_nodes[data[i]]=one_node;
             }
             cout<<"All nodes created"<<endl;
@@ -159,7 +154,7 @@ class Graph{
             display_all_connections(all_nodes);
         }
 
-        void create_graph(unordered_map<int,node*>&all_nodes,int choice=2){
+        void create_graph(unordered_map<int,node<T>*>&all_nodes,int choice=2){
             if(choice==1){
                 create_graph_manually(all_nodes);
             } else if(choice==2){
@@ -167,7 +162,7 @@ class Graph{
             }
         }
 
-        void extract_data_from_files(unordered_map<int,node*>&all_nodes){
+        void extract_data_from_files(unordered_map<int,node<T>*>&all_nodes){
             fstream file;
             file.open("file_data/first_data.txt",ios::in);
             int n,neighbours,node_data,dist;
@@ -198,7 +193,7 @@ class Graph{
             }
 
             for(int i=0;i<n;i++){
-                node*one_node=new node(data[i]);
+                node<T>*one_node=new node(data[i]);
                 all_nodes[data[i]]=one_node;
             }
 
@@ -211,7 +206,7 @@ class Graph{
                     cout<<"Lets connect "<<connector->first<<" with "<<neighbours<<" neighbours"<<endl;
                     for(int i=0;i<neighbours;i++){
                         ss>>node_data>>dist;
-                        node*&one_node=all_nodes[node_data];
+                        node<T>*&one_node=all_nodes[node_data];
                         connector->second->connect_to(one_node,dist);
                     }
                 } else {
@@ -225,13 +220,13 @@ class Graph{
             this->all_nodes=all_nodes;
         }
 
-        void display_all_connections(unordered_map<int,node*>&all_nodes){
+        void display_all_connections(unordered_map<int,node<T>*>&all_nodes){
             for(auto node =all_nodes.begin();node!=all_nodes.end();node++){
                 node->second->display_connections();
             }
         }
 
-        void DFS_helper(stack<node*>&loc,node*target,string path="->",int cost=0){
+        void DFS_helper(stack<node<T>*>&loc,node<T>*target,string path="->",int cost=0){
             if(loc.empty()){
                 cout<<"Stack found empty at path : "<<path<<endl;
                 all_paths.push_back(path);
@@ -263,11 +258,11 @@ class Graph{
             it->traversed=false;
         }
 
-        void DFS(node*&start,node*&target){
+        void DFS(node<T>*&start,node<T>*&target){
             min_cost=INT_MAX;
             path_with_min_cost.clear();
             all_paths.clear();
-            stack<node*>loc;
+            stack<node<T>*>loc;
             loc.push(start);
             DFS_helper(loc,target);
             display_all_paths();
@@ -285,18 +280,17 @@ class Graph{
             }
         }
 
-        void create_adjacancy_list(unordered_map<node*,int>&map){
-
-        }
 };
 
-void delete_all_nodes(unordered_map<int,node*>&all_nodes){
+template<typename tt>
+void delete_all_nodes(unordered_map<int,node<tt>*>&all_nodes){
     for(auto it = all_nodes.begin();it!=all_nodes.end();it++){
         delete it->second;
     }
 }
 
-void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,string path="->"){
+template<typename T>
+void DFS_using_stack(stack<node<T>*>&loc,node<T>*&target,vector<string>&all_paths,string path="->"){
     if(loc.empty()){
         all_paths.push_back(path);
         cout<<"Stack is empty"<<endl;
@@ -319,7 +313,7 @@ void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,stri
     }
     it->traversed=true;
     int size=it->connections_map.size();
-    unordered_map<int,pair<node*,int>>&connections_map=it->connections_map;
+    unordered_map<int,pair<node<T>*,int>>&connections_map=it->connections_map;
     
     for(auto next = connections_map.begin();next!=connections_map.end();next++){
         cout<<it->data<<" ";
@@ -330,7 +324,8 @@ void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,stri
     it->traversed=false;
 }
 
-pair<node*,node*> getPair(Graph& graph){
+template<typename T>
+pair<node<T>*,node<T>*> getPair(Graph<T>& graph){
     int start_data,target_data;
     cout<<"Enter start point for DFS : ";
     cin>>start_data;
@@ -344,7 +339,6 @@ int getChoiceCreateGraph(){
     cout<<"Enter your choce :"<<endl;
     cout<<"1 : Manually"<<endl;
     cout<<"2 : Extract data from files"<<endl;
-    cout<<"3 : Create adjacancy list"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -360,39 +354,27 @@ int getChoice(){
     return choice;
 }
 
-void setDirection(){
-    cout<<"Do you want Bidirectional graph (1 : Yes) : ";
-    cin>>bidirectional;
-}
-
+template<typename T>
 int main(){
     vector<string>all_paths;
-    unordered_map<int,node*>all_nodes;
-    Graph graph;
+    unordered_map<int,node<T>*>all_nodes;
+    Graph<T>graph;
     int choice=getChoiceCreateGraph();
-    setDirection();
     if(choice==1)graph.create_graph(all_nodes,1);
     else if(choice==2) graph.create_graph(all_nodes,2);
-    unordered_map<node*,list<pair<node*,int>>>adjacancy_list;
-    for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
-        for(auto neighbour=it->second->connections_map.begin();neighbour!=it->second->connections_map.end();neighbour++){
-            // adjacancy_list[it]={neighbour->second.first,it->second->connections_map[neighbour->second.second]};
-        }
-    }
+
     while(choice){
         choice=getChoice();
         if(choice==1){
-            pair<node*,node*>temp=getPair(graph);
-            node*start=temp.first;
-            node*target=temp.second;
+            pair<node<T>*,node<T>*>temp=getPair(graph);
+            node<T>*start=temp.first;
+            node<T>*target=temp.second;
             graph.DFS(start,target);
         } else if(choice==2){
-            pair<node*,node*>temp=getPair(graph);
-            node*start=temp.first;
-            node*target=temp.second;
+            pair<node<T>*,node<T>*>temp=getPair(graph);
+            node<T>*start=temp.first;
+            node<T>*target=temp.second;
             graph.BFS(start,target);
-        }
-        else if(choice==3){
         }
     }
     delete_all_nodes(all_nodes);
