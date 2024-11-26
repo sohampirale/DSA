@@ -13,7 +13,6 @@ class node{
     public:
         int data;
         bool traversed=false;
-        // vector<node*>connections;
         unordered_map<int,pair<node*,int>>connections_map;
         node(int data):data(data){
             cout<<data<<" created"<<endl;
