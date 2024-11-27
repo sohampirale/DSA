@@ -8,6 +8,7 @@
 #include<fstream>
 #include<sstream>
 #include<list>
+#include<filesystem>
 using namespace std;
 bool bidirectional=false;
 class node{
@@ -246,12 +247,10 @@ class Graph{
             } else if(it==target){
                 cout<<"Found target by path : "<<path+add<<" and with cost = "<<cost<<endl;
                 all_paths.push_back(path+add);
-                // cout<<"before min cost = "<<min_cost<<endl;
                 if(cost<min_cost){
                     min_cost=cost;
                     path_with_min_cost=path+add;
                 }
-                // cout<<"after min cost = "<<min_cost<<endl;
                 return;
             }
             it->traversed=true;            
@@ -285,9 +284,70 @@ class Graph{
             }
         }
 
-        void create_adjacancy_list(unordered_map<node*,int>&map){
-
+        void loadFromFile(ifstream& input,unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>&map){
+            int n,data;
+            input>>n;
+            for(int i=0;i<n;i++){
+                input>>data;
+                node* one_node=new node(data);
+                dataset[data]=one_node;
+                list<node*>temp;
+                map[one_node]=temp;
+            }
+            int mapSize,k,nodeData,neighbourData;
+            input>>mapSize;
+            for(int i=0;i<mapSize;i++){
+                input>>nodeData;
+                node* originateNode=dataset[nodeData];
+                input>>k;
+                for(int j=0;j<k;j++){
+                    input>>neighbourData;
+                    map[originateNode].push_back(dataset[neighbourData]);
+                }
+            }
+            cout<<"Whole graph loaded from file"<<endl;
         }
+
+        void loadGraph(unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>&map){
+        string path="graphs_data/";
+        bool custom;
+        cout<<"Is the graph you want to load is custom graph?\nYour choice(1 : Yes 0 : No) : ";
+        cin>>custom;
+        if(custom){
+            path+="custom_graphs/";
+            string graphName;
+            cout<<"Enter the custom name of the graph you want to load : ";
+            cin>>graphName;
+            graphName+=".txt";
+            if(filesystem::exists(path+graphName)){
+                path+=graphName;
+                ifstream input(path,ios::in);
+                if(input.is_open()){
+                    cout<<"opened "<<path<<endl;
+                    loadFromFile(input,dataset,map);
+                } else cout<<"couldn't oepn the file "<<graphName<<endl;
+            } else {
+                cout<<graphName<<" does not exist at "<<path<<endl;
+            }
+        } else{
+            int total=totalGraphsPresent(),graphNo;
+            cout<<"There are total "<<total<<" graphs present\nmEnter the graph you want to load (1-"<<total<<") : ";
+            cin>>graphNo;
+            path+="all_graphs/";
+            string graphName="graph"+to_string(graphNo)+".txt";
+            if(filesystem::exists(path+graphName)){
+                path+=graphName;
+                ifstream input(path,ios::in);
+                if(input.is_open()){
+                    cout<<"opened "<<path<<endl;
+                    loadFromFile(input,dataset,map);
+                } else cout<<"couldn't oepn the file "<<graphName<<endl;
+            } else {
+                cout<<graphName<<" does not exist in the directory : "<<path<<endl;
+            }
+        }
+    }
+
 };
 
 void delete_all_nodes(unordered_map<int,node*>&all_nodes){
@@ -368,6 +428,7 @@ void setDirection(){
 int main(){
     vector<string>all_paths;
     unordered_map<int,node*>all_nodes;
+    unordered_map<int,node*>dataset;
     Graph graph;
     int choice=getChoiceCreateGraph();
     setDirection();
