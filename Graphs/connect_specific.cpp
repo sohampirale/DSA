@@ -42,8 +42,8 @@ class node{
             cout<<endl;
         }
        
-        node* find(vector<node*>&all_nodes,int data){
-            for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
+        node* find(vector<node*>&dataset,int data){
+            for(auto it=dataset.begin();it!=dataset.end();it++){
                 if((*it)->data==data){
                     return *it;
                 }
@@ -51,7 +51,7 @@ class node{
             return nullptr;
         }
         
-        void connect_to_helper(unordered_map<int,node*>&all_nodes){
+        void connect_to_helper(unordered_map<int,node*>&dataset){
             int n;
             cout<<"How many connections does "<<this->data<<" has ? : ";
             cin>>n;
@@ -62,7 +62,7 @@ class node{
                 cin>>data;
                 cout<<"Enter distance of "<<data<<" from "<<this->data<<" : ";
                 cin>>dist;
-                node* one_node=all_nodes[data];
+                node* one_node=dataset[data];
                 if(one_node){
                     connect_to(one_node,dist);
                 }
@@ -75,14 +75,14 @@ class node{
 
 };
 
-
 class Graph{
     public:
-        unordered_map<int,node*>all_nodes;
+        unordered_map<int,node*>dataset;
         unordered_map<node*,list<node*>>adjacancy_list;
         vector<string>all_paths;
         int min_cost=0;
         string path_with_min_cost;
+
         void addAddrInQueue(node*&one_node,queue<node*>&loc,queue<int>&costs,int cost){
             if(!one_node)return;
             unordered_map<int,pair<node*,int>>&connections_map=one_node->connections_map;
@@ -134,14 +134,14 @@ class Graph{
             cout<<"Minimum cost required was : "<<min_cost<<endl;
         }
 
-        void connect_all_nodes(unordered_map<int,node*>&all_nodes){
-            for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
-                    it->second->connect_to_helper(all_nodes);
+        void connect_dataset(unordered_map<int,node*>&dataset){
+            for(auto it=dataset.begin();it!=dataset.end();it++){
+                    it->second->connect_to_helper(dataset);
             }
             cout<<"All nodes connected"<<endl;
         }
 
-        void create_graph_manually(unordered_map<int,node*>&all_nodes){
+        void createGraphManually(unordered_map<int,node*>&dataset){
             int n;
             cout<<"How many nodes you have : ";
             cin>>n;
@@ -152,23 +152,15 @@ class Graph{
             }
             for(int i=0;i<n;i++){
                 node*one_node=new node(data[i]);
-                all_nodes[data[i]]=one_node;
+                dataset[data[i]]=one_node;
             }
             cout<<"All nodes created"<<endl;
-            this->all_nodes=all_nodes;
-            connect_all_nodes(all_nodes);
-            display_all_connections(all_nodes);
+            this->dataset=dataset;
+            connect_dataset(dataset);
+            display_all_connections(dataset);
         }
 
-        void create_graph(unordered_map<int,node*>&all_nodes,int choice=2){
-            if(choice==1){
-                create_graph_manually(all_nodes);
-            } else if(choice==2){
-                extract_data_from_files(all_nodes);
-            }
-        }
-
-        void extract_data_from_files(unordered_map<int,node*>&all_nodes){
+        void extract_data_from_files(unordered_map<int,node*>&dataset){
             fstream file;
             file.open("file_data/first_data.txt",ios::in);
             int n,neighbours,node_data,dist;
@@ -200,10 +192,10 @@ class Graph{
 
             for(int i=0;i<n;i++){
                 node*one_node=new node(data[i]);
-                all_nodes[data[i]]=one_node;
+                dataset[data[i]]=one_node;
             }
 
-            auto connector=all_nodes.begin();
+            auto connector=dataset.begin();
             while(getline(file,line)){
                 if(line.empty()||line[0]=='#')continue;
                 stringstream ss(line);
@@ -212,22 +204,22 @@ class Graph{
                     cout<<"Lets connect "<<connector->first<<" with "<<neighbours<<" neighbours"<<endl;
                     for(int i=0;i<neighbours;i++){
                         ss>>node_data>>dist;
-                        node*&one_node=all_nodes[node_data];
+                        node*&one_node=dataset[node_data];
                         connector->second->connect_to(one_node,dist);
                     }
                 } else {
                     cout<<connector->first<<" has no neighbours"<<endl;
                 }
                 connector++;
-                if(connector==all_nodes.end())break;
+                if(connector==dataset.end())break;
             }
             cout<<"Extracting file process finished"<<endl;
             file.close();
-            this->all_nodes=all_nodes;
+            this->dataset=dataset;
         }
 
-        void display_all_connections(unordered_map<int,node*>&all_nodes){
-            for(auto node =all_nodes.begin();node!=all_nodes.end();node++){
+        void display_all_connections(unordered_map<int,node*>&dataset){
+            for(auto node =dataset.begin();node!=dataset.end();node++){
                 node->second->display_connections();
             }
         }
@@ -284,6 +276,19 @@ class Graph{
             }
         }
 
+        int totalGraphsPresent(){
+            ifstream total("graphs_data/total_graphs.txt",ios::in);
+            int total_graphs;
+            if(!total.is_open()){
+                cout<<"Error opening the file total_graphs.txt"<<endl;
+                return -1;
+            }
+            total>>total_graphs;
+            total.close();
+            cout<<"Total grpahs present in the directory currently are : "<<total_graphs<<endl;
+            return total_graphs;
+        }
+
         void loadFromFile(ifstream& input,unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>&map){
             int n,data;
             input>>n;
@@ -309,49 +314,49 @@ class Graph{
         }
 
         void loadGraph(unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>&map){
-        string path="graphs_data/";
-        bool custom;
-        cout<<"Is the graph you want to load is custom graph?\nYour choice(1 : Yes 0 : No) : ";
-        cin>>custom;
-        if(custom){
-            path+="custom_graphs/";
-            string graphName;
-            cout<<"Enter the custom name of the graph you want to load : ";
-            cin>>graphName;
-            graphName+=".txt";
-            if(filesystem::exists(path+graphName)){
-                path+=graphName;
-                ifstream input(path,ios::in);
-                if(input.is_open()){
-                    cout<<"opened "<<path<<endl;
-                    loadFromFile(input,dataset,map);
-                } else cout<<"couldn't oepn the file "<<graphName<<endl;
-            } else {
-                cout<<graphName<<" does not exist at "<<path<<endl;
-            }
-        } else{
-            int total=totalGraphsPresent(),graphNo;
-            cout<<"There are total "<<total<<" graphs present\nmEnter the graph you want to load (1-"<<total<<") : ";
-            cin>>graphNo;
-            path+="all_graphs/";
-            string graphName="graph"+to_string(graphNo)+".txt";
-            if(filesystem::exists(path+graphName)){
-                path+=graphName;
-                ifstream input(path,ios::in);
-                if(input.is_open()){
-                    cout<<"opened "<<path<<endl;
-                    loadFromFile(input,dataset,map);
-                } else cout<<"couldn't oepn the file "<<graphName<<endl;
-            } else {
-                cout<<graphName<<" does not exist in the directory : "<<path<<endl;
+            string path="graphs_data/";
+            bool custom;
+            cout<<"Is the graph you want to load is custom graph?\nYour choice(1 : Yes 0 : No) : ";
+            cin>>custom;
+            if(custom){
+                path+="custom_graphs/";
+                string graphName;
+                cout<<"Enter the custom name of the graph you want to load : ";
+                cin>>graphName;
+                graphName+=".txt";
+                if(filesystem::exists(path+graphName)){
+                    path+=graphName;
+                    ifstream input(path,ios::in);
+                    if(input.is_open()){
+                        cout<<"opened "<<path<<endl;
+                        loadFromFile(input,dataset,map);
+                    } else cout<<"couldn't oepn the file "<<graphName<<endl;
+                } else {
+                    cout<<graphName<<" does not exist at "<<path<<endl;
+                }
+            } else{
+                int total=totalGraphsPresent(),graphNo;
+                cout<<"There are total "<<total<<" graphs present\nmEnter the graph you want to load (1-"<<total<<") : ";
+                cin>>graphNo;
+                path+="all_graphs/";
+                string graphName="graph"+to_string(graphNo)+".txt";
+                if(filesystem::exists(path+graphName)){
+                    path+=graphName;
+                    ifstream input(path,ios::in);
+                    if(input.is_open()){
+                        cout<<"opened "<<path<<endl;
+                        loadFromFile(input,dataset,map);
+                    } else cout<<"couldn't oepn the file "<<graphName<<endl;
+                } else {
+                    cout<<graphName<<" does not exist in the directory : "<<path<<endl;
+                }
             }
         }
-    }
 
 };
 
-void delete_all_nodes(unordered_map<int,node*>&all_nodes){
-    for(auto it = all_nodes.begin();it!=all_nodes.end();it++){
+void delete_dataset(unordered_map<int,node*>&dataset){
+    for(auto it = dataset.begin();it!=dataset.end();it++){
         delete it->second;
     }
 }
@@ -396,7 +401,7 @@ pair<node*,node*> getPair(Graph& graph){
     cin>>start_data;
     cout<<"Enter target : ";
     cin>>target_data;
-    return {graph.all_nodes[start_data],graph.all_nodes[target_data]};
+    return {graph.dataset[start_data],graph.dataset[target_data]};
 }
 
 int getChoiceCreateGraph(){
@@ -426,16 +431,27 @@ void setDirection(){
 }
 
 int main(){
+    string test="12";
+    string test2="34";
+    stringstream ss(test);
+    int t1,t2;
+    ss>>t1;
+    // t2=(test2)-'0';
+    cout<<"t1 = "<<t1<<" & t2 = "<<t2<<endl;
+    return 0;
+
+
     vector<string>all_paths;
-    unordered_map<int,node*>all_nodes;
     unordered_map<int,node*>dataset;
+    unordered_map<node*,list<node*>>map;
     Graph graph;
     int choice=getChoiceCreateGraph();
     setDirection();
-    if(choice==1)graph.create_graph(all_nodes,1);
-    else if(choice==2) graph.create_graph(all_nodes,2);
+    if(choice==1)graph.createGraphManually(dataset);
+    else if(choice==2) graph.extract_data_from_files(dataset);
+
     unordered_map<node*,list<pair<node*,int>>>adjacancy_list;
-    for(auto it=all_nodes.begin();it!=all_nodes.end();it++){
+    for(auto it=dataset.begin();it!=dataset.end();it++){
         for(auto neighbour=it->second->connections_map.begin();neighbour!=it->second->connections_map.end();neighbour++){
             // adjacancy_list[it]={neighbour->second.first,it->second->connections_map[neighbour->second.second]};
         }
@@ -456,5 +472,5 @@ int main(){
         else if(choice==3){
         }
     }
-    delete_all_nodes(all_nodes);
+    delete_dataset(dataset);
 }

@@ -180,7 +180,7 @@ void loadGraph(unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>
         }
     } else{
         int total=totalGraphsPresent(),graphNo;
-        cout<<"There are total "<<total<<" graphs present\nmEnter the graph you want to load (1-"<<total<<") : ";
+        cout<<"There are total "<<total<<" graphs present\nEnter the graph you want to load (1-"<<total<<") : ";
         cin>>graphNo;
         path+="all_graphs/";
         string graphName="graph"+to_string(graphNo)+".txt";
