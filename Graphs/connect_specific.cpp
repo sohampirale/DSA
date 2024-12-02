@@ -9,14 +9,20 @@
 #include<sstream>
 #include<list>
 #include<filesystem>
+#include <csignal>
+#include <cstdlib>
+#include<unordered_set>
+
 using namespace std;
 bool bidirectional=false;
+
 class node{
     public:
         int data;
+        string path="";
         bool traversed=false;
         // vector<node*>connections;
-        //              data    addr,dist
+        //            data     addr, dist
         unordered_map<int,pair<node*,int>>connections_map;
         node(int data):data(data){
             cout<<data<<" created"<<endl;
@@ -82,41 +88,76 @@ class Graph{
         vector<string>all_paths;
         int min_cost=0;
         string path_with_min_cost;
+        node*start=nullptr,*target=nullptr,*intermediate=nullptr;
+        static Graph* instance;
+        unordered_set<node*>visited;
+        Graph(){
+            signal(SIGSEGV, signalHandler);
+            instance=this;
+        }
 
+        ~Graph(){
+            delete_dataset();
+        }
+
+        static void signalHandler(int signum) {
+            cout << "Caught signal " << signum << ". deallocating nodes..." << endl;
+            if(instance){
+                cout<<"hi"<<endl;
+                instance->delete_dataset();
+            }
+            exit(signum);
+        }
+
+        void delete_dataset(){
+            for(auto it = this->dataset.begin();it!=dataset.end();it++){
+                delete it->second;
+            }
+        }
+        
         void addAddrInQueue(node*&one_node,queue<node*>&loc,queue<int>&costs,int cost){
-            if(!one_node)return;
+            if(!one_node)
+                return;
+
             unordered_map<int,pair<node*,int>>&connections_map=one_node->connections_map;
-            int size=connections_map.size();
+
             for(auto it=connections_map.begin();it!=connections_map.end();it++){
-                loc.push(it->second.first);
+                auto add=it->second.first;
+                add->path+=("->"+to_string(one_node->data));
+                loc.push(add);
                 costs.push(cost+it->second.second);
             }
         }
 
         void BFS_helper(queue<node*>&loc,node*&target,queue<int>&costs,string path="->"){
-            cout<<"Path : "<<path<<endl;
             if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
                 return;
             }
             auto it=loc.front();
             string add=to_string(it->data);
             if(it->traversed){
-                cout<<"Revisited "<<add<<" via path : "<<path+add<<" with cost = "<<costs.front()<<endl;
+                cout<<"Revisited "<<add<<" via path : "<<it->path+add<<" with cost = "<<costs.front()<<endl;
                 return;
             }
             else if(it==target){
-                cout<<"Reached target with path : "<<path+add<<" & cost = "<<costs.front()<<endl;
+                cout<<"Reached target with path : "<<it->path+add<<" & cost = "<<costs.front()<<endl;
                 if(costs.front()<min_cost)min_cost=costs.front();
-                all_paths.push_back(path+add);
+                all_paths.push_back(it->path+add);
                 return;
             }
             int size=loc.size();
             for(int i=0;i<size;i++){
                 auto front=loc.front();
                 addAddrInQueue(front,loc,costs,costs.front());
+                if(loc.empty()){
+                    it->traversed=false;
+                    cout<<"Queue became empty"<<endl;
+                    return;
+                }
                 loc.pop();
                 costs.pop();
-                BFS_helper(loc,target,costs,path+add+"->");
+                BFS_helper(loc,target,costs,it->path+add+"->");
                 it->traversed=true;
             }
             it->traversed=false;
@@ -129,8 +170,10 @@ class Graph{
             queue<int>costs;
             costs.push(0);
             loc.push(start);
+            start->path="|"+to_string(start->data);
             BFS_helper(loc,target,costs);
             display_all_paths();
+            cout<<"For reaching from "<<start->data<<"->"<<target->data<<" : ";
             cout<<"Minimum cost required was : "<<min_cost<<endl;
         }
 
@@ -245,11 +288,15 @@ class Graph{
                 }
                 return;
             }
-            it->traversed=true;            
-            for(auto front=it->connections_map.begin();front!=it->connections_map.end();front++){
-                loc.push(front->second.first);
-                DFS_helper(loc,target,path+add+"->",cost+front->second.second);
-                loc.pop();
+            it->traversed=true;     
+            if(!it->connections_map.empty()){
+                for(auto front=it->connections_map.begin();front!=it->connections_map.end();front++){
+                    loc.push(front->second.first);
+                    DFS_helper(loc,target,path+add+"->",cost+front->second.second);
+                    loc.pop();
+                }
+            } else {
+                cout<<"Reached dead end at : "<<it->data<<" by path : "<<path+add<<endl;
             }
             it->traversed=false;
         }
@@ -263,6 +310,7 @@ class Graph{
             DFS_helper(loc,target);
             display_all_paths();
             if(min_cost!=INT_MAX){
+                cout<<"For reaching from "<<start->data<<"->"<<target->data<<" : ";
                 cout<<"Minimum cost required was : "<<min_cost<<endl;
                 cout<<"Path with minimum cost is : "<<path_with_min_cost<<endl;
             }
@@ -289,6 +337,12 @@ class Graph{
             return total_graphs;
         }
 
+        bool isPresent(unordered_map<int,node*>&dataset,int data){
+            bool ret= dataset.find(data)!=dataset.end();
+            if(!ret)cout<<"No ndoe present in the dataset with data : "<<data<<endl;
+            return ret;
+        }
+
         void loadFromFile(ifstream& input,unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>&map){
             int n,data;
             input>>n;
@@ -313,53 +367,402 @@ class Graph{
             cout<<"Whole graph loaded from file"<<endl;
         }
 
-        void loadGraph(unordered_map<int,node*>&dataset,unordered_map<node*,list<node*>>&map){
-            string path="graphs_data/";
-            bool custom;
-            cout<<"Is the graph you want to load is custom graph?\nYour choice(1 : Yes 0 : No) : ";
-            cin>>custom;
-            if(custom){
-                path+="custom_graphs/";
-                string graphName;
-                cout<<"Enter the custom name of the graph you want to load : ";
-                cin>>graphName;
-                graphName+=".txt";
-                if(filesystem::exists(path+graphName)){
-                    path+=graphName;
-                    ifstream input(path,ios::in);
-                    if(input.is_open()){
-                        cout<<"opened "<<path<<endl;
-                        loadFromFile(input,dataset,map);
-                    } else cout<<"couldn't oepn the file "<<graphName<<endl;
-                } else {
-                    cout<<graphName<<" does not exist at "<<path<<endl;
+        void loadGraph(){
+            string path="graphs_data/weighted_graphs/";
+            string graphName;
+            cout<<"Enter name of the graph to load from "<<path<<" : ";
+            cin>>graphName;
+            path+=graphName;
+            ifstream input(path,ios::in);
+            int n,data;
+            string line;
+            while(getline(input,line)){
+                if(line.empty()||line[0]=='/')continue;
+                stringstream ss(line);
+                ss>>n;
+                break;
+            }
+
+            while(getline(input,line)){
+                if(line.empty()||line[0]=='/')continue;
+                stringstream ss(line);
+                for(int i=0;i<n;i++){
+                    ss>>data;
+                    node*one_node=new node(data);
+                    dataset[data]=one_node;
                 }
-            } else{
-                int total=totalGraphsPresent(),graphNo;
-                cout<<"There are total "<<total<<" graphs present\nmEnter the graph you want to load (1-"<<total<<") : ";
-                cin>>graphNo;
-                path+="all_graphs/";
-                string graphName="graph"+to_string(graphNo)+".txt";
-                if(filesystem::exists(path+graphName)){
-                    path+=graphName;
-                    ifstream input(path,ios::in);
-                    if(input.is_open()){
-                        cout<<"opened "<<path<<endl;
-                        loadFromFile(input,dataset,map);
-                    } else cout<<"couldn't oepn the file "<<graphName<<endl;
-                } else {
-                    cout<<graphName<<" does not exist in the directory : "<<path<<endl;
+                break;
+            }
+            int k;//no. of neighbours
+            int neighbourData,neighbourDist,extra;
+            for(int i=0;i<n;i++){
+                getline(input,line);
+                stringstream ss(line);
+                ss>>data;
+                ss>>k;
+                node*one_node=dataset[data];
+                adjacancy_list[one_node];
+                for(int j=0;j<k;j++){
+                    ss>>neighbourData;
+                    ss>>neighbourDist;
+                    node*neighbour=dataset[neighbourData];
+                    adjacancy_list[one_node].push_front(neighbour);
+                    one_node->connections_map[neighbour->data]={neighbour,neighbourDist};
                 }
+                cout<<k<<" neighbours connected to node : "<<one_node->data<<endl;
             }
         }
 
+        stack<node*>& giveStack(node*&one_node){
+            static stack<node*>loc;
+            while(!loc.empty())loc.pop();
+            loc.push(one_node);
+            return loc;
+        }
+
+        queue<node*>& giveQueue(node*&one_node){
+            static queue<node*>loc;
+            while(!loc.empty())loc.pop();
+            loc.push(one_node);
+            return loc;
+        }
+
+        void DFSintermediate(stack<node*>&loc,stack<int>&cost){
+            if(loc.empty()){
+                cout<<"Stack became empty"<<endl;
+                return;
+            }
+            auto it=loc.top();
+            string curr=to_string(it->data);
+            if(it->traversed){
+                cout<<"Revisited "<<it->data<<" so retunring back"<<endl;
+                return;
+            } else if(it==intermediate){
+                cout<<"Reach intermediate->"<<it->data<<endl;
+                bool DFSfirst,changeIntermediate;
+                cout<<"Which algorithm to use to reach "<<target->data<<"\n1 : DFS\n0 : BFS\nYour chocie : ";
+                cin>>DFSfirst;
+                cout<<"DO you want to add any intermediate from "<<it->data<<" to "<<target->data<<"\n1 : Yes 0 : NoY\tYour choice : ";
+                cin>>changeIntermediate;
+
+                if(!changeIntermediate){
+                    intermediate=nullptr;
+                } else {
+                    int intermediateData;
+                    cout<<"Enter data of the next intermediate : ";
+                    cin>>intermediateData;
+                    this->intermediate=dataset[intermediateData];
+                }
+
+                if(DFSfirst){
+                    loc=giveStack(it);
+                    stack<int>costs;
+                    costs.push(0);
+                    DFSintermediate(loc,costs);
+                    cout<<"All traversald complete"<<endl;
+                    return;
+                } else {
+                    queue<node*>&loc=giveQueue(it);
+                    BFSintermediate(loc);
+                     cout<<"All traversald complete"<<endl;
+                    return;
+                }
+            }
+            else if(it==target){
+                cout<<"Reached the destination -> "<<it->data<<endl;
+                return;
+            }
+
+            unordered_map<int,pair<node*,int>>&connections_map=it->connections_map;
+            int size=connections_map.size();
+            int currcost=cost.top();
+            loc.pop();
+            cout<<"Popping "<<it->data<<" & "<<currcost<<" from stack"<<endl;
+            cost.pop();
+            it->traversed=true;
+            for(auto neighbour=connections_map.begin();neighbour!=connections_map.end();neighbour++){
+                loc.push(neighbour->second.first);
+                cost.push(neighbour->second.second);
+            }
+            DFSintermediate(loc,cost);
+            it->traversed=false;
+        }
+
+        void BFSintermediate(queue<node*>&loc){
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+            auto it=loc.front();
+            string curr=to_string(it->data);
+            if(it->traversed){
+                cout<<"Revisited "<<it->data<<" so returning form here"<<endl;
+                return;
+            } else if(it==intermediate){
+                cout<<"Reach intermediate->"<<it->data<<endl;
+                bool DFSfirst,changeIntermediate;
+                cout<<"Which algorithm to use to reach "<<target->data<<"\n1 : DFS\n0 : BFS\nYour chocie : ";
+                cin>>DFSfirst;
+                cout<<"DO you want to add any intermediate from "<<it->data<<" to "<<target->data<<"\n1 : Yes 0 : NoY\tYour choice : ";
+                cin>>changeIntermediate;
+
+                if(!changeIntermediate){
+                    intermediate=nullptr;
+                } else {
+                    int intermediateData;
+                    cout<<"Enter data of the next intermediate : ";
+                    cin>>intermediateData;
+                    this->intermediate=dataset[intermediateData];
+                }
+
+                if(DFSfirst){
+                    stack<node*>&loc=giveStack(it);
+                    stack<int>cost;
+                    cost.push(0);
+                    stack<int>costs;
+                    costs.push(0);
+                    DFSintermediate(loc,costs);
+                    cout<<"All traversald complete"<<endl;
+                    return;
+                } else {
+                    queue<int>cost;
+                    cost.push(0);
+                    loc=giveQueue(it);
+                    BFSintermediate(loc);
+                    cout<<"All traversald complete"<<endl;
+                    return;
+                }
+            } else if(it==target){
+                cout<<"Reached destination -> "<<it->data<<endl;
+                return;
+            }
+            unordered_map<int,pair<node*,int>>&connections_map=it->connections_map;
+            cout<<"Popping "<<it->data<<" from queue"<<endl;
+            loc.pop();
+            it->traversed=true;
+            for(auto it=connections_map.begin();it!=connections_map.end();it++){
+                loc.push(it->second.first);
+            }
+            BFSintermediate(loc);
+            it->traversed=false;
+            cout<<"hi"<<endl;
+        }
+
+        void intermediateTraversal(){
+            int startData,targetData,intermediateData;
+            while(1){
+                cout<<"Enter start point : ";
+                cin>>startData;
+                cout<<"Enter target data : ";
+                cin>>targetData;
+                cout<<"Enter intermediate data : ";
+                cin>>intermediateData;
+                if(isPresent(dataset,startData)||isPresent(dataset,targetData)||isPresent(dataset,intermediateData)){
+                    this->start=dataset[startData];
+                    this->target=dataset[targetData];
+                    this->intermediate=dataset[intermediateData];
+                    break;
+                } else {
+                    cout<<"Invalid node selected. Enter agian : "<<endl;
+                    continue;
+                }
+            }
+        
+            
+            bool DFSfirst;
+            cout<<"Which alogorithm you want to use first :\n1 : DFS\n0 : BFS\nYour choice : ";
+            cin>>DFSfirst;
+            if(DFSfirst){
+                stack<node*>&loc=giveStack(start);
+                stack<int>costs;
+                costs.push(0);
+                DFSintermediate(loc,costs);
+            } else {
+                queue<node*>&loc=giveQueue(start);
+            }
+            cout<<"Came out of intermediateTraversal()"<<endl;
+        }
+        
+        void intermediateTraversal2(){
+            int startData,targetData,intermediateData,k;
+            vector<bool>traversals;
+            vector<node*>intermediates;
+            // while(1){
+            bool temp;
+            cout<<"Enter start point : ";
+            cin>>startData;
+            cout<<"Enter target data : ";
+            cin>>targetData;
+            if(isPresent(dataset,startData)||isPresent(dataset,targetData)){
+                this->start=dataset[startData];
+                this->target=dataset[targetData];
+                // break;
+            } else {
+                cout<<"Invalid node selected. Enter agian : "<<endl;
+                // continue;
+            }
+
+            cout<<"How many breaks you have scheduled from : "<<startData<<"->"<<targetData<<" : ";
+            cin>>k;
+            // traversals.resize(k);
+            intermediates.resize(k,nullptr);
+            int curr=startData;
+            for(int i=0;i<k;i++){
+                cout<<"Enter data of intermediate no - "<<i+1<<" : ";
+                cin>>intermediateData;
+                intermediates[i]=dataset[intermediateData];
+                cout<<"Which traversal to use from "<<curr<<"->"<<intermediateData<<"?\n1 : DFS 0 : BFS\nYour chocie : ";
+                cin>>temp;
+                traversals.push_back(temp);
+                curr=intermediateData;
+            }
+            bool temp2;
+            cout<<"Which traversal to use from "<<intermediates.back()->data<<"->"<<target->data<<"?\n1 : DFS 0 : BFS\nYour chocie : ";
+            cin>>temp2;
+            intermediates.push_back(target);
+            traversals.push_back(temp2);
+            int totalMinCost=0;
+            cout<<"traversals.size() = "<<traversals.size() <<" & intermediates.size() = "<<intermediates.size()<<endl;
+            stack<node*>&st=giveStack(start);
+            queue<node*>&qu=giveQueue(start);
+            for(int i=0;i<=k;i++){
+                // min_cost=INT_MAX;
+                if(traversals[i]){
+                    if(i==0)DFS(start,intermediates[i]);
+                    else DFS(intermediates[i-1],intermediates[i]);
+                    if(min_cost==INT_MAX){
+                        cout<<"Not possible to reach "<<target->data<<" from "<<start->data<<endl;
+                        return;
+                    }
+                    totalMinCost+=min_cost;
+                    cout<<"totalMinCost = "<<totalMinCost<<endl;
+                    // if(i!=0)cout<<"Reached "<<intermediates[i]->data<<" from "<<intermediates[i-1]->data<<endl;
+                    // else cout<<"Reached "<<intermediates[i]->data<<" from "<<start->data<<endl;
+                } else {
+                    if(i==0)BFS(start,intermediates[i]);
+                    else BFS(intermediates[i-1],intermediates[i]);
+                    if(min_cost==INT_MAX){
+                        cout<<"Not possible to reach "<<target->data<<" from "<<start->data<<endl;
+                        return;
+                    }
+                    // BFS_helper(qu,intermediates[i],costs,path_with_min_cost);
+                    totalMinCost+=min_cost;
+                    cout<<"totalMinCost = "<<totalMinCost<<endl;
+                    // if(i!=0)cout<<"Reached "<<intermediates[i]->data<<" from "<<intermediates[i-1]->data<<endl;
+                    // else cout<<"Reached "<<intermediates[i]->data<<" from "<<start->data<<endl;
+                }
+            }
+            cout<<"After all traversals totalMinCost  = "<<totalMinCost<<endl;
+        }
+
+        void displayAdjacancyList(){
+            cout<<"Adjacancy List is : "<<endl;
+            for(auto it=adjacancy_list.begin();it!=adjacancy_list.end();it++){
+                cout<<it->first->data<<" : ";
+                for(auto neighbour=it->second.begin();neighbour!=it->second.end();neighbour++){
+                    cout<<"->"<<(*neighbour)->data;
+                }
+                cout<<endl;
+            }
+        }
+        
+        void BFSnoOfDisconnectedComponents(queue<node*>&loc){
+            if(loc.empty()){
+                cout<<"Queue found empty.Traversal complete."<<endl;
+                return;
+            }
+            auto it=loc.front();
+            loc.pop();
+            if(visited.find(it)==visited.end()){
+                visited.insert(it);
+                for(auto neighbour =adjacancy_list[it].begin();neighbour!=adjacancy_list[it].end();neighbour++){
+                    loc.push(*neighbour);
+                }
+            } 
+            BFSnoOfDisconnectedComponents(loc);
+        }
+
+        void DFSnoOfDisconnectedComponents(stack<node*>&loc){
+            if(loc.empty()){
+                cout<<"Stack is empty.All traversals complete"<<endl;
+                return;
+            }
+            auto it=loc.top();
+            loc.pop();
+            if(visited.find(it)==visited.end()){
+                visited.insert(it);
+                list<node*>&listRef=adjacancy_list[it];
+                for(auto neighbour=listRef.begin();neighbour!=listRef.end();neighbour++){
+                    loc.push(*neighbour);
+                }
+            }
+            DFSnoOfDisconnectedComponents(loc);
+        }
+
+        bool DFSnoOfDisconnectedComponents2(node*one_node){
+            if(visited.find(one_node)!=visited.end())return false;
+            visited.insert(one_node);
+            for(auto neighbour=adjacancy_list[one_node].begin();neighbour!=adjacancy_list[one_node].end();neighbour++){
+                DFSnoOfDisconnectedComponents2(*neighbour);
+            }
+            return true;
+        }
+
+
+        int noOfDisconnectedComponents(){
+            displayAdjacancyList();
+            visited.clear();
+            int total=0,choice;
+            bool useBoolReturnFunction;
+            cout<<"Which fucntion to use(1 : Returns bool 0 : Void type)\nYour choice : ";
+            cin>>useBoolReturnFunction;
+
+            if(useBoolReturnFunction){
+                if(choice==1){
+                    for(auto it=adjacancy_list.begin();it!=adjacancy_list.end();it++){
+                        if(DFSnoOfDisconnectedComponents2(it->first)){
+                            total++;
+                        }
+                    }
+                } 
+                cout<<"Number of disconnected components are : "<<total<<endl;
+            } else {
+                cout<<"Find answer via: 1 : DFS\n2 : BFS \nYour choice : ";
+                cin>>choice;
+                for(auto it=adjacancy_list.begin();it!=adjacancy_list.end();it++){
+                    if(visited.find(it->first)==visited.end()){
+                        total++;
+                        if(choice==1){
+                            stack<node*>loc;
+                            loc.push(it->first);
+                            DFSnoOfDisconnectedComponents(loc);
+                        } else if(choice==2){
+                            queue<node*>loc;
+                            loc.push(it->first);
+                            BFSnoOfDisconnectedComponents(loc);
+                        }
+                    }
+                }
+                cout<<"Total no of disocnnected components in thsi graph are : "<<total<<endl;
+            }
+            
+            
+            return total;
+        }
+
+        void createAdjacancyList(){
+            adjacancy_list.clear();
+            for(auto it=dataset.begin();it!=dataset.end();it++){
+                adjacancy_list[it->second];
+                for(auto neighbour=it->second->connections_map.begin();neighbour!=it->second->connections_map.end();neighbour++){
+                    adjacancy_list[it->second].push_front(neighbour->second.first);
+                }
+            }
+            cout<<"Adjacancy list created"<<endl;
+        }
 };
 
-void delete_dataset(unordered_map<int,node*>&dataset){
-    for(auto it = dataset.begin();it!=dataset.end();it++){
-        delete it->second;
-    }
-}
+Graph*  Graph :: instance =nullptr;
 
 void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,string path="->"){
     if(loc.empty()){
@@ -408,7 +811,7 @@ int getChoiceCreateGraph(){
     int choice;
     cout<<"Enter your choce :"<<endl;
     cout<<"1 : Manually"<<endl;
-    cout<<"2 : Extract data from files"<<endl;
+    cout<<"2 : Load Graph"<<endl;
     cout<<"3 : Create adjacancy list"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
@@ -420,6 +823,11 @@ int getChoice(){
     cout<<"Enter your choce :"<<endl;
     cout<<"1 : DFS"<<endl;
     cout<<"2 : BFS"<<endl;
+    cout<<"3 : Reach target by switching traversals"<<endl;
+    cout<<"4 : Reach target via k intermediates"<<endl;
+    cout<<"5 : Find no. of disconnected components"<<endl;
+    cout<<"6 : Display adjacancy list"<<endl;
+    cout<<"7 : Create adjacancy list"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -431,24 +839,15 @@ void setDirection(){
 }
 
 int main(){
-    string test="12";
-    string test2="34";
-    stringstream ss(test);
-    int t1,t2;
-    ss>>t1;
-    // t2=(test2)-'0';
-    cout<<"t1 = "<<t1<<" & t2 = "<<t2<<endl;
-    return 0;
-
 
     vector<string>all_paths;
     unordered_map<int,node*>dataset;
     unordered_map<node*,list<node*>>map;
     Graph graph;
     int choice=getChoiceCreateGraph();
-    setDirection();
+    //setDirection();
     if(choice==1)graph.createGraphManually(dataset);
-    else if(choice==2) graph.extract_data_from_files(dataset);
+    else if(choice==2) graph.loadGraph();
 
     unordered_map<node*,list<pair<node*,int>>>adjacancy_list;
     for(auto it=dataset.begin();it!=dataset.end();it++){
@@ -456,6 +855,7 @@ int main(){
             // adjacancy_list[it]={neighbour->second.first,it->second->connections_map[neighbour->second.second]};
         }
     }
+
     while(choice){
         choice=getChoice();
         if(choice==1){
@@ -470,7 +870,17 @@ int main(){
             graph.BFS(start,target);
         }
         else if(choice==3){
+            graph.intermediateTraversal();
+            cout<<"came out"<<endl;
+        } else if(choice==4){
+            graph.intermediateTraversal2();
+        } else if(choice==5){
+            graph.noOfDisconnectedComponents();
+        } else if(choice==6){
+            graph.displayAdjacancyList();
+        } else if(choice==7){
+            graph.createAdjacancyList();
         }
     }
-    delete_dataset(dataset);
+    // graph.delete_dataset();
 }
