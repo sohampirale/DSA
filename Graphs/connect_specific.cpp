@@ -692,7 +692,6 @@ class Graph{
             }
         }
 
-        
         void BFSnoOfDisconnectedComponents(queue<node*>&loc){
             if(loc.empty()){
                 cout<<"Queue found empty.Traversal complete."<<endl;
