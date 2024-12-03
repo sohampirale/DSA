@@ -85,6 +85,7 @@ class Graph{
     public:
         unordered_map<int,node*>dataset;
         unordered_map<node*,list<node*>>adjacancy_list;
+        unordered_map<node*,unordered_set<node*>>adjacancyList2;
         vector<string>all_paths;
         int min_cost=0;
         string path_with_min_cost;
@@ -103,7 +104,6 @@ class Graph{
         static void signalHandler(int signum) {
             cout << "Caught signal " << signum << ". deallocating nodes..." << endl;
             if(instance){
-                cout<<"hi"<<endl;
                 instance->delete_dataset();
             }
             exit(signum);
@@ -276,11 +276,11 @@ class Graph{
             auto it=loc.top();
             string add=to_string(it->data);
             if(it->traversed){
-                cout<<"revisited "<<add<<" by this path : "<<path+add<<" returnign form here"<<endl;
+                // cout<<"revisited "<<add<<" by this path : "<<path+add<<" returnign form here"<<endl;
                 all_paths.push_back(path+add);
                 return;
             } else if(it==target){
-                cout<<"Found target by path : "<<path+add<<" and with cost = "<<cost<<endl;
+                // cout<<"Found target by path : "<<path+add<<" and with cost = "<<cost<<endl;
                 all_paths.push_back(path+add);
                 if(cost<min_cost){
                     min_cost=cost;
@@ -308,7 +308,7 @@ class Graph{
             stack<node*>loc;
             loc.push(start);
             DFS_helper(loc,target);
-            display_all_paths();
+            // display_all_paths();
             if(min_cost!=INT_MAX){
                 cout<<"For reaching from "<<start->data<<"->"<<target->data<<" : ";
                 cout<<"Minimum cost required was : "<<min_cost<<endl;
@@ -405,11 +405,13 @@ class Graph{
                 ss>>k;
                 node*one_node=dataset[data];
                 adjacancy_list[one_node];
+                adjacancyList2[one_node];
                 for(int j=0;j<k;j++){
                     ss>>neighbourData;
                     ss>>neighbourDist;
                     node*neighbour=dataset[neighbourData];
                     adjacancy_list[one_node].push_front(neighbour);
+                    adjacancyList2[one_node].insert(neighbour);
                     one_node->connections_map[neighbour->data]={neighbour,neighbourDist};
                 }
                 cout<<k<<" neighbours connected to node : "<<one_node->data<<endl;
@@ -631,11 +633,21 @@ class Graph{
             for(int i=0;i<=k;i++){
                 // min_cost=INT_MAX;
                 if(traversals[i]){
+                    cout<<"Hi"<<endl;
                     if(i==0)DFS(start,intermediates[i]);
                     else DFS(intermediates[i-1],intermediates[i]);
                     if(min_cost==INT_MAX){
-                        cout<<"Not possible to reach "<<target->data<<" from "<<start->data<<endl;
-                        return;
+                        cout<<"Not possible to reach "<<intermediates[i]->data<<" from ";
+                        if(i==0){
+                            cout<<start->data<<endl;
+                            intermediates[i]=start;
+                        }
+                        else{
+                            cout<<intermediates[i-1]->data<<endl;
+                            intermediates[i]=intermediates[i-1];
+                        }
+
+                        continue;
                     }
                     totalMinCost+=min_cost;
                     cout<<"totalMinCost = "<<totalMinCost<<endl;
@@ -668,7 +680,18 @@ class Graph{
                 cout<<endl;
             }
         }
-        
+
+        void displayAdjacancyList2(){
+            cout<<"Adjacancy List2 is : "<<endl;
+            for(auto it=adjacancyList2.begin();it!=adjacancyList2.end();it++){
+                cout<<it->first->data<<" : ";
+                for(auto neighbour=it->second.begin();neighbour!=it->second.end();neighbour++){
+                    cout<<"->"<<(*neighbour)->data;
+                }
+                cout<<endl;
+            }
+        }
+
         void BFSnoOfDisconnectedComponents(queue<node*>&loc){
             if(loc.empty()){
                 cout<<"Queue found empty.Traversal complete."<<endl;
@@ -756,7 +779,9 @@ class Graph{
             adjacancy_list.clear();
             for(auto it=dataset.begin();it!=dataset.end();it++){
                 adjacancy_list[it->second];
+                adjacancyList2[it->second];
                 for(auto neighbour=it->second->connections_map.begin();neighbour!=it->second->connections_map.end();neighbour++){
+                    adjacancyList2[it->second].insert(neighbour->second.first);
                     adjacancy_list[it->second].push_front(neighbour->second.first);
                 }
             }
@@ -935,6 +960,7 @@ int main(){
             graph.noOfDisconnectedComponents();
         } else if(choice==6){
             graph.displayAdjacancyList();
+            graph.displayAdjacancyList2();
         } else if(choice==7){
             graph.createAdjacancyList();
         } else if(choice==8){
