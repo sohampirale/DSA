@@ -368,6 +368,9 @@ class Graph{
         }
 
         void loadGraph(){
+            adjacancy_list.clear();
+            delete_dataset();
+            visited.clear();
             string path="graphs_data/weighted_graphs/";
             string graphName;
             cout<<"Enter name of the graph to load from "<<path<<" : ";
@@ -708,7 +711,6 @@ class Graph{
             return true;
         }
 
-
         int noOfDisconnectedComponents(){
             displayAdjacancyList();
             visited.clear();
@@ -759,6 +761,59 @@ class Graph{
                 }
             }
             cout<<"Adjacancy list created"<<endl;
+        }
+
+        bool DFSlargestComponent(node*one_node,int &total){
+            if(visited.find(one_node)!=visited.end())return false;
+            visited.insert(one_node);
+            total++;
+            for(auto neighbour=adjacancy_list[one_node].begin();neighbour!=adjacancy_list[one_node].end();neighbour++){
+                DFSlargestComponent(*neighbour,total);
+            }
+            return true;
+        }
+
+        int DFSlargestComponentCount(node*one_node){
+            if(visited.find(one_node)!=visited.end())return 0;
+            visited.insert(one_node);
+            int cnt=1;
+            for(auto neighbour=adjacancy_list[one_node].begin();neighbour!=adjacancy_list[one_node].end();neighbour++){
+                cnt+=DFSlargestComponentCount(*neighbour);
+            }
+            return cnt;
+        }
+
+        int largestComponent(){
+            visited.clear();
+            int total=0,maxC=0,minC=INT_MAX;
+            int m;
+            node *minComponentStart=nullptr,*maxComponentStart=nullptr;
+            cout<<"Which method to use \n1 : Bool\n2 : Int return type\nYour choice  : ";
+            cin>>m;
+            if(m==1){
+
+            for(auto it=adjacancy_list.begin();it!=adjacancy_list.end();it++){
+                total=0;
+                if(DFSlargestComponent(it->first,total)){
+                    cout<<"Traversed thorugh : "<<it->first->data<<endl;
+                    if(total>maxC)maxC=(total);
+                }
+            }
+            cout<<"Largest component has "<<maxC<<" nodes"<<endl;
+            return maxC;
+            } else if(m==2){
+                for(auto it=adjacancy_list.begin();it!=adjacancy_list.end();it++){
+                    if(visited.find(it->first)==visited.end()){
+                        cout<<"traversed through "<<it->first->data<<endl;
+                        int cnt=DFSlargestComponentCount(it->first);
+                        if(cnt>maxC){maxC=cnt;  maxComponentStart=it->first;}
+                        if(cnt<minC){minC=cnt;  minComponentStart=it->first;}
+                    }
+                } 
+                cout<<"Minimum component has "<<minC<<" nodes from : "<<minComponentStart->data<<endl;
+                cout<<"Maximum component has "<<maxC<<" nodes from : "<<maxComponentStart->data<<endl;
+            }
+            return maxC;
         }
 };
 
@@ -828,6 +883,8 @@ int getChoice(){
     cout<<"5 : Find no. of disconnected components"<<endl;
     cout<<"6 : Display adjacancy list"<<endl;
     cout<<"7 : Create adjacancy list"<<endl;
+    cout<<"8 : Larget component"<<endl;
+    cout<<"9 : Load graph again"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -880,6 +937,10 @@ int main(){
             graph.displayAdjacancyList();
         } else if(choice==7){
             graph.createAdjacancyList();
+        } else if(choice==8){
+            graph.largestComponent();
+        } else if(choice==9){
+            graph.loadGraph();
         }
     }
     // graph.delete_dataset();
