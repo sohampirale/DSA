@@ -85,6 +85,7 @@ class Graph{
     public:
         unordered_map<int,node*>dataset;
         unordered_map<node*,list<node*>>adjacancy_list;
+        unordered_map<node*,unordered_set<node*>>adjacancyList2;
         vector<string>all_paths;
         int min_cost=0;
         string path_with_min_cost;
@@ -402,11 +403,13 @@ class Graph{
                 ss>>k;
                 node*one_node=dataset[data];
                 adjacancy_list[one_node];
+                adjacancyList2[one_node];
                 for(int j=0;j<k;j++){
                     ss>>neighbourData;
                     ss>>neighbourDist;
                     node*neighbour=dataset[neighbourData];
                     adjacancy_list[one_node].push_front(neighbour);
+                    adjacancyList2[one_node].insert(neighbour);
                     one_node->connections_map[neighbour->data]={neighbour,neighbourDist};
                 }
                 cout<<k<<" neighbours connected to node : "<<one_node->data<<endl;
@@ -665,6 +668,18 @@ class Graph{
                 cout<<endl;
             }
         }
+
+
+        void displayAdjacancyList2(){
+            cout<<"Adjacancy List2 is : "<<endl;
+            for(auto it=adjacancyList2.begin();it!=adjacancyList2.end();it++){
+                cout<<it->first->data<<" : ";
+                for(auto neighbour=it->second.begin();neighbour!=it->second.end();neighbour++){
+                    cout<<"->"<<(*neighbour)->data;
+                }
+                cout<<endl;
+            }
+        }
         
         void BFSnoOfDisconnectedComponents(queue<node*>&loc){
             if(loc.empty()){
@@ -707,7 +722,6 @@ class Graph{
             }
             return true;
         }
-
 
         int noOfDisconnectedComponents(){
             displayAdjacancyList();
@@ -877,7 +891,9 @@ int main(){
         } else if(choice==5){
             graph.noOfDisconnectedComponents();
         } else if(choice==6){
-            graph.displayAdjacancyList();
+            // graph.displayAdjacancyList();
+            graph.displayAdjacancyList2();
+
         } else if(choice==7){
             graph.createAdjacancyList();
         }
