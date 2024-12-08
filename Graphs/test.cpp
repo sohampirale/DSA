@@ -1,68 +1,39 @@
-// #include<iostream>
-// #include<stack>
-// #include<cstdint>
-// #include<fstream>
-// using namespace std;
-// class node{
-//     public:
-//         int data;
-//         node(int data){
-//             this->data=data;
-//         }
-// };
-// int main(){
-//     ifstream inputFile("addr.txt", ios::in);
-//     uintptr_t addr_from_file;
-//     inputFile >> addr_from_file;
-//     inputFile.close();
-
-//     node* one_node = reinterpret_cast<node*>(addr_from_file);
-
-//     if (one_node != nullptr) {
-//         cout << "Data in node: " << one_node->data << endl;
-//     } else {
-//         cout << "Invalid pointer!" << endl;
-//     }
-
-// }
-
 #include<iostream>
-#include<fstream>
-#include<cstdint> // for uintptr_t
-
+#include<unordered_set>
 using namespace std;
+unordered_set<node*>nodes;
 
-class node {
-public:
-    int data;
-    node(int data) {
-        this->data = data;
-    }
+class node{
+    public:
+        int data;
+        node(int data):data(data){}
+
+        static void cleanup(){
+            for(auto it=nodes.begin();it!=nodes.end();it++){
+                delete (*it);
+            }
+        }
+        
+        ~node(){
+            cout<<"deleting "<<this->data<<endl;
+        }
 };
+// unordered_set<node*> node::nodes; 
+node*  operator *(size_t size){
+    node* ptr= new node(size);
+    // node:: nodes.insert(ptr);
+    return ptr;
+}
 
-int main() {
-    node* original_node = new node(10);
+int main(){
+    node*one_node=new node(10);
+    one_node=new node(20);
+    one_node=new node(30);
+    one_node=new node(40);
+    one_node=new node(50);
+    node n(35);
 
-    ofstream outputFile("addr.txt", ios::out);
-    uintptr_t addr = reinterpret_cast<uintptr_t>(original_node);
-    outputFile << addr;
-    outputFile.close();
-
-    ifstream inputFile("addr.txt", ios::in);
-    uintptr_t addr_from_file;
-    inputFile >> addr_from_file;
-    inputFile.close();
-
-    node* one_node = reinterpret_cast<node*>(addr_from_file);
-
-    if (one_node != nullptr) {
-        cout << "Data in node: " << one_node->data << endl;
-    } else {
-        cout << "Invalid pointer!" << endl;
-    }
-
-    // Clean up the allocated memory
-    delete original_node;
-
+    cout<<"Node created"<<endl;
+    node::cleanup();
     return 0;
 }
