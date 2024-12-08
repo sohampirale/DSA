@@ -18,7 +18,7 @@ int main() {
     inputFile >> addr_from_file;
     inputFile.close();
     node* one_node = reinterpret_cast<node*>(addr_from_file);
-
+    cout<<"one_node = "<<one_node<<endl;
     if (one_node != nullptr) {
         cout<<"addr of one_node  = "<<one_node<<endl;
         cout << "Pointer read from file: " << addr_from_file << endl;
