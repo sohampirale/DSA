@@ -86,13 +86,6 @@ class node{
 
 };
 
-class DijekstrasCompare{
-    public:     
-        bool operator()(const node* n1,const node* n2){
-            return n1->data>n2->data;
-        }
-};
-
 class Graph{
     public:
         unordered_map<int,node*>dataset;
@@ -105,6 +98,7 @@ class Graph{
         static Graph* instance;
         unordered_set<node*>visited;
         unordered_map<node*,string>DijekstrasPath;
+        bool flag=false;
         
         Graph(){
             signal(SIGSEGV, signalHandler); //  segmentation fault
@@ -115,6 +109,13 @@ class Graph{
         ~Graph(){
             delete_dataset();
         }
+
+        class DijekstrasCompare{
+            public:     
+                bool operator()(const node* n1,const node* n2){
+                    return n1->data>n2->data;
+                }
+        };
 
         static void signalHandler(int signum) {
             cout << "Caught signal " << signum << ". deallocating nodes..." << endl;
@@ -1044,8 +1045,7 @@ class Graph{
             displayDijeskstrasTable(one_node->DijekstrasDist);
         }
 
-        void DijekstrasUsingPriorityQueue(priority_queue<node*,vector<node*>,DijekstrasCompare>&loc,unordered_set<node*>&visited){
-
+        void DijekstrasUsingPriorityQueue(priority_queue<node*,vector<node*>,DijekstrasCompare>&loc,unordered_set<node*>&visited,node*target=nullptr){
 
             if(loc.empty()){
                 cout<<"Queue found empty"<<endl;
@@ -1059,9 +1059,15 @@ class Graph{
                 return;
             }
             node* current_node=loc.top();
+            if(current_node==target){
+                flag=true;
+                cout<<"FOund target"<<endl;
+                return;
+            }
             loc.pop();
             visited.insert(current_node);
             for(auto it=current_node->connections_map.begin();it!=current_node->connections_map.end();it++){
+                if(flag)return;
                 if(visited.find(it->second.first)==visited.end()){
                     int newCost=current_node->cost+it->second.second;
                     if(newCost<it->second.first->cost){
@@ -1073,6 +1079,40 @@ class Graph{
             }
             DijekstrasUsingPriorityQueue(loc,visited);
         }
+
+        void DijekstrasPointToPoint(){
+            int Start,Destination;
+            cout<<"Enter start point data : ";
+            cin>>Start;
+            cout<<"Enter destination data : ";
+            cin>>Destination;
+            node*start=dataset[Start];
+            node*destination=dataset[Destination];
+            cout<<"The minimum distance required to reach "<<Destination<<" from "<<Start<<" is : "<<start->DijekstrasDist[destination]<<endl;
+        }
+
+        void DijekstrasOneToOne(){
+            visited.clear();
+            int startData,destinationData;
+            cout<<"Enter data of start ndoe : ";
+            cin>>startData;
+            cout<<"Enter destination data : ";
+            cin>>destinationData;
+            node* start=dataset[startData];
+            priority_queue<node*,vector<node*>,DijekstrasCompare>loc;
+            loc.push(start);
+            DijekstrasUsingPriorityQueue(loc,visited);
+            cout<<"Dijekstras Traversal done"<<endl;
+            cout<<"Lets print path"<<endl;
+            int curr=destinationData;
+            while(curr!=startData){
+                cout<<curr<<"<-";
+                curr=dataset[curr]->reachedFrom;
+            }
+            cout<<startData<<endl;
+            cout<<"out of while loop"<<endl;
+        }
+
 };
 
 Graph*  Graph :: instance = nullptr;
@@ -1109,7 +1149,7 @@ void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,stri
         loc.pop();
     }
     it->traversed=false;
-}
+    }
 
 pair<node*,node*> getPair(Graph& graph){
     int start_data,target_data;
@@ -1146,6 +1186,8 @@ int getChoice(){
     cout<<"10 : is cycle present"<<endl;
     cout<<"11 : Dijekstras"<<endl;
     cout<<"12 : Display Dijekstra's tabel for a node"<<endl;
+    cout<<"13 : Shortest Distance from one node to another"<<endl;
+    cout<<"14 : Dijekstra from start to Destination"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -1217,6 +1259,12 @@ int main(){
         }
         else if(choice==12){
             graph.DisplayDijekstrasTableOfANode();
+        }
+        else if(choice==13){
+            graph.DijekstrasPointToPoint();
+        }
+        else if(choice==14){
+            graph.DijekstrasOneToOne();
         }
     }
     // graph.delete_dataset();
