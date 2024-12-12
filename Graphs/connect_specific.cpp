@@ -24,6 +24,11 @@ class node{
         // vector<node*>connections;
         //            data     addr, dist
         unordered_map<int,pair<node*,int>>connections_map;
+
+        //For Dijekstras
+        unordered_map<node*,int>DijekstrasDist;
+        int reachedFrom=-1,cost=INT_MAX;
+
         node(int data):data(data){
             cout<<data<<" created"<<endl;
         }
@@ -81,6 +86,13 @@ class node{
 
 };
 
+class DijekstrasCompare{
+    public:     
+        bool operator()(const node* n1,const node* n2){
+            return n1->data>n2->data;
+        }
+};
+
 class Graph{
     public:
         unordered_map<int,node*>dataset;
@@ -92,8 +104,11 @@ class Graph{
         node*start=nullptr,*target=nullptr,*intermediate=nullptr;
         static Graph* instance;
         unordered_set<node*>visited;
+        unordered_map<node*,string>DijekstrasPath;
+        
         Graph(){
-            signal(SIGSEGV, signalHandler);
+            signal(SIGSEGV, signalHandler); //  segmentation fault
+            signal(SIGTSTP, signalHandler); //  cntl + Z
             instance=this;
         }
 
@@ -416,6 +431,7 @@ class Graph{
                 }
                 cout<<k<<" neighbours connected to node : "<<one_node->data<<endl;
             }
+            cout<<"Done"<<endl;
         }
 
         stack<node*>& giveStack(node*&one_node){
@@ -840,9 +856,226 @@ class Graph{
             }
             return maxC;
         }
+
+        bool DFSisCyclePresent(node*&one_node,unordered_set<node*>&currVisited){
+            if(!one_node)return false;
+            else if(currVisited.find(one_node)!=currVisited.end())return true;
+
+            currVisited.insert(one_node);
+            bool result=false;
+            for(auto it=one_node->connections_map.begin();it!=one_node->connections_map.end();it++){
+                result= result || DFSisCyclePresent(it->second.first,currVisited);
+            }
+            return result;
+        }
+
+        bool DFSisCyclePresentUndirected(node*&one_node,unordered_set<node*>&currVisited,node*parent){
+            if(currVisited.find(one_node)!=currVisited.end())return true;
+            currVisited.insert(one_node);
+            bool result=false;
+            for(auto it=one_node->connections_map.begin();it!=one_node->connections_map.end();it++){
+                if(it->second.first==parent)continue;
+                result= result || DFSisCyclePresentUndirected(it->second.first,currVisited,one_node);
+            }
+            return result;
+        }
+
+        bool isCyclePresent(){
+            bool undirected=false;
+            cout<<"Is graph undirected ? : ";
+            cin>>undirected;
+            if(undirected){
+                unordered_set<node*>currVisited,prevVisited;
+                for(auto it=dataset.begin();it!=dataset.end();it++){
+                    if(prevVisited.find(it->second)==prevVisited.end()){
+                        if(DFSisCyclePresentUndirected(it->second,currVisited,nullptr)){
+                            cout<<"Cycle found for "<<it->second->data<<endl;
+                            return true;
+                        }
+                        else {
+                            prevVisited.insert(currVisited.begin(),currVisited.end());
+                            currVisited.clear();
+                        }
+                    }
+                }
+                return false;
+            } else {
+                unordered_set<node*>currVisited,prevVisited;
+                for(auto it=dataset.begin();it!=dataset.end();it++){
+                    if(prevVisited.find(it->second)==prevVisited.end()){
+                        if(DFSisCyclePresent(it->second,currVisited)){
+                            cout<<"Cycle found for "<<it->second->data<<endl;
+                            return true;
+                        }
+                        else {
+                            prevVisited.insert(currVisited.begin(),currVisited.end());
+                            currVisited.clear();
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        void DijeskstrasHelper(node*&one_node,unordered_map<node*,int>&table,string path){
+            
+            if(!one_node){
+                cout<<"one_node == nullptr"<<endl;
+                return;
+            }else if(visited.find(one_node)!=visited.end()){
+                return;
+            }
+            // unordered_set<node*>visitedTemp=visited;
+            visited.insert(one_node);
+            int nextMin=INT_MAX;
+            node*next_node=nullptr;
+            queue<node*>loc;
+
+            for(auto it=one_node->connections_map.begin();it!=one_node->connections_map.end();it++){
+                
+                int nextDist=table[one_node]+it->second.second;
+                if(visited.find(it->second.first)==visited.end()){
+                    // cout<<"Next distance for "<<it->first<<" from "<<one_node->data<<" is : "<<nextDist<<endl;
+                    // cout<<"nextDist for "<<one_node->data<<" to "<<it->second.first->data<<" = "<<nextDist<<endl;
+                    if(nextDist<=nextMin){
+                        // next_node=it->second.first;
+                        if(nextMin==nextDist)loc.push(it->second.first);
+                        else {
+                            while(!loc.empty())loc.pop();
+                            loc.push(it->second.first);
+                        }
+                        nextMin=nextDist;
+                    }
+                    if(table.find(it->second.first)==table.end()){
+                        table[it->second.first]=nextDist;
+                        // DijekstrasPath[it->second.first]=path+"->"+to_string(it->second.first->data);
+                        // cout<<"setting value for "<<it->first<<" = "<<table[it->second.first]<<" & path = "<<paths[it->second.first]<<endl;
+                    } else {
+                        if(table[it->second.first]>nextDist){
+                            // cout<<"updating value of "<<it->first<<" from "<<table[it->second.first]<<" to ";
+                            table[it->second.first]=nextDist;
+                            // if(DijekstrasPath.find(it->second.first)!=DijekstrasPath.end())
+                            //     DijekstrasPath[it->second.first]=path+"->"+to_string(it->second.first->data);
+                            // else 
+                            //     DijekstrasPath[it->second.first]=DijekstrasPath[one_node]+"->"+to_string(it->second.first->data);
+                            // cout<<table[it->second.first]<<" & path = "<<DijekstrasPath[it->second.first]<<endl;
+                        } else {
+                            // cout<<"Keeping value for "<<it->first<<" as it is i.e. ("<<table[it->second.first]<<")"<<" & path = "<<paths[it->second.first]<<endl;
+                        }
+                    }
+                } 
+                else {
+                    // cout<<it->second.first->data<<" is said visited for "<<one_node->data<<endl;
+                }
+            }
+            
+            // if(loc.size()!=1)cout<<"loc.size() == "<<loc.size()<<" for "<<one_node->data<<endl;
+            while(!loc.empty()){
+                cout<<"traversing to "<<loc.front()->data<<" from "<<one_node->data<<endl;
+                DijeskstrasHelper(loc.front(),table,path+"->"+to_string(loc.front()->data));
+                // visited.erase(loc.front());
+                loc.pop();
+            }
+        }
+
+        void displayDijeskstrasTable(unordered_map<node*,int>&table){
+            cout<<"Dijekstra's Table is : "<<endl;
+            for(auto it=table.begin();it!=table.end();it++){
+                cout<<it->first->data<<" : "<<it->second<<endl;
+            }
+        }
+        
+        void Dijeskstras(){
+            all_paths.clear();
+            visited.clear();
+            unordered_map<node*,int>table;
+            unordered_map<node*,string>paths;
+            int data,choice;
+            cout<<"Which Dijekstra's to implement \n1 : With Priority Queue\n2 : Without priority queue\nYour choice : ";
+            cin>>choice;
+            if(choice==1){
+                priority_queue<node*,vector<node*>,DijekstrasCompare>loc;
+                cout<<"Size of dataset = "<<dataset.size()<<endl;
+                for(auto it=dataset.begin();it!=dataset.end();it++){
+                    loc.push(it->second);
+                    it->second->cost=0;
+                    DijekstrasUsingPriorityQueue(loc,visited);
+                    for(auto all_nodes=dataset.begin();all_nodes!=dataset.end();all_nodes++){
+                        it->second->DijekstrasDist[all_nodes->second]=all_nodes->second->cost;
+                        all_nodes->second->cost=INT_MAX;
+                    }
+                    cout<<"Dijesktra's table created for "<<it->second->data<<" size = "<<it->second->DijekstrasDist.size()<<endl;
+                    displayDijeskstrasTable(it->second->DijekstrasDist);
+                    while(!loc.empty())
+                        loc.pop();
+                    visited.clear();
+                }
+                cout<<"Dijesktra's for all nodes is done"<<endl;
+            }   else if(choice==2){
+                for(auto it=dataset.begin();it!=dataset.end();it++){
+                    table.clear();
+                    table[it->second]=it->first;
+                    DijeskstrasHelper(it->second,table,"St->");
+                    it->second->DijekstrasDist=table;
+                    cout<<"After performing Dijekstras for "<<it->first<<" the table lokos like : "<<endl;
+                    displayDijeskstrasTable(table);
+                    table.clear();
+                }
+                cout<<"Dijekstra for all nodes is done"<<endl;
+                // cout<<"From whcih node you want to start Dijesktras's : ";
+                // cin>>data;
+                // node*start=dataset[data];
+                // // for(auto it=dataset.begin();it!=dataset.end();it++){
+                // // if(visited.find(it->second)==visited.end()){
+                // table[start]=0;
+                // DijeskstrasHelper(start,table,to_string(start->data));
+                // }
+                // }
+            }
+            cout<<"All process of Dijeskstra's is completed"<<endl;
+            // displayDijeskstrasTable(table);
+        }
+
+        void DisplayDijekstrasTableOfANode(){
+            int data;
+            cout<<"Enter data of node you want to see Dijekstra's table of : ";
+            cin>>data;
+            node*one_node=dataset[data];
+            displayDijeskstrasTable(one_node->DijekstrasDist);
+        }
+
+        void DijekstrasUsingPriorityQueue(priority_queue<node*,vector<node*>,DijekstrasCompare>&loc,unordered_set<node*>&visited){
+
+
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+
+            while(!loc.empty()&&visited.find(loc.top())!=visited.end())
+                loc.pop();
+            if(loc.empty()){
+                cout<<"queue made empty"<<endl;
+                return;
+            }
+            node* current_node=loc.top();
+            loc.pop();
+            visited.insert(current_node);
+            for(auto it=current_node->connections_map.begin();it!=current_node->connections_map.end();it++){
+                if(visited.find(it->second.first)==visited.end()){
+                    int newCost=current_node->cost+it->second.second;
+                    if(newCost<it->second.first->cost){
+                        it->second.first->cost=newCost;
+                        it->second.first->reachedFrom=current_node->data;
+                        loc.push(it->second.first);
+                    }
+                }
+            }
+            DijekstrasUsingPriorityQueue(loc,visited);
+        }
 };
 
-Graph*  Graph :: instance =nullptr;
+Graph*  Graph :: instance = nullptr;
 
 void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,string path="->"){
     if(loc.empty()){
@@ -910,6 +1143,9 @@ int getChoice(){
     cout<<"7 : Create adjacancy list"<<endl;
     cout<<"8 : Larget component"<<endl;
     cout<<"9 : Load graph again"<<endl;
+    cout<<"10 : is cycle present"<<endl;
+    cout<<"11 : Dijekstras"<<endl;
+    cout<<"12 : Display Dijekstra's tabel for a node"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -921,7 +1157,7 @@ void setDirection(){
 }
 
 int main(){
-
+    
     vector<string>all_paths;
     unordered_map<int,node*>dataset;
     unordered_map<node*,list<node*>>map;
@@ -967,6 +1203,20 @@ int main(){
             graph.largestComponent();
         } else if(choice==9){
             graph.loadGraph();
+        }
+        else if(choice==10){
+            bool isCyclePresent=graph.isCyclePresent();
+            if(isCyclePresent){
+                cout<<"Cycle is present in the graph"<<endl;
+            } else {
+                cout<<"Cycle is not present in the graph"<<endl;
+            }
+        }
+        else if(choice==11){
+            graph.Dijeskstras();
+        }
+        else if(choice==12){
+            graph.DisplayDijekstrasTableOfANode();
         }
     }
     // graph.delete_dataset();

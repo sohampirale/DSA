@@ -45,6 +45,7 @@ void quick_sort_pivot_at_mid(vector<int>&nums,int low,int high){
         }
         while(nums[end]>pivot)
             end--;
+            
         if(st<=end){
             int temp=nums[st];
             nums[st]=nums[end];

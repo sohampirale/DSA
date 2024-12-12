@@ -162,6 +162,12 @@ int main(){
 
 
 
+
+
+
+
+
+
 // void giveP1(vector<string>&p1,string path){
 //     vector<string>familyMembers;
 //     ifstream familyMem(path+"family",ios::in);
