@@ -24,10 +24,13 @@ class node{
         // vector<node*>connections;
         //            data     addr, dist
         unordered_map<int,pair<node*,int>>connections_map;
-
         //For Dijekstras
         unordered_map<node*,int>DijekstrasDist;
         int reachedFrom=-1,cost=INT_MAX;
+
+        //For A Star
+        unordered_map<node*,int>HeuristicValues;
+        int costWithHeuristicValue=INT_MAX;
 
         node(int data):data(data){
             cout<<data<<" created"<<endl;
@@ -98,8 +101,9 @@ class Graph{
         static Graph* instance;
         unordered_set<node*>visited;
         unordered_map<node*,string>DijekstrasPath;
+        node* destination=nullptr;
         bool flag=false;
-        
+
         Graph(){
             signal(SIGSEGV, signalHandler); //  segmentation fault
             signal(SIGTSTP, signalHandler); //  cntl + Z
@@ -114,6 +118,13 @@ class Graph{
             public:     
                 bool operator()(const node* n1,const node* n2){
                     return n1->data>n2->data;
+                }
+        };
+
+        class AStartCompare{
+            public:
+                bool operator()(const node*n1,const node* n2){
+                    return n1->costWithHeuristicValue>n2->costWithHeuristicValue;
                 }
         };
 
@@ -432,7 +443,28 @@ class Graph{
                 }
                 cout<<k<<" neighbours connected to node : "<<one_node->data<<endl;
             }
+            bool heuristicPresent;
+            cout<<"Does this graph have heiristic values? 1 : Yes 0 : No\nYour chocie : ";
+            cin>>heuristicPresent;
+            if(heuristicPresent){
+                int originData,numberOfNeighbours,neighboursData,heuristicValue;
+                for(int t=0;t<dataset.size();t++){
+                    getline(input,line);
+                    if(line.empty()||line[0]=='#'){
+                        t--;
+                        continue;
+                    }
+                    stringstream ss(line);
+                    ss>>originData>>numberOfNeighbours;
+                    for(int i=0;i<numberOfNeighbours;i++){
+                        ss>>neighboursData>>heuristicValue;
+                        dataset[originData]->HeuristicValues[dataset[neighboursData]]=heuristicValue;
+                    }
+                    cout<<dataset[originData]->HeuristicValues.size()<<" values added to the "<<originData<<endl;
+                }
+            }
             cout<<"Done"<<endl;
+            input.close();
         }
 
         stack<node*>& giveStack(node*&one_node){
@@ -1113,6 +1145,110 @@ class Graph{
             cout<<"out of while loop"<<endl;
         }
 
+        void loadHeuristicalValues(string path){
+            ifstream input(path,ios::in);
+            string line;
+            int n;
+            int originData,numberOfNeighbours,neighboursData,heuristicValue;
+            while(getline(input,line)){
+                if(line.empty()||line[0]=='#')continue;
+                stringstream ss(line);
+                ss>>originData;
+                ss>>numberOfNeighbours;
+                for(int i=0;i<numberOfNeighbours;i++){
+                    ss>>neighboursData>>heuristicValue;
+                    dataset[originData]->HeuristicValues[dataset[neighboursData]]=heuristicValue;
+                }
+            }
+
+        }
+
+        void displayHeuristicValuesOfANode(node*one_node=nullptr){
+            int data;
+            if(nullptr){
+                cout<<"Enter node data whom heuristic values you wish to see : ";
+                cin>>data;
+                one_node=dataset[data];
+            }
+            cout<<"Heuristic value of "<<one_node->data<<" from other nodes is : "<<endl;
+            for(auto it=one_node->HeuristicValues.begin();it!=one_node->HeuristicValues.end();it++){
+                cout<<"From "<<it->first->data<<" is <---> "<<it->second<<endl;
+            }
+        }
+
+        void AStartHelper(priority_queue<node*,vector<node*>,AStartCompare>&loc,unordered_set<node*>&visited){
+
+            while(!loc.empty()&&visited.find(loc.top())!=visited.end()){
+                loc.pop();
+            }
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+            node*current_node=loc.top();
+            if(current_node==destination){
+                cout<<"Reached destination"<<endl;
+                return;
+            }
+            visited.insert(current_node);
+            loc.pop();
+            for(auto it=current_node->connections_map.begin();it!=current_node->connections_map.end();it++){
+                if(visited.find(it->second.first)==visited.end()){
+                    cout<<"Looking for "<<it->first<<endl;
+                    int newCost=current_node->cost+it->second.second+it->second.first->HeuristicValues[destination];
+                    if(it->second.first->costWithHeuristicValue>newCost){
+                        it->second.first->costWithHeuristicValue=newCost;
+                        it->second.first->reachedFrom=current_node->data;
+                        it->second.first->cost=current_node->cost+it->second.second;
+                        loc.push(it->second.first);
+                    }
+                } else {
+                    cout<<it->first<<" is already visited by "<<it->second.first->reachedFrom-1<<endl;
+                }
+            }
+            AStartHelper(loc,visited);
+        }
+
+        void AStar(){
+            for(auto it=dataset.begin();it!=dataset.end();it++){
+                it->second->costWithHeuristicValue=INT_MAX;
+                it->second->cost=INT_MAX;
+            }
+            visited.clear();
+            start=nullptr;
+            destination=nullptr;
+            int startData,destinationData;
+            cout<<"Enter data of the start point : ";
+            cin>>startData;
+            start=dataset[startData];
+            cout<<"Enter Destination data : ";
+            cin>>destinationData;
+            destination=dataset[destinationData];
+            // start->costWithHeuristicValue=destination->HeuristicValues[start];
+            start->costWithHeuristicValue=start->HeuristicValues[destination];
+            start->cost=0;
+            cout<<"start->costWithHeuristicValue = "<<start->costWithHeuristicValue<<endl;
+            cout<<"start->cost = "<<start->cost<<endl;
+            priority_queue<node*,vector<node*>,AStartCompare>loc;
+            loc.push(start);
+            cout<<loc.top()->data<<" is at the top let's start AStar"<<endl;
+            AStartHelper(loc,visited);
+            cout<<"AStar Algorithm Done"<<endl;
+            cout<<"destination->costWithHeuristicValue = "<<destination->costWithHeuristicValue<<endl;
+            cout<<"destination->cost = "<<destination->cost<<endl;
+            cout<<"All th enodes traversed are : ";
+            for(auto it=visited.begin();it!=visited.end();it++){
+                cout<<(*it)->data<<" ";
+            }
+            cout<<endl;
+            visited.clear();
+        }
+
+        void displayHeuristicValuesOfAllNodes(){
+            for(auto it=dataset.begin();it!=dataset.end();it++){
+                displayHeuristicValuesOfANode(it->second);
+            }
+        }
 };
 
 Graph*  Graph :: instance = nullptr;
@@ -1188,6 +1324,9 @@ int getChoice(){
     cout<<"12 : Display Dijekstra's tabel for a node"<<endl;
     cout<<"13 : Shortest Distance from one node to another"<<endl;
     cout<<"14 : Dijekstra from start to Destination"<<endl;
+    cout<<"15 : See heuristic values of a node"<<endl;
+    cout<<"16 : A Star Algorithm"<<endl;
+    cout<<"17 : Display heuristic values of all nodes"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -1265,6 +1404,15 @@ int main(){
         }
         else if(choice==14){
             graph.DijekstrasOneToOne();
+        }
+        else if(choice==15){
+            graph.displayHeuristicValuesOfANode();
+        }
+        else if(choice==16){
+            graph.AStar();
+        }
+        else if(choice==17){
+            graph.displayHeuristicValuesOfAllNodes();
         }
     }
     // graph.delete_dataset();

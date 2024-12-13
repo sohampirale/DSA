@@ -1,2 +1,5 @@
 11nodesFewDisconnected.txt
 14nodesCyclePresent
+6nodesDijekstrasWithHeuristicValues
+8nodesAStar
+9nodesAStar
