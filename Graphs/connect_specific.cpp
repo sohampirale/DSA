@@ -1214,6 +1214,7 @@ class Graph{
                 it->second->costWithHeuristicValue=INT_MAX;
                 it->second->cost=INT_MAX;
             }
+            //c1
             visited.clear();
             start=nullptr;
             destination=nullptr;
