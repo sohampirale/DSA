@@ -854,6 +854,7 @@ class Graph{
                         }
                     }
                 }
+                
                 cout<<"Total no of disocnnected components in thsi graph are : "<<total<<endl;
             }
             
