@@ -18,7 +18,7 @@
 // }
 
 
-//reverse half
+// reverse half
 // node* reverse_half(node*&start,node*slow,node*fast,node*t=nullptr){
 //   if(fast==nullptr||fast->next==nullptr){
 //     cout<<"Reached at the end"<<endl;
@@ -31,7 +31,7 @@
 //   return start;
 // }
 
-//reverse from left to right index
+// reverse from left to right index
 // void reverse_given(node*&start,int left,int right){
   
 // }

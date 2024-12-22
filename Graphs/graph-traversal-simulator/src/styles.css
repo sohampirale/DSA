@@ -1,0 +1,51 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+#graph {
+    margin: 20px auto;
+    width: 80%;
+    height: 500px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    position: relative;
+}
+
+.node {
+    fill: #69b3a2;
+    stroke: #fff;
+    stroke-width: 2px;
+}
+
+.link {
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #69b3a2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #5a9b8a;
+}
+
+#controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
