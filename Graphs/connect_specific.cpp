@@ -143,6 +143,7 @@ class Graph{
         static Graph* instance;
         unordered_set<node*>visited;
         unordered_map<node*,string>DijekstrasPath;
+        unordered_map<int,unordered_set<int>>visitedPlaces;
         unordered_map<node*,unordered_map<node*,int>>adjacancyMatrixUsingGraph;
         node* destination=nullptr;
         node* source=nullptr;
@@ -1652,7 +1653,6 @@ class Graph{
 
         }
         
-        unordered_map<int,unordered_set<int>>visitedPlaces;
         void floodFillWithUMap(vector<vector<int>>&matrix,int x,int y,int& parent,int& color){
             if(x<0||y<0||x>=matrix.size()||y>=matrix[x].size())return;
             else if(visitedPlaces.find(x)!=visitedPlaces.end()&&visitedPlaces[x].find(y)!=visitedPlaces[x].end())return;
@@ -1678,7 +1678,8 @@ class Graph{
         }
 
         void floodFill(){
-            vector<vector<int>>matrix=loadMatrix();
+            // vector<vector<int>>matrix=loadMatrix();
+            loadMatrix();
             bool usingUMap;
             int x,y,parent,color;
             cout<<"Enter x & y co-ordinates of starting point : ";
@@ -1723,22 +1724,23 @@ class Graph{
         }
 
         void loadMatrixFromFile(){
-            this->matrix=loadMatrix();
+            // this->matrix=loadMatrix();
+            loadMatrix();
         }
 
-        vector<vector<int>> loadMatrix(){
+        void loadMatrix(){
             string path="graphs_data/matrix_data/";
             string filename;
             cout<<"Enter fileanme of the matrix you want to form : ";
             cin>>filename;
             path+=filename;
             cout<<"Fetching matrix from "<<path<<endl;
-            vector<vector<int>>matrix;
+            // vector<vector<int>>matrix;
 
             ifstream input(path,ios::in);
             if(!input.is_open()){
                 cout<<"Error openign the file"<<endl;
-                return matrix;
+                return;
             }
             int row,col;
             input>>row>>col;
@@ -1752,7 +1754,8 @@ class Graph{
             cout<<"Matrix formed"<<endl;
             displayMatrix(matrix);
             input.close();
-            return matrix;
+            // return matrix;
+            return;
         }
 
         bool safeCheck(vector<vector<int>>&matrix,int x,int y){
@@ -2670,6 +2673,114 @@ class Graph{
             return false;
         }
 
+        //isBypartite BFS + DFS Codes
+        void isBypartiteQuestionCodes(){
+            unordered_set<int>visited;
+            unordered_map<int,bool>colored;
+                        bool isBipartiteBFS(queue<pair<int,int>>&loc,vector<vector<int>>&adjacancyList){
+                    if(loc.empty()){
+                        // cout<<"Queue found empty"<<endl;
+                        return true;
+                    }
+                    int size=loc.size();
+                    while(size--){
+                        int curr=loc.front().first;
+                        int parent=loc.front().second;
+                        // cout<<"Curr = "<<curr<<" & parent = "<<parent<<endl;
+                        loc.pop();
+                        if(visited.find(curr)==visited.end()){
+                            visited.insert(curr);   
+                            colored[curr]=!colored[parent];
+                        } else {
+                            if(colored[curr]==colored[parent]){
+                                // cout<<curr<<" & "<<parent<<" are colored same"<<endl;
+                                return false;
+                            } else {
+                                continue;
+                            }
+                        }
+                        for(int neighbour:adjacancyList[curr]){
+                            if(neighbour!=parent){
+                                loc.push({neighbour,curr});
+                            }
+                        }
+                    }
+                    return isBipartiteBFS(loc,adjacancyList);
+                }
+
+                bool isBipartiteBFS2(queue<int>&loc,bool color,vector<vector<int>>&adjacancyList){
+                    if(loc.empty())return true;
+                    int size=loc.size();
+                    while(size--){
+                        int curr=loc.front();
+                        loc.pop();
+                        colored[curr]=color;
+                        for(int neighbour:adjacancyList[curr]){
+                            if(colored.find(neighbour)==colored.end()){
+                                loc.push(neighbour);
+                            } else if(colored[neighbour]==color){
+                                return false;
+                            }
+                        }
+                    }
+                    return isBipartiteBFS2(loc,!color,adjacancyList);
+                }
+
+                bool isBipartiteDFS(int curr,int parent,vector<vector<int>>&adjacancyList){
+                    if(visited.find(curr)==visited.end()){
+                        visited.insert(curr);
+                        colored[curr]=!colored[parent];
+                    } else {
+                        if(colored[curr]==colored[parent]){
+                            cout<<curr<<" & "<<parent<<" are colored same"<<endl;
+                            return false;
+                        }
+                        return true;
+                    }
+                    bool ret;
+                    for(int neighbour: adjacancyList[curr]){
+                        if(neighbour!=parent){
+                            ret=isBipartiteDFS(neighbour,curr,adjacancyList);
+                            if(!ret){
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                
+                }
+
+                bool isBipartiteDFS2(int curr,int parent,vector<vector<int>>&adjacancyList){
+                    colored[curr]=!colored[parent];
+                    for(int neighbour: adjacancyList[curr]){
+                        if(colored.find(neighbour)==colored.end()){
+                            bool ret=isBipartiteDFS2(neighbour,curr,adjacancyList);
+                            if(!ret)return false;
+                        } else {
+                            if(colored[neighbour]==colored[curr])return false;
+                        }
+                    }
+                    return true;
+                }
+
+                bool isBipartiteDFS3(int curr,bool color,vector<vector<int>>&adjacancyList){
+                    if(colored.find(curr)==colored.end())
+                        colored[curr]=color;
+                    else if(colored[curr]!=color)return false;
+                    bool ret=true;
+                    for(int neighbour : adjacancyList[curr]){
+                        if(colored.find(neighbour)==colored.end()){
+                            ret=isBipartiteDFS3(neighbour,!color,adjacancyList);
+                            if(!ret)return false;
+                        } else {
+                            if(colored[neighbour]==color)return false;
+                        }
+                    }
+                    cout<<"Retunring true from "<<curr<<endl;
+                    return ret;
+                }
+
+        }
 
 };
 

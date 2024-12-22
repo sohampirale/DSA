@@ -1,3 +1,4 @@
 {
-    "postCreateCommand": "git config --global user.email '23031089_cse@adcet.in' && git config --global user.name 'Soham Pirale' && git config --local commit.gpgsign false && git config --global credential.helper store"
+    "postCreateCommand": "git config --global user.email '23031089_cse@adcet.in' && git config --global user.name 'Soham Pirale' && git config --global commit.gpgsign false && git config --global --unset user.signingkey && git config --global credential.helper store"
 }
+
