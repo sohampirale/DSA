@@ -23,6 +23,7 @@ class node{
         bool colored;
         string path="";
         bool traversed=false;
+        bool topological=false;
         // vector<node*>connections;
         //            data     addr, dist
         unordered_map<int,pair<node*,int>>connections_map;
@@ -3003,6 +3004,280 @@ class Graph{
             }
         }
 
+        unordered_set<int>visitedNodes;
+        unordered_set<int>terminalNodes;
+        bool reachesTerminal(int curr){
+            visitedNodes.insert(curr);
+            for(int neighbour: matrix[curr]){
+                if(terminalNodes.find(neighbour)!=terminalNodes.end()){
+                    terminalNodes.insert(curr);
+                    return true;
+                } else if(visitedNodes.find(neighbour)!=visitedNodes.end()){
+                    return false;
+                } else {
+                    if(reachesTerminal(neighbour)){
+                        terminalNodes.insert(curr);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        void eventualSafeNodes() {
+            loadMatrixFromFile();
+
+            for(int i=0;i<matrix.size();i++){
+                if(matrix[i].empty()){
+                    terminalNodes.insert(i);
+                }
+            }
+            cout<<"Total terminal nodes are : "<<terminalNodes.size()<<endl;
+            for(int i=0;i<matrix.size();i++){
+                if(terminalNodes.find(i)==terminalNodes.end()){
+                    if(visitedNodes.find(i)==visitedNodes.end()){
+                        reachesTerminal(i);
+                    }
+                }
+            }
+            for(int i=0;i<matrix.size();i++){
+                if(matrix[i].empty())terminalNodes.erase(i);
+            }
+            cout<<"Total Safe nodes are : "<<terminalNodes.size()<<endl;
+            for(auto it:terminalNodes){
+                cout<<it<<" ";
+            }
+            cout<<endl;
+        }   
+        
+        void topologicalSortingBFS(queue<node*>&loc,string &ans){
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+            int size=loc.size();
+            // vector<node*>sources;
+            unordered_set<node*>sources;
+            while(size--){
+                node* curr_node=loc.front();
+                loc.pop();
+                sources.insert(curr_node);
+                if(curr_node->connections_map.empty()){
+                    curr_node->topological=true;
+                    ans=to_string(curr_node->data)+ans;
+                    visited.insert(curr_node);
+                    continue;
+                }
+                for(auto &neighbours : curr_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    if(neighbour==destination){
+                        cout<<"Found detination ";
+                        if(visited.find(neighbour)==visited.end()){
+                            cout<<"for the first time"<<endl;
+                            neighbour->topological=true;
+                            ans=to_string(neighbour->data)+ans;
+                            visited.insert(neighbour);
+                        } else cout<<endl;
+                    } else {
+                        loc.push(neighbour);
+                    }
+                }
+            }
+            // if(loc.empty()){
+            //     cout<<"Queue made empty so lets go back"<<endl;
+            //     return;
+            // }
+            topologicalSortingBFS(loc,ans);
+            for(node* one_node: sources){
+                for(auto neighbours:one_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    one_node->topological= one_node->topological||neighbour->topological;
+                }
+                if(one_node->topological){
+                    cout<<"It is possibel to reach destination from "<<one_node->data<<endl;
+                    if(visited.find(one_node)==visited.end()){
+                        ans=to_string(one_node->data)+ans;
+                        visited.insert(one_node);
+                    } else {
+                        cout<<"But it is already included in the answer"<<endl;
+                    }
+                }
+            }
+        }
+
+        bool topologicalSortingDFS(node*curr_node,string&ans){
+            if(curr_node==destination){
+                if(visited.find(curr_node)==visited.end()){
+                    visited.insert(curr_node);
+                    cout<<curr_node->data<<" is visited for first time"<<endl;
+                    curr_node->topological=true;
+                    ans=to_string(curr_node->data)+ans;
+                } 
+                return true;
+            }
+            for(auto &neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                curr_node->topological=curr_node->topological || topologicalSortingDFS(neighbour,ans);
+            }
+            if(curr_node->topological){
+                if(visited.find(curr_node)==visited.end()){
+                    visited.insert(curr_node);
+                    ans=to_string(curr_node->data)+"->"+ans;
+                }
+            }
+            return curr_node->topological;
+        }
+        // void addAlternatively(string& original,string& newStr){
+        //    int i=0;
+        //    while(i<original.size()&&newStr.empty()){
+        //     if(original[i]=='>'){
+        //         i++;
+        //         int j=0;
+        //         while(j<new)
+        //     }
+        //    }
+        // }
+        void topologicalSort(){
+            for(auto it:dataset){
+                it.second->topological=false;
+            }
+            visited.clear();
+            bool choice;
+            cout<<"Which method to use?\n1 : DFS\n0 : BFS\nYour choice : ";
+            cin>>choice;
+            if(choice){
+                int n,startData,destinationData;
+                cout<<"How many source nodes are present : ";
+                cin>>n;
+                queue<node*>loc;
+                for(int i=0;i<n;i++){
+                    cout<<"Enter data of node no - "<<i+1<<"  : ";
+                    cin>>startData;
+                    loc.push(dataset[startData]);
+                }
+                cout<<"ENter destination node data : ";
+                cin>>destinationData;
+                destination=dataset[destinationData];
+                string ans="";
+                vector<string>answers;
+                while(!loc.empty()){
+                    ans="";
+                    topologicalSortingDFS(loc.front(),ans);
+
+                    // answers.push_back(ans);
+                    loc.pop();
+                }
+                cout<<"After topological sorting DFS Answer = "<<ans<<endl;
+                for(string str : answers){
+                    cout<<"Ans : "<<str<<endl;
+                }
+            } else  { 
+                int n,startData,destinationData;
+                cout<<"How many nodes are there with indegree 0 : ";
+                cin>>n;
+                queue<node*>loc;
+                for(int i=0;i<n;i++){
+                    cout<<"Enter data of node no - "<<i+1<<"  : ";
+                    cin>>startData;
+                    loc.push(dataset[startData]);
+                }
+                cout<<"ENter data of node which has indegree 0 : ";
+                // cin>>startData;
+                // start=dataset[startData];
+                cout<<"Enter destination node data : ";
+                cin>>destinationData;
+                destination=dataset[destinationData];
+                string ans="";
+                topologicalSortingBFS(loc,ans);
+                cout<<"Came out of topological sorting BFS fucntion"<<endl;
+                cout<<"Answer : "<<ans<<endl;
+            }
+            cout<<"No of elemnts added in the topological sort were "<<visited.size()<<endl;
+        }
+ 
+        //1.visited can be removed
+        //2 unordered sets can be used instead of queue
+        void tolopologicalSortingBFSNRandom(queue<node*>&loc,string& ans){
+
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+
+            int size=loc.size();
+            unordered_set<node*>sources;
+
+            while(size--){
+                node*curr_node=loc.front();
+                loc.pop();
+
+                if(curr_node==destination){
+                    if(visited.find(curr_node)==visited.end()){
+                        curr_node->topological=true;
+                        visited.insert(curr_node);
+                        ans=to_string(curr_node->data)+"->"+ans;
+                    }
+                    continue;
+                } 
+
+                sources.insert(curr_node);
+
+                for(auto &neighbours:curr_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    if(visited.find(curr_node)==visited.end()){
+                        loc.push(neighbour);
+                    } else {
+                        continue;//means nothign because going to wokr on curr_node->topologic after recursive call
+                    }
+                }
+
+            }
+
+            tolopologicalSortingBFSNRandom(loc,ans);
+
+            for(node*one_node:sources){
+                if(one_node->topological)continue;      //if it is topologically already visited why to look for its neighbours again
+                for(auto neighbours:one_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    one_node->topological=one_node->topological||neighbour->topological;
+                    if(one_node->topological){
+                        ans=to_string(one_node->data)+"->"+ans;
+                        visited.insert(one_node);
+                        break;
+                    }
+                }
+            }
+        }
+
+        void topologicalSortNRandom(){
+            visited.clear();
+            for(auto it:dataset){
+                it.second->topological=false;
+            }
+            cout<<"Marked every node->topological=false"<<endl;
+            bool choice;
+            cout<<"Which method to use?\n1 : DFS\n0 : BFS\nYour choice : ";
+            cin>>choice;
+            if(choice){
+
+            } else {
+                int n,startData,destinationData;
+                cout<<"How many nodes you want to start topological sorting with : ";
+                cin>>n;
+                queue<node*>loc;
+                for(int i=0;i<n;i++){ 
+                    cout<<"ENter data of node no - "<<i+1<<" : ";
+                    cin>>startData;
+                    loc.push(dataset[startData]);
+                }
+                cout<<"ENter node data od destination ndoe : ";
+                cin>>destinationData;
+                destination=dataset[destinationData];
+                string ans="";
+                tolopologicalSortingBFSNRandom(loc,ans);
+                cout<<"Came out of tolopologicalSortingBFSNRandom() function"<<endl;
+                cout<<"Topological Sort answer : "<<ans<<endl;
+            }
+        }
 };
 
 Graph*  Graph :: instance = nullptr;
@@ -3104,6 +3379,8 @@ int getChoice(){
     cout<<"38 : Find total merge points"<<endl;
     cout<<"39 : Const Snake Size Traversal"<<endl;
     cout<<"40 : Is undorected graph Cyclic find out using Directed DFS"<<endl;
+    cout<<"41 : Topological Sorting BFS"<<endl;
+    cout<<"42 : Topological Sorting With N Randomk Nodes"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -3115,6 +3392,9 @@ void setDirection(){
 }
 
 int main(){
+    
+
+
     vector<string>all_paths;
     unordered_map<int,node*>dataset;
     unordered_map<node*,list<node*>>map;
@@ -3253,6 +3533,12 @@ int main(){
         }
         else if(choice==40){
             graph.isCyclicUndirectedUseDirected();
+        }
+        else if(choice==41){
+            graph.topologicalSort();
+        }
+        else if(choice==42){
+            graph.topologicalSortNRandom();
         }
         sleep(2);
     }
