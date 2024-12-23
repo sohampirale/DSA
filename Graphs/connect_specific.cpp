@@ -3126,16 +3126,7 @@ class Graph{
             }
             return curr_node->topological;
         }
-        // void addAlternatively(string& original,string& newStr){
-        //    int i=0;
-        //    while(i<original.size()&&newStr.empty()){
-        //     if(original[i]=='>'){
-        //         i++;
-        //         int j=0;
-        //         while(j<new)
-        //     }
-        //    }
-        // }
+
         void topologicalSort(){
             for(auto it:dataset){
                 it.second->topological=false;
@@ -3193,7 +3184,7 @@ class Graph{
             }
             cout<<"No of elemnts added in the topological sort were "<<visited.size()<<endl;
         }
- 
+        
         //1.visited can be removed
         //2 unordered sets can be used instead of queue
         void tolopologicalSortingBFSNRandom(queue<node*>&loc,string& ans){
@@ -3276,6 +3267,57 @@ class Graph{
                 tolopologicalSortingBFSNRandom(loc,ans);
                 cout<<"Came out of tolopologicalSortingBFSNRandom() function"<<endl;
                 cout<<"Topological Sort answer : "<<ans<<endl;
+            }
+        }
+
+        void topologicalSortUsingUSets(unordered_set<node*>&sources,string&ans){
+            if(sources.empty()){
+                cout<<"No further nodes found in this set"<<endl;
+                return;
+            }
+            unordered_set<node*>newSources;
+            for(node* curr_node:sources){
+                if(curr_node==destination){
+                    if(!curr_node->topological){
+                        ans=to_string(curr_node->data)+"->"+ans;
+                        curr_node->topological=true;
+                    }
+                    continue;
+                }
+                for(auto &neighbours:curr_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    if(neighbour==destination){
+                        if(!neighbour->topological){
+                            neighbour->topological=true;
+                            ans=to_string(curr_node->data)+"->"+ans;
+                        }
+                    } else {
+
+                    }
+                }
+            }
+        }
+
+        void topologicalSortUsingSets(){
+            bool choice;
+            cout<<"Enter your choice : \n1 : DFS\n0 : BFS\nYour choice : ";
+            cin>>choice;
+            int n,startData,destinationData;
+            cout<<"How many nodes you wnat to start Topological sort from : ";
+            cin>>n;
+            unordered_set<node*>sources;
+            for(int i=0;i<n;i++){
+                cout<<"Enter data of node no - "<<i+1<<" : ";
+                cin>>startData;
+                sources.insert(dataset[startData]);
+            }
+            cout<<"Enter data of destination ndoe : ";
+            cin>>destinationData;
+            destination=dataset[destinationData];
+            if(choice){
+              
+            } else {
+
             }
         }
 };
