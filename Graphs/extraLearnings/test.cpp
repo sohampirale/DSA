@@ -19,7 +19,7 @@ class node{
         }
 };
 // unordered_set<node*> node::nodes; 
-node*  operator *(size_t size){
+node*  operator new(size_t size){
     node* ptr= new node(size);
     // node:: nodes.insert(ptr);
     return ptr;

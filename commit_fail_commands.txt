@@ -1,2 +1,5 @@
 cat .git/config
 git config --list
+
+git config --global commit.gpgsign false
+git config --local commit.gpgsign false

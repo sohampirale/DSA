@@ -12,6 +12,7 @@
 #include <csignal>
 #include <cstdlib>
 #include<unordered_set>
+#include<unistd.h>
 
 using namespace std;
 bool bidirectional=false;
@@ -2677,7 +2678,9 @@ class Graph{
         void isBypartiteQuestionCodes(){
             unordered_set<int>visited;
             unordered_map<int,bool>colored;
-                        bool isBipartiteBFS(queue<pair<int,int>>&loc,vector<vector<int>>&adjacancyList){
+
+            /*{
+                bool isBipartiteBFS(queue<pair<int,int>>&loc,vector<vector<int>>&adjacancyList){
                     if(loc.empty()){
                         // cout<<"Queue found empty"<<endl;
                         return true;
@@ -2777,9 +2780,227 @@ class Graph{
                         }
                     }
                     cout<<"Retunring true from "<<curr<<endl;
-                    return ret;
+                        return ret;
+                    }
                 }
+        */
+        
+        }
 
+        bool isCyclicDirectedDFS(node*curr_node,node*parent){
+            cout<<"Going through "<<curr_node->data<<endl;
+            visited.insert(curr_node);
+            for(auto&neighbours : curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    if(isCyclicDirectedDFS(neighbour,curr_node))return true;
+                } else {
+                    cout<<neighbour->data<<" is already visited"<<endl;
+                    if(neighbour!=parent){
+                        cout<<"here"<<endl;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        bool isCyclicDirectedBFS(queue<pair<node*,node*>>&loc){
+            if(loc.empty())return false;
+            node* curr_node=loc.front().first;
+            node* parent=loc.front().second;
+            loc.pop();
+            visited.insert(curr_node);
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    loc.push({neighbour,curr_node});
+                } else if(neighbour!=parent){
+                    cout<<"Cycle found at "<<neighbour->data<<" & "<<curr_node->data<<endl;
+                    return true;
+                }
+            }
+            return isCyclicDirectedBFS(loc);
+        }
+
+        bool isCyclicGraphDirected(){
+            visited.clear();
+            bool choice;
+            cout<<"Which method to use :\n1 : DFS\n2 : BFS\nYour choice : ";
+            cin>>choice;
+            start=dataset.begin()->second;
+            cout<<"Starting from "<<start->data<<endl;
+            bool isCyclic=false;
+            for(auto& it:dataset){
+                if(visited.find(it.second)==visited.end()){
+                    if(choice){
+                        isCyclic=isCyclic||isCyclicDirectedDFS(it.second,nullptr);
+                    } else {
+                        queue<pair<node*,node*>>loc;
+                        loc.push({it.second,nullptr});
+                        isCyclic=isCyclic||isCyclicDirectedBFS(loc);
+                    }
+                }
+            }
+            if(isCyclic)cout<<"CYcle is present in the Directed Graph"<<endl;
+            else cout<<"Cycle is Not present in the Directed Graph"<<endl;
+            return isCyclic;
+        }
+        
+        bool isCyclicDirectedDFS(node*curr_node){
+            visited.insert(curr_node);
+            for(auto& neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    if(isCyclicDirectedDFS(neighbour))return true;
+                } else return true;
+            }
+            visited.erase(curr_node);
+            return false;
+        }
+
+        bool isCyclicDirected(){
+            for(auto& it:dataset){
+                if(visited.find(it.second)==visited.end()){
+                    cout<<"Cycle is present found from "<<it.first<<endl;
+                    return true;
+                }
+            }
+            cout<<"CYcle not present"<<endl;
+            return false;
+        }
+        int totalMergePoints=0;
+
+        void mergePointBFS(queue<node*>&loc){
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+            int size=loc.size();
+            while(size--){
+                node*curr_node=loc.front();
+                visited.insert(curr_node);
+                loc.pop();
+                for(auto& neighbours:curr_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    if(visited.find(neighbour)==visited.end()){
+                        loc.push(neighbour);
+                    } else {
+                        cout<<"Merge point is found "<<curr_node->data<<" <--> "<<neighbour->data<<endl;
+                        totalMergePoints++;
+                    }
+                }
+            }
+            mergePointBFS(loc);
+        }
+
+        void mergePointsDFS(node*curr_node){
+            visited.insert(curr_node);
+            for(auto& neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    mergePointsDFS(neighbour);
+                } else {
+                    cout<<"MErge point found "<<curr_node->data<<" <--> "<<neighbour->data<<endl;
+                    totalMergePoints++;
+                }
+            }
+        }
+
+        void findMergePoint(){
+            visited.clear();
+            totalMergePoints=0;
+            int startData;
+            cout<<"From where to start the search : ";
+            cin>>startData;
+            start=dataset[startData];
+            queue<node*>loc;
+            loc.push(start);
+            mergePointBFS(loc);
+
+            // for(auto&it:dataset){
+            //     if(visited.find(it.second)==visited.end()){
+            //         queue<node*>loc;
+            //         loc.push(it.second);
+            //         mergePointBFS(loc);
+            //     }
+            // }
+            cout<<"Total merge points found are : "<<totalMergePoints<<endl;
+        }
+        
+        int cnt=0;
+        void snakeConstSizeDFS(node*curr_node,int& size,queue<node*>&loc){
+            cnt++;
+            if(cnt>100)return;
+            if(loc.empty()){
+                cout<<"Queue became empty"<<endl;
+                return;
+            }
+            visited.insert(curr_node);
+            cout<<"Snake : ";
+            for(auto it:visited){
+                cout<<it->data<<" ";
+            }
+            cout<<endl;
+            if(visited.size()==size+1){
+                node* remove_node=loc.front();
+                loc.pop();
+                cout<<remove_node->data<<" needs to be removed because size of the snake is full"<<endl;
+                visited.erase(remove_node);
+            }
+            for(auto& neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    loc.push(neighbour);
+                    snakeConstSizeDFS(neighbour,size,loc);
+                } else {
+                    cout<<"Snake biting itself at point : "<<curr_node->data<<" <--> "<<neighbour->data<<endl;
+                    totalMergePoints++;
+                }
+            }
+        }
+
+        void snakeSizeCycle(){
+            visited.clear();
+            totalMergePoints=0;
+
+            int size,startData;
+            cout<<"ENetr max size you want : ";
+            cin>>size;
+            cout<<"Enetr start node : ";
+            cin>>startData;
+            start=dataset[startData];
+            queue<node*>loc;
+            loc.push(start);
+            snakeConstSizeDFS(start,size,loc);
+            cout<<"Number of time snake biting itself is : "<<totalMergePoints<<endl;
+        }
+
+        bool isCyclicUndirectedUsingDirectedDFS(node*curr_node,node*parent){
+            visited.insert(curr_node);
+            for(auto&neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    if(isCyclicUndirectedUsingDirectedDFS(neighbour,curr_node))return true;
+                } else if(parent!=neighbour)return true;
+            }
+            visited.erase(curr_node);
+            return false;
+        }
+
+        bool isCyclicUndirectedUseDirected(){
+            visited.clear();
+            int startData;
+            cout<<"Enetr node to start from : ";
+            cin>>startData;
+            start=dataset[startData];
+            if(isCyclicUndirectedUsingDirectedDFS(start,nullptr)){
+                cout<<"CYcle is present in this undirected graph"<<endl;
+                return true;
+            } else {
+                cout<<"Cycle is not present in thsi undirected graph"<<endl;
+                return false;
+            }
         }
 
 };
@@ -2878,6 +3099,11 @@ int getChoice(){
     cout<<"33 : Is Graph Bipartite"<<endl;
     cout<<"34 : Display coloring of each node"<<endl;
     cout<<"35 : Color Graph and Check Bipartiteness"<<endl;
+    cout<<"36 : Is cycle present in the Directed Graph"<<endl;
+    cout<<"37 : Is directed graph cyclic"<<endl;
+    cout<<"38 : Find total merge points"<<endl;
+    cout<<"39 : Const Snake Size Traversal"<<endl;
+    cout<<"40 : Is undorected graph Cyclic find out using Directed DFS"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -3013,6 +3239,22 @@ int main(){
         else if(choice==35){
             graph.colorGraphAndCheckBipartiteness();
         }
+        else if(choice==36){
+            graph.isCyclicGraphDirected();
+        }
+        else if(choice==37){
+            graph.isCyclicDirected();
+        }
+        else if(choice==38){
+            graph.findMergePoint();
+        }
+        else if(choice==39){
+            graph.snakeSizeCycle();
+        }
+        else if(choice==40){
+            graph.isCyclicUndirectedUseDirected();
+        }
+        sleep(2);
     }
     // graph.delete_dataset(); //already included in the graph destructor
 }
