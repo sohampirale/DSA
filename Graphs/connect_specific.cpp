@@ -147,6 +147,7 @@ class Graph{
         unordered_map<node*,string>DijekstrasPath;
         unordered_map<int,unordered_set<int>>visitedPlaces;
         unordered_map<node*,unordered_map<node*,int>>adjacancyMatrixUsingGraph;
+        unordered_map<node*,unordered_set<node*>>reverseAdjacancyList;
         node* destination=nullptr;
         node* source=nullptr;
         vector<vector<int>>matrix;
@@ -166,7 +167,7 @@ class Graph{
         ~Graph(){
             delete_dataset();
         }
-       
+
         static void signalHandler(int signum) {
             cout << "Caught signal " << signum << ". deallocating nodes..." << endl;
             if(instance){
@@ -3184,7 +3185,7 @@ class Graph{
             }
             cout<<"No of elemnts added in the topological sort were "<<visited.size()<<endl;
         }
-        
+
         //1.visited can be removed
         //2 unordered sets can be used instead of queue
         void tolopologicalSortingBFSNRandom(queue<node*>&loc,string& ans){
@@ -3281,7 +3282,7 @@ class Graph{
                     if(!curr_node->topological){
                         ans=to_string(curr_node->data)+"->"+ans;
                         curr_node->topological=true;
-                    }
+                    }  
                     continue;
                 }
                 for(auto &neighbours:curr_node->connections_map){
@@ -3289,16 +3290,33 @@ class Graph{
                     if(neighbour==destination){
                         if(!neighbour->topological){
                             neighbour->topological=true;
-                            ans=to_string(curr_node->data)+"->"+ans;
+                            ans=to_string(neighbour->data)+"->"+ans;
                         }
-                    } else {
-
+                    } else if(!neighbour->topological){
+                        newSources.insert(neighbour);
+                    }
+                }
+            }
+            topologicalSortUsingUSets(newSources,ans);
+            for(node*one_node:sources){
+                if(one_node->topological)continue;
+                for(auto &neighbours : one_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    one_node->topological=one_node->topological||neighbour->topological;
+                    if(one_node->topological){
+                        ans=to_string(one_node->data)+"->"+ans;
+                        break;
                     }
                 }
             }
         }
 
         void topologicalSortUsingSets(){
+            for(auto & it:dataset){
+                it.second->topological=false;
+            }
+
+            string ans="";
             bool choice;
             cout<<"Enter your choice : \n1 : DFS\n0 : BFS\nYour choice : ";
             cin>>choice;
@@ -3317,11 +3335,80 @@ class Graph{
             if(choice){
               
             } else {
+                topologicalSortUsingUSets(sources,ans);
+            }
+            cout<<"COming out of topological sorting"<<endl;
+            if(ans.empty()){
+                cout<<"Not possible to reach destination from the given source nodes"<<endl;
+            }
+            cout<<"Answer = "<<ans<<endl;
+        }
 
+        void createReverseAdjacancyListBFS(unordered_set<node*>&sources){
+            if(sources.empty()){
+                cout<<"USet found empty"<<endl;
+                return;
+            }
+            unordered_set<node*>newSources;
+            for(node*curr_node:sources){
+                visited.insert(curr_node);
+                for(auto &neighbours:curr_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    reverseAdjacancyList[neighbour].insert(curr_node);
+                    if(visited.find(neighbour)==visited.end()){
+                        newSources.insert(neighbour);
+                    }
+                }
+            }
+            createReverseAdjacancyListBFS(newSources);
+        }
+
+        void createReverseAdjacancyList(){
+            visited.clear();
+            bool choice;
+            int startData;
+            cout<<"Which method you want to use?\n1 : DFS\n0 : BFS\nYour choice : ";
+            cin>>choice;
+            cout<<"Enter data of node from which to start traversal : ";
+            cin>>startData;
+            cout<<"Start data : "<<startData<<endl;
+            node*startNode=dataset[startData];
+            if(!startNode){
+                cout<<"Start node selected is nullptr"<<endl;
+                return;
+            }
+            // start=dataset[startData];
+            if(choice){
+
+            } else {
+                // cout<<"Starting traversal from "<<start->data<<endl;
+                unordered_set<node*>sources;
+                // sources.insert(start);
+                sources.insert(startNode);
+                createReverseAdjacancyListBFS(sources);
+            }
+            cout<<"The Reverse Adjacancy List is created"<<endl;
+            displayReverseAdjacancyList();
+        }
+
+        void displayReverseAdjacancyList(){
+            if(reverseAdjacancyList.empty()){
+                cout<<"REverse adjacancy list is empty"<<endl;
+                return;
+            }
+            for(auto it:reverseAdjacancyList){
+                node*one_node=it.first;
+                cout<<one_node->data<<" has indegree of "<<it.second.size()<<" : ";
+                for(node* neighbour:it.second){
+                    cout<<neighbour->data<<" ";
+                }
+                cout<<endl;
             }
         }
 };
-//
+
+// 5nodesTopologicalSorting2SourceNodes
+
 Graph*  Graph :: instance = nullptr;
 
 void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,string path="->"){
@@ -3423,6 +3510,10 @@ int getChoice(){
     cout<<"40 : Is undorected graph Cyclic find out using Directed DFS"<<endl;
     cout<<"41 : Topological Sorting BFS"<<endl;
     cout<<"42 : Topological Sorting With N Randomk Nodes"<<endl;
+    cout<<"43 : Topological Sorting with N Rnadom nodes (using unordered_sets)"<<endl;
+    cout<<"44 : Create reverse adjacnacy list "<<endl;
+    cout<<"45 : Display Reverse Adjacancy List"<<endl; 
+    cout<<"46 : Display Dataset"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -3452,7 +3543,6 @@ int main(){
             // adjacancy_list[it]={neighbour->second.first,it->second->connections_map[neighbour->second.second]};
         }
     }
-
     while(choice){
         choice=getChoice();
         if(choice==1){
@@ -3581,6 +3671,14 @@ int main(){
         }
         else if(choice==42){
             graph.topologicalSortNRandom();
+        }
+        else if(choice==43){
+            graph.topologicalSortUsingSets();
+        }
+        else if(choice==44){
+            graph.createReverseAdjacancyList();
+        } else if(choice==45){
+            graph.displayReverseAdjacancyList();
         }
         sleep(2);
     }
