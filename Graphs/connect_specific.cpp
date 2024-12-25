@@ -3128,15 +3128,40 @@ class Graph{
             return curr_node->topological;
         }
 
+        bool topologicalSortingDFSTry2(node*&curr_node,string &ans){
+            visited.insert(curr_node);
+            if(curr_node==destination){
+                if(!curr_node->topological){
+                    ans=to_string(curr_node->data)+"->"+ans;
+                    curr_node->topological=true;
+                }
+                return true;
+            }
+            bool mark=false;
+            for(auto &neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    mark=mark||topologicalSortingDFSTry2(neighbour,ans);
+                } else {
+                    mark=mark || neighbour->topological;
+                }
+            }
+            if(mark){
+                curr_node->topological=true;
+                ans=to_string(curr_node->data)+"->"+ans;
+            }
+            return mark;
+        }
+
         void topologicalSort(){
             for(auto it:dataset){
                 it.second->topological=false;
             }
             visited.clear();
-            bool choice;
-            cout<<"Which method to use?\n1 : DFS\n0 : BFS\nYour choice : ";
+            int choice;
+            cout<<"Which method to use?\n1 : DFS\n2 : BFS\n3 : DFS Try2\nYour choice : ";
             cin>>choice;
-            if(choice){
+            if(choice==1){
                 int n,startData,destinationData;
                 cout<<"How many source nodes are present : ";
                 cin>>n;
@@ -3162,7 +3187,7 @@ class Graph{
                 for(string str : answers){
                     cout<<"Ans : "<<str<<endl;
                 }
-            } else  { 
+            } else if(choice==2) { 
                 int n,startData,destinationData;
                 cout<<"How many nodes are there with indegree 0 : ";
                 cin>>n;
@@ -3182,6 +3207,23 @@ class Graph{
                 topologicalSortingBFS(loc,ans);
                 cout<<"Came out of topological sorting BFS fucntion"<<endl;
                 cout<<"Answer : "<<ans<<endl;
+            } else if(choice==3){
+                int n,startData;
+                cout<<"How many starting points you have : ";
+                cin>>n;                
+                queue<node*>startingPoints;
+                for(int i=0;i<n;i++){
+                    cout<<"Enter data of node no - "<<i+1<<" : ";
+                    cin>>startData; 
+                    startingPoints.push(dataset[startData]);
+                }
+                string ans="";
+                while(!startingPoints.empty()){
+                    topologicalSortingDFSTry2(startingPoints.front(),ans);
+                    startingPoints.pop();
+                }
+                cout<<"Came out of topologicalSortingDFSTry2() function"<<endl;
+                cout<<"Answer received (Topological Sort ) : "<< ans<<endl;
             }
             cout<<"No of elemnts added in the topological sort were "<<visited.size()<<endl;
         }
