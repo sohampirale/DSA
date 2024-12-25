@@ -2789,17 +2789,16 @@ class Graph{
         
         }
 
-        bool isCyclicDirectedDFS(node*curr_node,node*parent){
+        bool isCyclicUnDirectedDFS(node*curr_node,node*parent){
             cout<<"Going through "<<curr_node->data<<endl;
             visited.insert(curr_node);
             for(auto&neighbours : curr_node->connections_map){
                 node*neighbour=neighbours.second.first;
                 if(visited.find(neighbour)==visited.end()){
-                    if(isCyclicDirectedDFS(neighbour,curr_node))return true;
+                    if(isCyclicUnDirectedDFS(neighbour,curr_node))return true;
                 } else {
                     cout<<neighbour->data<<" is already visited"<<endl;
                     if(neighbour!=parent){
-                        cout<<"here"<<endl;
                         return true;
                     }
                 }
@@ -2807,7 +2806,8 @@ class Graph{
             return false;
         }
 
-        bool isCyclicDirectedBFS(queue<pair<node*,node*>>&loc){
+        bool isCyclicUnDirectedBFS(queue<pair<node*,node*>>&loc){
+            //could be a bit wrong
             if(loc.empty())return false;
             node* curr_node=loc.front().first;
             node* parent=loc.front().second;
@@ -2822,36 +2822,12 @@ class Graph{
                     return true;
                 }
             }
-            return isCyclicDirectedBFS(loc);
+            return isCyclicUnDirectedBFS(loc);
         }
 
-        bool isCyclicGraphDirected(){
-            visited.clear();
-            bool choice;
-            cout<<"Which method to use :\n1 : DFS\n2 : BFS\nYour choice : ";
-            cin>>choice;
-            start=dataset.begin()->second;
-            cout<<"Starting from "<<start->data<<endl;
-            bool isCyclic=false;
-            for(auto& it:dataset){
-                if(visited.find(it.second)==visited.end()){
-                    if(choice){
-                        isCyclic=isCyclic||isCyclicDirectedDFS(it.second,nullptr);
-                    } else {
-                        queue<pair<node*,node*>>loc;
-                        loc.push({it.second,nullptr});
-                        isCyclic=isCyclic||isCyclicDirectedBFS(loc);
-                    }
-                }
-            }
-            if(isCyclic)cout<<"CYcle is present in the Directed Graph"<<endl;
-            else cout<<"Cycle is Not present in the Directed Graph"<<endl;
-            return isCyclic;
-        }
-        
         bool isCyclicDirectedDFS(node*curr_node){
             visited.insert(curr_node);
-            for(auto& neighbours:curr_node->connections_map){
+            for(auto &neighbours:curr_node->connections_map){
                 node*neighbour=neighbours.second.first;
                 if(visited.find(neighbour)==visited.end()){
                     if(isCyclicDirectedDFS(neighbour))return true;
@@ -2861,15 +2837,143 @@ class Graph{
             return false;
         }
 
+        bool isCyclicDirectedBFSTry3(queue<node*>&loc,int&cnt){
+            if(loc.empty()){
+                if(cnt==dataset.size())return false;
+                else return true;
+            }
+            node*curr_node=loc.front();
+            cout<<"Working on "<<curr_node->data<<endl;
+            cnt++;
+            loc.pop();
+            for(auto& neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                reverseAdjacancyList[neighbour].erase(curr_node);
+                if(reverseAdjacancyList[neighbour].empty()){
+                    loc.push(neighbour);
+                }
+            }
+            return isCyclicDirectedBFSTry3(loc,cnt);
+        }
+
+        bool isCyclicDirectedBFSTry2(unordered_set<node*>&loc){
+            int visited=0;
+            unordered_set<node*>&sources=loc;
+            while(1){
+                cout<<"no. of sources now are : "<<sources.size()<<endl;
+                unordered_set<node*>newSources;
+                for(node* curr_node:sources){
+                    visited++;
+                    for(auto neighbours:curr_node->connections_map){
+                        node*neighbour=neighbours.second.first;
+                        reverseAdjacancyList[neighbour].erase(curr_node);
+                        if(reverseAdjacancyList[neighbour].empty()){
+                            newSources.insert(neighbour);
+                        }
+                    }
+                }
+                if(newSources.empty())break;
+                sources=newSources;
+            }
+            if(visited==dataset.size())return false;
+            else return true;
+        }
+
+        bool isCyclicDirectedBFSTry1(unordered_set<node*>&loc){
+        //this fails are merging situations of branched directions
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return false;
+            } 
+            int size=loc.size();
+            unordered_set<node*>newLoc;
+            for(node* curr_node:loc){
+                for(auto &neighbours:curr_node->connections_map){
+                    node*neighbour=neighbours.second.first;
+                    unordered_set<node*>&indegreeOfNeighbour=reverseAdjacancyList[neighbour];
+                    if(indegreeOfNeighbour.empty()){
+                        cout<<curr_node->data<<" is trying to add "<<neighbours.first<<" where cycloe might be present"<<endl;
+                        return true;
+                    } 
+                    indegreeOfNeighbour.erase(curr_node);
+                    newLoc.insert(neighbour);
+                }
+            }
+            return isCyclicDirectedBFSTry1(newLoc);
+        }
+
         bool isCyclicDirected(){
-            for(auto& it:dataset){
-                if(visited.find(it.second)==visited.end()){
-                    cout<<"Cycle is present found from "<<it.first<<endl;
+            visited.clear();
+            bool isCyclic=false;
+            int choice;
+            cout<<"Which method to use :\n1 : DFS\n2 : BFS Try1(fails at multiple lebgth merges)\n3 : BFS Using unordered set Iterative\n4 : BFS recursive\nYour choice : ";
+            cin>>choice;
+            if(choice==1){
+               
+            } else if(choice==2){
+                if(reverseAdjacancyList.empty()){
+                    cout<<"We first need to create Reverse Adjacancy List"<<endl;
+                    createReverseAdjacancyList();
+                }
+                cout<<"Using kahn's algorithm to find out whether cycle is present or not in a Directed Graph"<<endl;
+                queue<node*>sourceNodes;
+                for(auto it:reverseAdjacancyList){
+                    if(it.second.empty()){
+                        sourceNodes.push(it.first);
+                    }
+                }
+                while(!sourceNodes.empty()){
+                    node*source=sourceNodes.front();
+                    sourceNodes.pop();
+                    unordered_set<node*>loc;
+                    loc.insert(source);
+                    cout<<"Doing kahn's algorithm from "<<source->data<<endl;
+                    isCyclic=isCyclicDirectedBFSTry1(loc);
+                    if(isCyclic){
+                        cout<<"Cycle is present in the grpah found form "<<source->data<<endl;
+                        return true;
+                    }
+                }
+            } else if(choice==3){
+                 if(reverseAdjacancyList.empty()){
+                    cout<<"We first need to create Reverse Adjacancy List"<<endl;
+                    createReverseAdjacancyList();
+                }
+                unordered_set<node*>loc;
+                for(auto it:dataset){
+                    if(reverseAdjacancyList[it.second].empty()){
+                        loc.insert(it.second);
+                    }
+                }
+                cout<<"no of starting points are : "<<loc.size()<<endl;
+                isCyclic=isCyclicDirectedBFSTry2(loc);
+                 if(isCyclic){
+                    cout<<"Cycle is present in the grpah found form "<<source->data<<" using kahn's algorithm"<<endl;
+                    return true;
+                }
+            }else if(choice==4){
+                 if(reverseAdjacancyList.empty()){
+                    cout<<"We first need to create Reverse Adjacancy List"<<endl;
+                    createReverseAdjacancyList();
+                }
+                queue<node*>loc;
+                for(auto it:dataset){
+                    if(reverseAdjacancyList[it.second].empty()){
+                        loc.push(it.second);
+                    }
+                }
+                cout<<"no of starting points are : "<<loc.size()<<endl;
+                int cnt=0;
+                isCyclic=isCyclicDirectedBFSTry3(loc,cnt);
+                 if(isCyclic){
+                    cout<<"Cycle is present in the grpah found using kahn's algorithm"<<endl;
                     return true;
                 }
             }
-            cout<<"CYcle not present"<<endl;
-            return false;
+         
+            if(isCyclic)cout<<"CYcle is present in the Directed Graph"<<endl;
+            else cout<<"Cycle is Not present in the Directed Graph"<<endl;
+            return isCyclic;
         }
         int totalMergePoints=0;
 
@@ -3386,6 +3490,18 @@ class Graph{
             cout<<"Answer = "<<ans<<endl;
         }
 
+        void createReverseAdjacancyListDFS(node*curr_node){
+            if(visited.find(curr_node)!=visited.end())return;
+            else visited.insert(curr_node);
+            for(auto& neighbours : curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    reverseAdjacancyList[neighbour].insert(curr_node);
+                    createReverseAdjacancyListDFS(neighbour);
+                }
+            }
+        }
+
         void createReverseAdjacancyListBFS(unordered_set<node*>&sources){
             if(sources.empty()){
                 cout<<"USet found empty"<<endl;
@@ -3393,7 +3509,8 @@ class Graph{
             }
             unordered_set<node*>newSources;
             for(node*curr_node:sources){
-                visited.insert(curr_node);
+                if(visited.find(curr_node)!=visited.end())continue;
+                else visited.insert(curr_node);
                 for(auto &neighbours:curr_node->connections_map){
                     node*neighbour=neighbours.second.first;
                     reverseAdjacancyList[neighbour].insert(curr_node);
@@ -3420,14 +3537,26 @@ class Graph{
                 return;
             }
             // start=dataset[startData];
-            if(choice){
 
+            if(choice){
+                for(auto &it:dataset){
+                    if(visited.find(it.second)==visited.end()){
+                        reverseAdjacancyList[it.second];
+                        createReverseAdjacancyListDFS(it.second);
+                    }
+                }
+                cout<<"Reverse Adjacancy List created using DFS"<<endl;
             } else {
-                // cout<<"Starting traversal from "<<start->data<<endl;
                 unordered_set<node*>sources;
-                // sources.insert(start);
-                sources.insert(startNode);
-                createReverseAdjacancyListBFS(sources);
+                for(auto &it:dataset){
+                    if(visited.find(it.second)==visited.end()){
+                        reverseAdjacancyList[it.second];
+                        sources.insert(it.second);
+                        createReverseAdjacancyListBFS(sources);
+                    }
+                    sources.clear();
+                }
+                cout<<"Reverse adjacancy list created using BFS"<<endl;
             }
             cout<<"The Reverse Adjacancy List is created"<<endl;
             displayReverseAdjacancyList();
@@ -3447,8 +3576,18 @@ class Graph{
                 cout<<endl;
             }
         }
+
+        void reverseTopologicalSorting(){
+            if(reverseAdjacancyList.empty()){
+                cout<<"Reverse adjacancy list i smepty so first we need to create it"<<endl;
+                createReverseAdjacancyList();
+            }
+             
+        }
 };
 
+//5nodesDirectedCyclePresent
+//11nodesTopologicalSortingComplex
 // 5nodesTopologicalSorting2SourceNodes
 
 Graph*  Graph :: instance = nullptr;
@@ -3567,9 +3706,6 @@ void setDirection(){
 }
 
 int main(){
-    
-
-
     vector<string>all_paths;
     unordered_map<int,node*>dataset;
     unordered_map<node*,list<node*>>map;
@@ -3694,7 +3830,7 @@ int main(){
             graph.colorGraphAndCheckBipartiteness();
         }
         else if(choice==36){
-            graph.isCyclicGraphDirected();
+            graph.isCyclicDirected();
         }
         else if(choice==37){
             graph.isCyclicDirected();
