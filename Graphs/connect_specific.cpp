@@ -2934,6 +2934,7 @@ class Graph{
                         return true;
                     }
                 }
+                reverseAdjacancyList.clear();
             } else if(choice==3){
                  if(reverseAdjacancyList.empty()){
                     cout<<"We first need to create Reverse Adjacancy List"<<endl;
@@ -2951,6 +2952,7 @@ class Graph{
                     cout<<"Cycle is present in the grpah found form "<<source->data<<" using kahn's algorithm"<<endl;
                     return true;
                 }
+                reverseAdjacancyList.clear();
             }else if(choice==4){
                  if(reverseAdjacancyList.empty()){
                     cout<<"We first need to create Reverse Adjacancy List"<<endl;
@@ -2969,6 +2971,7 @@ class Graph{
                     cout<<"Cycle is present in the grpah found using kahn's algorithm"<<endl;
                     return true;
                 }
+                reverseAdjacancyList.clear();
             }
          
             if(isCyclic)cout<<"CYcle is present in the Directed Graph"<<endl;
@@ -3587,10 +3590,11 @@ class Graph{
         }
 };
 
+//File Names
+
 //5nodesDirectedCyclePresent
 //11nodesTopologicalSortingComplex
 // 5nodesTopologicalSorting2SourceNodes
-
 Graph*  Graph :: instance = nullptr;
 
 void DFS_using_stack(stack<node*>&loc,node*&target,vector<string>&all_paths,string path="->"){
