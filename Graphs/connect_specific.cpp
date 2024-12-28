@@ -149,6 +149,8 @@ class Graph{
         unordered_map<node*,unordered_map<node*,int>>adjacancyMatrixUsingGraph;
         unordered_map<node*,unordered_set<node*>>reverseAdjacancyList;
         node* destination=nullptr;
+        vector<string>stringVector;
+        vector<vector<int>>intMatrix;
         node* source=nullptr;
         vector<vector<int>>matrix;
         bool flag=false;
@@ -3585,6 +3587,298 @@ class Graph{
             }
              
         }
+
+        void diejkstraWithAdjacancyListHelper(queue<int>&loc,vector<vector<int>>& adjacancyList,vector<int>&shortestDist){
+            while(!loc.empty()){
+                int curr=loc.front();
+                loc.pop();
+                for(int neighbour : adjacancyList[curr]){   
+                    if(visitedNodes.find(neighbour)==visitedNodes.end()){
+                        // int newCost=shortestDist[curr]+
+                    }
+                }
+            }
+        }
+
+        void dijekstrasWithMatrix(vector<vector<int>>&adjacancyList){
+                // unordered_map<int,unordered_map<int,int>>adjacancyList;
+                
+                int startData;
+                cout<<"Enter node from which you want to start : ";
+                cin>>startData;
+                vector<int>shortestDist(adjacancyList.size(),INT_MAX);
+                shortestDist[startData]=0;
+                cout<<"starting traversal form "<<startData<<endl;
+                queue<int>loc;
+                loc.push(startData);
+
+        }
+
+        unordered_map<char,unordered_set<char>>adjacancyListChar;
+        unordered_map<char,unordered_set<char>>incomingDegree;
+    
+        string topoBFS(queue<char>&loc,int &visited,string & seq){
+            if(loc.empty()){
+                if(visited>=incomingDegree.size())return seq;
+                else {
+                    cout<<" no of characters visited = "<<visited<<endl;
+                    return "";
+                }
+            }
+            char curr=loc.front();
+            cout<<"Going through "<<curr<<endl;
+            visited++;
+            seq=seq+curr;
+            loc.pop();
+            for(char neighbour:adjacancyListChar[curr]){
+                    incomingDegree[neighbour].erase(curr);;
+                    cout<<"neighbour : "<<neighbour<<" has incoming degree = "<<incomingDegree[neighbour].size()<<endl;
+                    if(incomingDegree[neighbour].empty()){
+                        loc.push(neighbour);
+                    }
+                }
+                return topoBFS(loc,visited,seq);
+        }
+            
+        // void displayadjacancyListChar(){
+        //     for(auto curr=adjacancyListChar.begin();curr!=adjacancyListChar.end();curr++){
+        //         cout<<curr->first<<" is connected with letters -> ";
+        //         for(char neighbour:curr->second){
+        //             cout<<neighbour<<" ";
+        //         }
+        //         cout<<endl;
+        //     }
+        // }
+
+        string alienDictionary() {
+            int k;
+            fetchStringVector();
+            cout<<"Enter k : ";
+            cin>>k;
+
+            for(int i=0;i<stringVector.size()-1;i++){
+                int j=0;
+                while(1){
+                    if(j>=stringVector[i].size()||j>=stringVector[i+1].size())
+                        break;
+                    if(stringVector[i][j]!=stringVector[i+1][j]){
+                        adjacancyListChar[stringVector[i][j]].insert(stringVector[i+1][j]);
+                        incomingDegree[stringVector[i+1][j]].insert(stringVector[i][j]);
+                        incomingDegree[stringVector[i][j]];
+                        break;
+                    } else {
+                        j++;
+                    }
+                }
+            }
+
+            // displayadjacancyListChar();
+
+            queue<char>loc;
+            cout<<"Size of adjacancyListChar = "<<adjacancyListChar.size()<<endl;
+            cout<<"SIze of incomingDegree = "<<incomingDegree.size()<<endl;
+            cout<<"Starting TopoSort from : "<<endl;
+            for(auto it:incomingDegree){
+                if(it.second.empty()){
+                    cout<<it.first<<" is connected with "<<adjacancyListChar[it.first].size()<<" neighbours";
+                    loc.push(it.first);
+                } 
+            }
+
+            string seq="";
+            int visited=0;
+            cout<<"There are total "<<loc.size()<<" source points"<<endl;
+            string ans=topoBFS(loc,visited,seq);
+            cout<<"NO. of visited characters "<<visited<<endl;
+            cout<<"Answer recievd = "<<ans<<endl;
+            return ans;
+        }
+
+        void fetchMatrixInt(){
+            string path="graphs_data/intMatrix/";
+            string filename;
+            cout<<"Enter filename : ";
+            cin>>filename;
+            path=path+filename;
+            ifstream input(path,ios::in);
+            if(!input.is_open()){
+                cout<<"Error opennignt he file "<<endl;
+                return;
+            }
+            int var;
+            string line;
+            while(getline(input,line)){
+                stringstream ss(line);
+                vector<int>temp;
+                while(ss>>var){
+                    temp.push_back(var);
+                }
+                intMatrix.push_back(temp);
+            }
+            cout<<"Matrix fetched form file"<<endl;
+        }
+
+        void fetchStringVector(){
+            stringVector.clear();
+            string path="graphs_data/stringMatrix/";
+            string filename;
+            cout<<"Enter filename : ";
+            cin>>filename;
+            path+=filename;
+            ifstream input(path,ios::in);
+            if(!input.is_open()){
+                cout<<"Error openign the file"<<endl;
+                return;
+            }
+            string line;
+            
+            while(getline(input,line)){
+                stringVector.push_back(line);
+            }
+            cout<<"Data fetched from  file"<<endl;
+            input.close();
+        }
+
+        unordered_map<int,unordered_map<int,int>>adjacancyList;
+        unordered_map<int,int>incomingDegreeInt;
+        unordered_map<int,int>shortestDist;
+
+        void topoShortestDistBFS(queue<int>&loc,int&visited){
+            if(loc.empty())return;
+            int curr=loc.front();
+            visited++;
+            loc.pop();
+            for(auto neighbours:adjacancyList[curr]){
+                incomingDegreeInt[neighbours.first]--;
+                if(incomingDegreeInt[neighbours.first]==0){
+                    loc.push(neighbours.first);
+                }
+                int newCost=shortestDist[curr]+neighbours.second;
+                if(shortestDist[neighbours.first]>newCost){
+                    shortestDist[neighbours.first]=newCost;
+                }
+            }
+            topoShortestDistBFS(loc,visited);
+        }
+
+        vector<int> topologicalShortestDistInDAG(){
+            adjacancyList.clear();
+            fetchMatrixInt();
+            int v,e;
+            for(int i=0;i<intMatrix.size();i++){
+                adjacancyList[intMatrix[i][0]].insert({intMatrix[i][0],intMatrix[i][2]});
+                incomingDegreeInt[intMatrix[i][1]]++;
+                incomingDegreeInt[matrix[i][0]];
+            }
+            queue<int>loc;
+            for(auto it:incomingDegreeInt){
+                shortestDist[it.first]=INT_MAX;
+                if(it.second==0){
+                    loc.push(it.first);
+                    shortestDist[it.first]=0;
+                }
+            }
+            cout<<"Starting Topological Distance Mapping from "<<loc.size()<<" sources"<<endl;
+            vector<int>shortestDistance;
+            for(auto& it:shortestDist){
+                if(it.second!=INT_MAX)shortestDistance.push_back(it.second);
+                else shortestDistance.push_back(-1);
+            }
+            return shortestDistance;
+        }
+
+        unordered_map<string,unordered_set<string>>adjacancyListWords;
+        unordered_set<string>visitedWords;
+        bool isDiffOne(string str1,string str2){
+            int diff=0;
+            for(int i=0;i<str1.size();i++){
+                if(str1[i]!=str2[i]){
+                    diff++;
+                    if(diff==2)return false;
+                }
+            }
+            return diff==1?true:false;
+        }
+
+        void displayAdjacancyListOfWords(){
+            for(auto it:adjacancyListWords){
+                cout<<"Word : "<<it.first<<" Depends upon "<<it.second.size()<<" -> ";
+                for(string neighbour:it.second){
+                    cout<<neighbour<<" ";
+                }
+                cout<<endl;
+            }
+        }
+
+        void BFSWordLadder(queue<string>&loc,string targetWord,int& cnt){
+            if(loc.empty()){
+                cnt=-1;
+                return;
+            }
+            int size=loc.size();
+            while(size--){
+                string curr=loc.front();
+                if(curr==targetWord){
+                    cout<<"Found the end word : "<<curr<<endl;
+                    return;
+                }
+                visitedWords.insert(curr);
+                loc.pop();
+                for(string neighbour:adjacancyListWords[curr]){
+                    if(visitedWords.find(neighbour)==visitedWords.end()){
+                        loc.push(neighbour);
+                    }
+                }
+            }
+            cnt++;
+            return BFSWordLadder(loc,targetWord,cnt);
+        }
+
+        int wordLadder(){
+            fetchStringVector();
+            string startWord,targetWord;
+            cout<<"ENter start word : ";
+            cin>>startWord;
+            cout<<"Enter target word : ";
+            cin>>targetWord;
+            int cnt=0;
+            cout<<"Size of string vector = "<<stringVector.size()<<endl;
+            if(find(stringVector.begin(),stringVector.end(),targetWord)==stringVector.end()){
+                cout<<"Target word is not present int he string vector"<<endl;
+                return -1;
+            }
+            for(int i=0;i<stringVector.size()-1;i++){
+                string curr=stringVector[i];
+                for(int j=i+1;j<stringVector.size();j++){
+                    if(isDiffOne(curr,stringVector[j])){
+                        adjacancyListWords[curr].insert(stringVector[j]);
+                        adjacancyListWords[stringVector[j]].insert(curr);
+                    }
+                }
+            }
+            if(adjacancyListWords.find(startWord)==adjacancyListWords.end()){
+                cout<<"Start word not present in the wordlist initially"<<endl;
+                cnt++;
+                for(int i=0;i<stringVector.size();i++){
+                    if(isDiffOne(startWord,stringVector[i])){
+                        adjacancyListWords[startWord].insert(stringVector[i]);
+                        adjacancyListWords[stringVector[i]].insert(startWord);
+                    }
+                }
+            }
+            displayAdjacancyListOfWords();
+            queue<string>loc;
+            loc.push(startWord);
+            BFSWordLadder(loc,targetWord,cnt);
+            if(cnt!=-1){
+                cout<<"Reached the target word in "<<cnt<<" transformations"<<endl;
+            } else {
+                cout<<"Unable to reach "<<targetWord<<endl;
+            }
+            return cnt;
+        }
+
+
 };
 
 //5nodesDirectedCyclePresent
@@ -3695,7 +3989,8 @@ int getChoice(){
     cout<<"43 : Topological Sorting with N Rnadom nodes (using unordered_sets)"<<endl;
     cout<<"44 : Create reverse adjacnacy list "<<endl;
     cout<<"45 : Display Reverse Adjacancy List"<<endl; 
-    cout<<"46 : Display Dataset"<<endl;
+    cout<<"46 : Alien stringVectorionary"<<endl;
+    cout<<"47 : Word Ladder"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -3858,6 +4153,12 @@ int main(){
             graph.createReverseAdjacancyList();
         } else if(choice==45){
             graph.displayReverseAdjacancyList();
+        }
+        else if(choice==46){
+            graph.alienDictionary();
+        }
+        else if(choice==47){
+            graph.wordLadder();
         }
         sleep(2);
     }
