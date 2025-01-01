@@ -4,6 +4,7 @@
 #include<unordered_map>
 #include<stack>
 #include<queue>
+#include<set>
 #include<climits>
 #include<fstream>
 #include<sstream>
@@ -94,6 +95,8 @@ class node{
 
 class Graph{
     public:
+        static unordered_map<int,int>dijekstrasDist;
+
         class DijekstrasCompare{
             public:     
                 bool operator()(const node* n1,const node* n2){
@@ -135,6 +138,19 @@ class Graph{
                 }
         };
         
+        class dijekstrasPriorityQueue{
+            public:
+                bool operator()(node*n1,node*n2){
+                    return Graph::dijekstrasDist[n1->data]>Graph::dijekstrasDist[n2->data];
+                }
+        };
+
+        struct dijekstrasUsingSet{
+                bool operator()(node*n1,node*n2){
+                    return Graph::dijekstrasDist[n1->data]>Graph::dijekstrasDist[n2->data];
+                }
+        };
+
         unordered_map<int,node*>dataset;
         unordered_map<node*,list<node*>>adjacancy_list;
         unordered_map<node*,unordered_set<node*>>adjacancyList2;
@@ -3881,11 +3897,107 @@ class Graph{
             return cnt;
         }
 
+        unordered_map<string,int>heuristicValuesWithEndWord;
+
+        int noOfDifferences(string str1,string str2){
+            int i=0;
+            for(int j=0;j<str1.size();j++){
+                if(str1[j]!=str2[j])i++;
+            }
+            return i;
+        }
+
+        void wordLadderAStar(){
+            fetchStringVector();    
+            string targetWord;
+            cout<<"Enter target word : ";
+            cin>>targetWord;
+            for(string str:stringVector){
+                heuristicValuesWithEndWord[str]=noOfDifferences(targetWord,str);
+            }
+            cout<<"HEurtistic table created"<<endl;
+            for(auto it:heuristicValuesWithEndWord){
+                cout<<it.first<<" : "<<it.second<<endl;
+            }
+        }
+
+        void dijekstrasUsingPriorityQueue(priority_queue<node*,vector<node*>,dijekstrasPriorityQueue>&loc){
+
+            if(loc.empty()){
+                cout<<"Qeue found empty"<<endl;
+                return;
+            }
+            node*curr=loc.top();
+            loc.pop();
+            visited.insert(curr);
+            int shortestDist=INT_MAX,shortestNode=INT_MAX;
+            for(auto neighbours: curr->connections_map){
+                node*& neighbour=neighbours.second.first;
+                if(visited.find(neighbour)!=visited.end())continue;
+                int newCost=dijekstrasDist[curr->data]+neighbours.second.second;
+                if(dijekstrasDist.find(neighbour->data)==dijekstrasDist.end()){
+                    dijekstrasDist[neighbour->data]=newCost;
+                    // loc.push(neighbour);
+                } else if(dijekstrasDist[neighbour->data]>newCost){
+                    dijekstrasDist[neighbour->data]=newCost;
+                    // loc.push(neighbour);
+                }
+                if(dijekstrasDist[neighbour->data]<shortestDist&&visited.find(neighbour)==visited.end()){
+                    shortestDist=dijekstrasDist[neighbour->data];
+                    shortestNode=neighbour->data;
+                }
+            }
+            if(dataset.find(shortestNode)!=dataset.end())
+                loc.push(dataset[shortestNode]);
+            dijekstrasUsingPriorityQueue(loc);
+        }
+
+        void doDijekstrasUsingPriorityQueue(){
+            dijekstrasDist.clear();
+            int startData;
+            cout<<"ENter data of start node : ";
+            cin>>startData;
+            start=dataset[startData];
+            priority_queue<node*,vector<node*>,dijekstrasPriorityQueue>loc;
+            loc.push(start);
+            dijekstrasDist[start->data]=0;
+            dijekstrasUsingPriorityQueue(loc);
+            cout<<"Dijekstras done"<<endl;
+            for(auto it:dijekstrasDist){
+                cout<<it.first<<" : "<<it.second<<endl;
+            }
+        }
+
+        void dijekstrasUsingSet(set<node*,dijekstrasUsingSet>&loc){
+            if(loc.empty()){
+                cout<<"Set ofund empty"<<endl;
+                return;
+            }
+            node*curr=*(loc.begin());
+
+        }
+
+        void doDijekstrasUsingSets(){
+            dijekstrasDist.clear();
+            int startData;
+            cout<<"ENter data of start node : ";
+            cin>>startData;
+            start=dataset[startData];
+            // set<node*,dijekstrasUsingSet> loc;
+            dijekstrasDist[start->data]=0;
+
+            cout<<"Dijekstras done"<<endl;
+            for(auto it:dijekstrasDist){
+                cout<<it.first<<" : "<<it.second<<endl;
+            }
+        }
+
 
 };
 
-//File Names
+unordered_map<int, int> Graph::dijekstrasDist;
 
+//File Names
 //5nodesDirectedCyclePresent
 //11nodesTopologicalSortingComplex
 // 5nodesTopologicalSorting2SourceNodes
@@ -3995,6 +4107,8 @@ int getChoice(){
     cout<<"45 : Display Reverse Adjacancy List"<<endl; 
     cout<<"46 : Alien stringVectorionary"<<endl;
     cout<<"47 : Word Ladder"<<endl;
+    cout<<"48 : A Star Word Ladder"<<endl;
+    cout<<"49 : Dijekstras Using Prioirty Queue"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -4163,6 +4277,11 @@ int main(){
         }
         else if(choice==47){
             graph.wordLadder();
+        }
+        else if(choice==48){
+            graph.wordLadderAStar();
+        } else if(choice==49){
+            graph.doDijekstrasUsingPriorityQueue();
         }
         sleep(2);
     }
