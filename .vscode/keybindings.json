@@ -1,0 +1,10 @@
+[
+    {
+        "key": "ctrl+t",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "g++ connect_specific.cpp && ./a.out\n"
+        }
+    }
+    // ...existing code...
+]

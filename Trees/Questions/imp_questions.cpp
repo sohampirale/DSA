@@ -195,6 +195,7 @@ void dotreeFromPostAndInUMap(){
     preetyDisplay(root);
     delteAllNodes(root);
 }
+
 int getChoice(){
     int choice;
     cout<<"1 : From Inorder & Preorder to tree building"<<endl;

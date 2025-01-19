@@ -10,8 +10,8 @@
 #include<sstream>
 #include<list>
 #include<filesystem>
-#include <csignal>
-#include <cstdlib>
+#include<csignal>
+#include<cstdlib>
 #include<unordered_set>
 #include<unistd.h>
 
@@ -145,12 +145,21 @@ class Graph{
                 }
         };
 
-        struct dijekstrasUsingSet{
-                bool operator()(node*n1,node*n2){
-                    return Graph::dijekstrasDist[n1->data]>Graph::dijekstrasDist[n2->data];
+        class dijekstrasPairNodeInt{
+            public:
+                bool operator()(pair<node*,int>&p1,pair<node*,int>&p2){
+                    return p1.second>p2.second;
                 }
         };
 
+        // struct dijekstrasUsingSet{
+        //         bool operator()(node*n1,node*n2){
+        //             return Graph::dijekstrasDist[n1->data]>Graph::dijekstrasDist[n2->data];
+        //         }
+        // };
+
+        static unordered_map<node*,int>dijekstrasMap;
+        unordered_map<node*,string>dijekstrasPaths;
         unordered_map<int,node*>dataset;
         unordered_map<node*,list<node*>>adjacancy_list;
         unordered_map<node*,unordered_set<node*>>adjacancyList2;
@@ -164,6 +173,7 @@ class Graph{
         unordered_map<int,unordered_set<int>>visitedPlaces;
         unordered_map<node*,unordered_map<node*,int>>adjacancyMatrixUsingGraph;
         unordered_map<node*,unordered_set<node*>>reverseAdjacancyList;
+
         node* destination=nullptr;
         vector<string>stringVector;
         vector<vector<int>>intMatrix;
@@ -175,6 +185,20 @@ class Graph{
         unordered_set<pair<int,int>,pairIntIntHash>visitedLoc;
         unordered_set<pair<int,string>,pairIntIntHash>distinctIslands;
         vector<string>fourDrxn={"d","u","r","l"};
+
+        class dijekstrasUsingPriorityQueueDijekstrasMap{
+            public:
+                bool operator()(node* n1,node*n2){
+                    return dijekstrasMap[n1]>dijekstrasMap[n2];
+                }
+        };
+
+        class dijekstrasUsingSet{
+            public:
+                bool operator()(node* n1,node*n2)const{
+                    return dijekstrasMap[n1]>dijekstrasMap[n2];
+                }
+        };
 
         Graph(){
             signal(SIGSEGV, signalHandler); //  segmentation fault
@@ -3808,6 +3832,7 @@ class Graph{
 
         unordered_map<string,unordered_set<string>>adjacancyListWords;
         unordered_set<string>visitedWords;
+
         bool isDiffOne(string str1,string str2){
             int diff=0;
             for(int i=0;i<str1.size();i++){
@@ -3921,6 +3946,26 @@ class Graph{
             }
         }
 
+        void displayDijekstrasPaths(){
+            cout<<"Dijekstras path are : "<<endl;
+            for(auto it:dijekstrasPaths){
+                cout<<it.first->data<<" : "<<it.second<<endl;
+            }
+        }
+
+        void displayDijekstrasDist(){
+            cout<<"Dijekstras Distances are : "<<endl;
+            for(auto it:dijekstrasMap){
+                cout<<it.first->data<<" : "<<it.second<<endl;
+            }
+        }
+
+        void resetDijekstrasMap(){
+            for(auto it:dataset){
+                dijekstrasMap[it.second]=INT_MAX;
+            }
+        }
+
         void dijekstrasUsingPriorityQueue(priority_queue<node*,vector<node*>,dijekstrasPriorityQueue>&loc){
 
             if(loc.empty()){
@@ -3968,33 +4013,528 @@ class Graph{
             }
         }
 
-        void dijekstrasUsingSet(set<node*,dijekstrasUsingSet>&loc){
+        // void dijekstrasUsingSet(set<node*,dijekstrasUsingSet>&loc){
+        //    if(loc.empty()){
+        //     cout<<"Set found empty"<<endl;
+        //     return;
+        //    }
+        //    node* curr_node=*(loc.begin);
+        //    visited.insert(curr_node);
+        //    loc.erase(loc.begin());
+        //    int minD=INT_MAX;
+        //    node*next_node=nullptr;
+        //     for(auto neighbours: curr_node->connections_map){
+        //         node*neighbour=neighbours.second.first;
+        //         if(visited.find(neighbour)==visited.end()){
+        //             int nextDist=neighbours.second.second+dijekstrasDist[curr_node->data];
+        //             if(nextDist<dijekstrasDist[neighbours.first]){
+        //                 dijekstrasDist[neighbour->data]=nextDist;
+        //             }
+        //             if(dijekstrasDist[neighbour->data]<minD){
+        //                 minD=dijekstrasDist[neighbour->data];
+        //                 next_node=neighbour;
+        //             }
+        //         }
+        //     }
+        //     if(next_node){
+        //         cout<<"Pushing "<<next_node->data<<" in the set"<<endl;
+        //     }
+        // }
+
+        // void doDijekstrasUsingSets(){
+        //     dijekstrasDist.clear();
+        //     int startData;
+        //     cout<<"ENter data of start node : ";
+        //     cin>>startData;
+        //     start=dataset[startData];
+        //     // set<node*,dijekstrasUsingSet> loc;
+        //     dijekstrasDist[start->data]=0;
+        //     cout<<"Dijekstras done"<<endl;
+        //     for(auto it:dijekstrasDist){
+        //         cout<<it.first<<" : "<<it.second<<endl;
+        //     }
+        // }
+ 
+        void dijekstrasUsingPriorityQueueTry3(priority_queue<node*,vector<node*>,dijekstrasUsingPriorityQueueDijekstrasMap>&loc){
             if(loc.empty()){
-                cout<<"Set ofund empty"<<endl;
+                cout<<"Queue found empty"<<endl;
                 return;
             }
-            node*curr=*(loc.begin());
+            node*curr_node=loc.top();
+            loc.pop();
+            if(visited.find(curr_node)!=visited.end()){
+                cout<<"Revisited "<<curr_node->data<<endl;
+                dijekstrasUsingPriorityQueueTry3(loc);
+                return;
+            } else {
+                cout<<"Going through : "<<curr_node->data<<endl;
+                visited.insert(curr_node);
+            }
 
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                    if(nextD<dijekstrasMap[neighbour]){
+                        cout<<"For "<<neighbours.first<<" chnaged from "<<dijekstrasMap[neighbour]<<" to "<<nextD<<endl;
+                        dijekstrasMap[neighbour]=nextD;
+                        loc.push(neighbour);
+                    }
+                }
+            }
+            dijekstrasUsingPriorityQueueTry3(loc);
         }
 
-        void doDijekstrasUsingSets(){
-            dijekstrasDist.clear();
+        void dodijekstrasUsingPriorityQueueDijekstrasMap(){
+            resetDijekstrasMap();   // Setting dijekstras idstance of all nodes to be INT_MAX
             int startData;
-            cout<<"ENter data of start node : ";
+            cout<<"Enter start node data : ";
             cin>>startData;
-            start=dataset[startData];
-            // set<node*,dijekstrasUsingSet> loc;
-            dijekstrasDist[start->data]=0;
+            priority_queue<node*,vector<node*>,dijekstrasUsingPriorityQueueDijekstrasMap>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            loc.push(dataset[startData]);
+            dijekstrasUsingPriorityQueueTry3(loc);
+            cout<<"Dijeskstras try3 performed"<<endl;
+            displayDijekstrasDist();
+        }
 
-            cout<<"Dijekstras done"<<endl;
-            for(auto it:dijekstrasDist){
-                cout<<it.first<<" : "<<it.second<<endl;
+        //using only a set (node*)
+        void dijekstrasUsingExploredSet(set<node*,dijekstrasUsingSet>&loc){
+            if(loc.empty()){
+                cout<<"Set found empty"<<endl;
+                return;
             }
+            node* curr_node=*loc.begin();
+            loc.erase(loc.begin());
+            for(auto neighbours:curr_node->connections_map){
+                node* neighbour=neighbours.second.first;
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                if(nextD<dijekstrasMap[neighbour]){
+                    loc.erase(neighbour);
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.insert(neighbour);
+                }
+            }
+            dijekstrasUsingExploredSet(loc);
+        }
+
+        void doDijekstrasUsingExploredSet(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData;
+            set<node*,dijekstrasUsingSet>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            loc.insert(dataset[startData]);
+            dijekstrasUsingExploredSet(loc);
+            cout<<"Dijekstras using Explored set done"<<endl;
+            displayDijekstrasDist();
+        }
+
+        void dijekstrasUsingExploredSetRecordsPath(set<node*,dijekstrasUsingSet>&loc){
+            if(loc.empty())return;
+            node*curr_node=*loc.begin();
+            loc.erase(loc.begin());
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                if(nextD<dijekstrasMap[neighbour]){
+                    loc.erase(neighbour);
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.insert(neighbour);
+                    dijekstrasPaths[neighbour]=dijekstrasPaths[curr_node]+to_string(neighbour->data)+"->";
+                    // cout<<"Setting path of "<<neighbour->data<<" as : "<<dijekstrasPaths[curr_node]+to_string(curr_node->data)+"->"<<endl;
+                }
+            }
+            dijekstrasUsingExploredSetRecordsPath(loc);
+        }
+
+        void doDijekstrasUsingExploredSetRecordsPath(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData;
+            set<node*,dijekstrasUsingSet>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            dijekstrasPaths[dataset[startData]]=to_string(startData)+"->";
+            loc.insert(dataset[startData]);
+            dijekstrasUsingExploredSetRecordsPath(loc);
+            cout<<"Dijekstras using Explored set done"<<endl;
+            displayDijekstrasDist();
+            displayDijekstrasPaths();
+        }
+
+        void dijekstrasUsingPriorityQueueTry4(priority_queue<node*,vector<node*>,dijekstrasUsingPriorityQueueDijekstrasMap>&loc,int currMax){
+            if(loc.empty()){
+                cout<<"Prioirty Queue foudn empty"<<endl;
+                return;
+            }
+            node* curr_node=loc.top();
+            loc.pop();
+            if(dijekstrasMap[curr_node]<=currMax){
+                cout<<"Revisited "<<curr_node->data<<endl;
+                dijekstrasUsingPriorityQueueTry4(loc,currMax);
+                return;
+            } else currMax=dijekstrasMap[curr_node];
+            cout<<"Goign through "<<curr_node->data<<endl;
+            for(auto neighbours:curr_node->connections_map){
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                node*neighbour=neighbours.second.first;
+                if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.push(neighbour);
+                }
+            }
+            dijekstrasUsingPriorityQueueTry4(loc,currMax);
+        }
+
+        void doDijekstrasUsingPriorityQueueTry4(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData;
+            priority_queue<node*,vector<node*>,dijekstrasUsingPriorityQueueDijekstrasMap>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            loc.push(dataset[startData]);
+            dijekstrasUsingPriorityQueueTry4(loc,-1); //-1 is currMax 
+            cout<<"Dijekstras using Priority Queue Try4 done"<<endl;
+            displayDijekstrasDist();
+        }
+        
+        unordered_set<node*>explored;
+        void dijekstrasUsingSetAndUSet(set<node*,dijekstrasUsingSet>&loc){
+            if(loc.empty()){
+                cout<<"Set found empty"<<endl;
+                return;
+            }
+            node*curr_node=*loc.begin();
+            loc.erase(loc.begin());
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    if(explored.find(neighbour)==explored.end()){
+                        loc.insert(neighbour);
+                        explored.insert(neighbour);
+                    } else {
+                        loc.erase(neighbour);
+                        loc.insert(neighbour);
+                    }
+                }
+            }
+            dijekstrasUsingSetAndUSet(loc);
+        }
+
+        void doDijekstrasUsingSetAndUSet(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData;
+            set<node*,dijekstrasUsingSet>loc;
+            loc.insert(dataset[startData]);
+            dijekstrasMap[dataset[startData]]=0;
+            dijekstrasUsingSetAndUSet(loc);
+            cout<<"Dijekstras using Set and USet done"<<endl;
+            displayDijekstrasDist();
+        }
+
+        void dijekstrasUsingPriorityQueueTry5(priority_queue<pair<node*,int>,vector<pair<node*,int>>,dijekstrasPairNodeInt>&loc){
+            if(loc.empty()){
+                cout<<"queue found empty"<<endl;
+                return;
+            }
+            node* curr_node=loc.top().first;;
+            int currD=loc.top().second;
+            loc.pop();
+            if(currD>dijekstrasMap[curr_node]){
+                cout<<"revisited "<<curr_node->data<<endl;
+                dijekstrasUsingPriorityQueueTry5(loc);
+                return;
+            } else {
+                cout<<"Going through "<<curr_node->data<<endl;
+            }
+            for(auto neighbours:curr_node->connections_map){
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                node* neighbour=neighbours.second.first;
+                if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.push({neighbour,nextD});
+                    cout<<"Pushing "<<neighbour->data<<endl;
+                }
+            }
+            dijekstrasUsingPriorityQueueTry5(loc);
+        }
+
+        void doDijekstrasUsingPriorityQueueTry5(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData;
+            priority_queue<pair<node*,int>,vector<pair<node*,int>>,dijekstrasPairNodeInt>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            loc.push({dataset[startData],-1}); 
+            dijekstrasUsingPriorityQueueTry5(loc); 
+            cout<<"Dijekstras using Priority Queue Try5 done"<<endl;
+            displayDijekstrasDist();
+        }
+
+        //in this dijekstrasMap used as an explored set
+        void dijesktrasUsingSetTry2(set<node*,dijekstrasUsingSet>&loc){
+            if(loc.empty()){
+                cout<<"Set found empty"<<endl;
+                return;
+            }
+            node* curr_node=*loc.begin();;
+            loc.erase(loc.begin());
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                if(dijekstrasMap[neighbour]==INT_MAX){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.insert(neighbour);
+                } else if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.erase(neighbour);
+                    loc.insert(neighbour);
+                }
+            }
+            dijesktrasUsingSetTry2(loc);
+        }
+
+        void doDijesktrasUsingSetTry2(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData;
+            set<node*,dijekstrasUsingSet>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            loc.insert(dataset[startData]);
+            dijesktrasUsingSetTry2(loc); 
+            cout<<"Dijekstras using Set and DijekstrasMap as explored set done"<<endl;
+            displayDijekstrasDist();
+        }
+
+        void dijekstrasUsingSet_IntNode(set<pair<int,node*>,greater<pair<int,node*>>>&loc){
+            if(loc.empty()){
+                cout<<"Set found empty"<<endl;
+                return;
+            }
+            node* curr_node=(*loc.begin()).second;
+            int currD=(*loc.begin()).first;
+            loc.erase(loc.begin());
+            if(currD>dijekstrasMap[curr_node]){
+                cout<<"Revisited "<<curr_node->data<<endl;
+                dijekstrasUsingSet_IntNode(loc);
+                return;
+            } else cout<<"Goign through "<<curr_node->data<<endl;
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.insert({nextD,neighbour});
+                } 
+            }
+            dijekstrasUsingSet_IntNode(loc);
+        }   
+
+        void doDijekstrasUsingSet_IntNode(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData; 
+            set<pair<int,node*>,greater<pair<int,node*>>>loc;
+            dijekstrasMap[dataset[startData]]=0;
+            loc.insert({0,dataset[startData]});
+            dijekstrasUsingSet_IntNode(loc); 
+            cout<<"Dijekstras using Set in pair<int,node*> done"<<endl;
+            displayDijekstrasDist();
+        }
+
+        void dijekstrasUsingQueue(queue<node*>&loc){
+            if(loc.empty()){
+                cout<<"Queue found empty"<<endl;
+                return;
+            }
+            node*curr_node=loc.front();
+            loc.pop();
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                int nextD=dijekstrasMap[curr_node]+neighbours.second.second;
+                if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.push(neighbour);
+                }
+            }
+            dijekstrasUsingQueue(loc);
+        }
+
+        void doDijekstrasUsingQueue(){
+            resetDijekstrasMap();
+            int startData;
+            cout<<"Enter start data : ";
+            cin>>startData; 
+            queue<node*>loc;
+            loc.push(dataset[startData]);
+            dijekstrasMap[dataset[startData]]=0;
+            dijekstrasUsingQueue(loc);
+            cout<<"Dijekstras using Queue done"<<endl;
+            displayDijekstrasDist();
+        }
+
+        void dijekstras(){
+            int choice;
+            cout<<"Dijekstras : "<<endl;
+            cout<<"1 : Using Prioirty queue Try3"<<endl;
+            cout<<"2 : Using Explored Set"<<endl;            //Only inserted in set when relaxed succesfully than curent value
+            cout<<"3 : Using Explored Set Records Paths"<<endl;
+            cout<<"4 : Using Priority Queue ONLY(try4)"<<endl;
+            cout<<"5 : Using Prioirty Queue Pair<node*,int>"<<endl;
+            cout<<"6 : Using Seta nd Unordered Set"<<endl;
+            cout<<"7 : Using Set and using dijekstrasMap as explored Set"<<endl;
+            cout<<"8 : Using Set and pair<int,node*>"<<endl;
+            cout<<"9 : Dijekstras Using Queue"<<endl;
+            cout<<"Enter your choice : ";
+            cin>>choice;
+            if(choice==2){
+                doDijekstrasUsingExploredSet();
+            } 
+            else if(choice==3){
+                doDijekstrasUsingExploredSetRecordsPath();
+            } 
+            else if(choice==4){
+                doDijekstrasUsingPriorityQueueTry4();
+            }
+            else if(choice==5){
+                doDijekstrasUsingPriorityQueueTry5();
+            }
+            else if(choice==6){
+                doDijekstrasUsingSetAndUSet();
+            }
+            else if(choice==7){
+                doDijesktrasUsingSetTry2();
+            }
+            else if(choice==8){
+                doDijekstrasUsingSet_IntNode();
+            }
+            else if(choice==9){
+                doDijekstrasUsingQueue();
+            }
+
+        }
+    
+        int minCost=INT_MAX,maxStops;
+        void DFSSourceToDestinationWithAtmostKstops(node*curr_node,int cost,int step){
+            if(step>maxStops){
+                return;
+            } else if(curr_node==destination){
+                cout<<"Reached "<<destination->data<<" in cost = "<<cost<<endl;
+                if(cost<minCost){
+                    minCost=cost;
+                }
+                return;
+            }
+            visited.insert(curr_node);
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                if(visited.find(neighbour)==visited.end()){
+                    DFSSourceToDestinationWithAtmostKstops(neighbour,cost+neighbours.second.second,step+1);
+                }
+            }
+        }
+
+        class PairNodeIntIntCompare{
+            public:
+                bool operator()(pair<node*,pair<int,int>>&p1,pair<node*,pair<int,int>>&p2)const{
+                    return dijekstrasMap[p1.first]>dijekstrasMap[p2.first];
+                }
+        };
+
+        void DijekstrasSourceToDestinationWithAtmostKstops(priority_queue<pair<node*,pair<int,int>>,vector<pair<node*,pair<int,int>>>,PairNodeIntIntCompare>&loc){
+            if(loc.empty())return;
+            node* curr_node=loc.top().first;
+            int stops=loc.top().second.second;
+            int cost=loc.top().second.first;
+            loc.pop();
+            if(visited.find(curr_node)!=visited.end()){
+                cout<<"Revisited "<<curr_node->data<<endl;
+                DijekstrasSourceToDestinationWithAtmostKstops(loc);
+                return;
+            } else if(stops>maxStops){
+                cout<<"Maximum stops exceeded at "<<curr_node->data<<endl;
+                if(curr_node==destination){
+                    dijekstrasMap[destination]=INT_MAX;
+                }
+                DijekstrasSourceToDestinationWithAtmostKstops(loc);
+                return;
+            } else if(curr_node==destination){
+                cout<<"Reached destination in "<<stops<<" stops and in cost = "<<cost<<endl;
+                if(cost<minCost){
+                    minCost=cost;
+                }
+                DijekstrasSourceToDestinationWithAtmostKstops(loc);
+                return;
+            } else visited.insert(curr_node);
+             
+            for(auto neighbours:curr_node->connections_map){
+                node*neighbour=neighbours.second.first;
+                int nextD=neighbours.second.second+dijekstrasMap[curr_node];
+                if(nextD<dijekstrasMap[neighbour]){
+                    dijekstrasMap[neighbour]=nextD;
+                    loc.push({neighbour,{neighbours.second.second,stops+1}});
+                    // cout<<"Pushed "<<neighbour->data<<endl;
+                }
+            }
+            DijekstrasSourceToDestinationWithAtmostKstops(loc);
+        }
+       
+        void BFSSourceToDestinationWithAtmostKstops(queue<pair<node*,pair<int,int>>>&loc){
+            if(loc.empty())return;
+            int size=loc.size();
+            while(size--){
+                node*curr_node=loc.front().first;
+                int cost=loc.front().s
+            }
+        }
+
+        void doSourceToDestinationWithAtmostKstops(){
+            visited.clear();
+            int startData,destinationData,choice;
+            minCost=INT_MAX;
+            cout<<"Enter data from whcih you want to start : ";
+            cin>>startData;
+            cout<<"Enter destination data : ";
+            cin>>destinationData;
+            cout<<"Enter maximum stops allowed : ";
+            cin>>maxStops;
+            start=dataset[startData];
+            destination=dataset[destinationData];
+            cout<<"1 : DFS"<<endl;
+            cout<<"2 : Dijekstras"<<endl;
+            cout<<"3 : BFS"<<endl;
+            cout<<"Your choice : ";
+            cin>>choice;
+
+            if(choice==1){
+                DFSSourceToDestinationWithAtmostKstops(start,0,0);
+            }
+            else if(choice==2){
+                resetDijekstrasMap();
+                dijekstrasMap[start]=0;
+                priority_queue<pair<node*,pair<int,int>>,vector<pair<node*,pair<int,int>>>,PairNodeIntIntCompare>loc;                
+                loc.push({start,{0,0}});
+                DijekstrasSourceToDestinationWithAtmostKstops(loc);
+            }
+
+            if(minCost!=INT_MAX) cout<<"Min cost required to reach destination is : "<<minCost<<endl;
+            else cout<<"Enable to reach destination"<<endl;
         }
 
 
 };
 
+unordered_map<node*,int> Graph::dijekstrasMap;
 unordered_map<int, int> Graph::dijekstrasDist;
 
 //File Names
@@ -4109,6 +4649,9 @@ int getChoice(){
     cout<<"47 : Word Ladder"<<endl;
     cout<<"48 : A Star Word Ladder"<<endl;
     cout<<"49 : Dijekstras Using Prioirty Queue"<<endl;
+    cout<<"50 : Diekstras Using Dijekstras Try3"<<endl;
+    cout<<"51 : All dijekstras"<<endl;
+    cout<<"52 : Shortest Pah k Stops"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -4119,7 +4662,12 @@ void setDirection(){
     cin>>bidirectional;
 }
 
+//About custom Comparator
+    //For set               n1 : new one
+    //For priority queue    n2 : new one
+
 int main(){
+
     vector<string>all_paths;
     unordered_map<int,node*>dataset;
     unordered_map<node*,list<node*>>map;
@@ -4282,6 +4830,14 @@ int main(){
             graph.wordLadderAStar();
         } else if(choice==49){
             graph.doDijekstrasUsingPriorityQueue();
+        }
+        else if(choice==50){
+            graph.dodijekstrasUsingPriorityQueueDijekstrasMap();
+        } else if(choice==51){
+            graph.dijekstras();
+        }
+        else if(choice==52){
+            graph.doSourceToDestinationWithAtmostKstops();
         }
         sleep(2);
     }
