@@ -8,7 +8,7 @@ unsigned long long fibo(unsigned long long n){
     if(n<=2)return 1;
     if(fiboMap.find(n)==fiboMap.end()){
         cnt++;
-        cout<<"Calculation no - "<<cnt<<endl;
+        // cout<<"Calculation no - "<<cnt<<endl;
         fiboMap[n]=fibo(n-1)+fibo(n-2);
     } 
     return fiboMap[n];
@@ -16,7 +16,7 @@ unsigned long long fibo(unsigned long long n){
 
 unsigned long long normalFibo(unsigned long long n){
     cnt++;
-    cout<<"making calculation no "<<cnt<<endl;
+    // cout<<"making calculation no "<<cnt<<endl;
     if(n==1||n==2)return 1;
     else return normalFibo(n-1)+normalFibo(n-2);
 }

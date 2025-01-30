@@ -1,6 +1,7 @@
 #include<iostream>
 #include<vector>
 #include<queue>
+#include<stack>
 #include<climits>
 #include<unordered_set>
 #include<unordered_map>
@@ -23,7 +24,11 @@ class DynamicProgramming{
         vector<pair<int,int>>downNleftNright={{0,-1},{1,0},{0,1}};
         vector<pair<int,int>>downNrightNdia={{1,0},{0,1},{1,1}};
         
+        unordered_set<unsigned long long>visitedNums;
         unordered_set<unsigned long long>notPossible;
+
+        //unordered_map<unsigned long long,vector<vector<unsigned long long>>>noOfWaysHowSum;
+        
         bool isSafe(int x,int y){
             return (x>=0&&y>=0&&x<noOfWays.size()&&y<noOfWays[x].size());
         }
@@ -59,20 +64,20 @@ class DynamicProgramming{
         }
 
         unsigned long long dynamicTraverse(int x,int y){
-        if(noOfWays[x][y]!=0){
-            savedCalculation++;
-            return noOfWays[x][y];
-        }
-        // cnt++;
-        // cout<<"Calculation no - "<<cnt<<endl;
-        for(auto it:downNright){
-            int nextX=x+it.first;
-            int nextY=y+it.second;
-            if(isSafe(nextX,nextY)){
-                noOfWays[x][y]+=dynamicTraverse(nextX,nextY);
+            if(noOfWays[x][y]!=0){
+                savedCalculation++;
+                return noOfWays[x][y];
             }
-        }
-        return noOfWays[x][y];
+            cnt++;
+            // cout<<"Calculation no - "<<cnt<<endl;
+            for(auto it:downNright){
+                int nextX=x+it.first;
+                int nextY=y+it.second;
+                if(isSafe(nextX,nextY)){
+                    noOfWays[x][y]+=dynamicTraverse(nextX,nextY);
+                }
+            }
+            return noOfWays[x][y];
         }
 
         unsigned long long matrixNormalTraverse(int x,int y){
@@ -129,11 +134,12 @@ class DynamicProgramming{
             noOfWays[targetX][targetY]=1;
             dynamicTraverse(0,0);
             // cout<<"Saved total "<<savedCalculation<<" calculation from outside"<<endl;
-            savedCalculation=0;
-            cnt=0;
-            savedCalculation=0;
             cout<<"Dynamically traversed from Top-Left to Bottom-Right"<<endl;
             cout<<"Total no of ways to reach destination are : "<<noOfWays[0][0]<<endl;
+            cout<<"Total function calls = "<<cnt<<endl;
+            cout<<"No. of saved calculations = "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
         }
 
         void createMatrix(int n=-1){
@@ -331,12 +337,19 @@ class DynamicProgramming{
         }
 
         bool helper_canSumDP(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long target){
-            cout<<"Curr = "<<curr<<endl;
-            if(curr>target||notPossible.find(curr)!=notPossible.end()){
+
+            // cout<<"Curr = "<<curr<<endl;
+            if(curr>target){
                 notPossible.insert(curr);
+                return false;
+            } else if(notPossible.find(curr)!=notPossible.end()){
+                savedCalculation++;
                 return false;
             }
             else if(curr==target)return true;
+            // cout<<"Curr = "<<curr<<endl;
+            cnt++;
+            // cout<<"Calculation no - "<<cnt<<endl;
             for(unsigned long long &next:nums){
                 if(helper_canSumDP(curr+next,nums,target))return true;
             }
@@ -363,11 +376,17 @@ class DynamicProgramming{
             } else {
                 cout<<"it is not possibel to reach target with given numbers"<<endl;
             }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"Total saved calculations dues to DP roughly : "<<savedCalculation<<endl;
+            cnt=0;
+            savedCalculation=0;
             return ans;
         }
 
         bool helper_canSum(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long target){
-            cout<<"hey"<<endl;
+            // cout<<"hey"<<endl;
+            cnt++;
+            // cout<<"Calculation no - "<<cnt<<endl;
             if(curr==target)return true;
             else if(curr>target)return false;
             bool ret=false;
@@ -395,7 +414,1225 @@ class DynamicProgramming{
             } else {
                 cout<<"it is not possibel to reach target with given numbers"<<endl;
             }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cnt=0;
             return ans;
+        }
+
+        bool helper_canMultiplyDP(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long & target){
+            if(curr>target){
+                notPossible.insert(curr);
+                return false;
+            }
+            else if(notPossible.find(curr)!=notPossible.end()){
+                savedCalculation++;
+                return false;
+            } else if(curr==target)return true;
+            cnt++;
+            for(int next : nums){
+                if(helper_canMultiplyDP(curr*next,nums,target))return true;
+            }
+            notPossible.insert(curr);
+            return false;
+        }
+
+        bool canMultiplyDP(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_canMultiplyDP(1,nums,target);
+            if(ans){
+                cout<<"It is possibel to reach multiplication = "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"Total saved calculations dues to DP roughly : "<<savedCalculation<<endl;
+            cnt=0;
+            savedCalculation=0;
+            return ans;
+        }
+
+        bool helper_canMultiply(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long &target){
+            if(curr>target)return false;
+            else if(curr==target)return true;
+            // cout<<"curr = "<<curr<<endl;
+            cnt++;
+            for(int next:nums){
+                if(helper_canMultiply(curr*next,nums,target))return true;
+            }
+            return false;
+        }
+
+        bool canMultiply(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_canMultiply(1,nums,target);
+            if(ans){
+                cout<<"It is possibel to reach multiplication = "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cnt=0;
+            return ans;
+        }
+
+        bool helper_canSumNegNums(long long curr,vector< long long>&nums,long long & target){
+            cout<<"curr = "<<curr<<endl;
+            if(curr==target)return true;
+            else if(curr>target||curr<(-target)||visitedNums.find(curr)!=visitedNums.end()){
+                return false;
+            }
+            // similar to notPossible set used in other applications of canSum / howSum
+            visitedNums.insert(curr);
+            cnt++;
+            for(int next:nums){
+                // cout<<"doing +"<<next<<endl;
+                if(helper_canSumNegNums(curr+next,nums,target))return true;
+            }
+            return false;
+        }
+
+        bool canSumNegNums(){
+            long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector< long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_canSumNegNums(0,nums,target);
+            if(ans){
+                cout<<"It is possibel to reach sum to : "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cnt=0;
+            return ans;
+        }
+
+        bool helper_canSumDecreasingFromTarget(long long curr,vector<long long>&nums){
+            // cout<<"curr = "<<curr<<endl;
+            if(curr==0){
+                return true;
+            } else if(curr<0){
+                return false;
+            } else if(notPossible.find(curr)!=notPossible.end()){
+                savedCalculation++;
+                return false;
+            }
+            cnt++;
+
+            for(int next:nums){
+                if(helper_canSumDecreasingFromTarget(curr-next,nums))return true;
+            }
+
+            notPossible.insert(curr);
+            return false;
+        }
+
+        bool canSumDecreasingFromTarget(){
+            long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector< long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_canSumDecreasingFromTarget(target,nums);
+            if(ans){
+                cout<<"It is possibel to reach sum to : "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            notPossible.clear();
+            return ans;
+        }
+
+        unordered_map<unsigned long long,unsigned long long>noOfPossibleWays;
+
+        unsigned long long helper_canSumNoOfWays(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long & target){
+            if(curr==target)return 1;
+            else if(curr>target)return 0;
+            else if(noOfPossibleWays.find(curr)!=noOfPossibleWays.end()){
+                savedCalculation++;
+                return noOfPossibleWays[curr];
+            }
+
+            //no need because if from one num it is not possible it will automatically becomes 0
+            // else if(notPossible.find(curr)!=notPossible.end())return 0;
+
+            for(unsigned long long next : nums){
+                noOfPossibleWays[curr]+=helper_canSumNoOfWays(curr+next,nums,target);
+            }
+            return noOfPossibleWays[curr];
+        }
+
+        bool canSumNoOfWays(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_canSumNoOfWays(0,nums,target);
+            if(ans){
+                cout<<"It is possibel to reach sum to : "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            
+            for(auto it:noOfPossibleWays){
+                if(it.second!=0){
+                    cout<<"From : "<<it.first<<" in "<<it.second<<" ways"<<endl;
+                }
+            }
+            cout<<target<<" can be reached in "<<noOfPossibleWays[0]<<" ways"<<endl;
+            notPossible.clear();
+            noOfPossibleWays.clear();
+            return ans;
+        }
+
+        bool helper_howSumRecursion(unsigned long long curr,vector<unsigned long long>&nums,vector<unsigned long long>&ansSum,unsigned long long target){
+            if(curr==target){
+                ansSum.push_back(target);
+                return true;
+            }
+            else if(curr>target)return false;
+            cnt++;
+            for(unsigned long long next:nums){
+                if(helper_howSumRecursion(curr+next,nums,ansSum,target)){
+                    ansSum.push_back(curr);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void howSumRecursion(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0),ansSum;
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_howSumRecursion(0,nums,ansSum,target);
+            if(ans){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+                cout<<"Ans : ";
+                for(unsigned long long num:ansSum)cout<<num<<",";
+                cout<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+        
+        }
+
+        bool helper_howSumDP(unsigned long long curr,vector<unsigned long long>&nums,vector<unsigned long long>&ansSum,unsigned long long& target){            
+            if(curr==target){
+                ansSum.push_back(curr);
+                return true;
+            } else if(curr>target) return false;
+            else if(notPossible.find(curr)!=notPossible.end()){
+                savedCalculation++;
+                return false;
+            }
+            cnt++;
+            for(unsigned long long next: nums){
+                if(helper_howSumDP(curr+next,nums,ansSum,target)){
+                    ansSum.push_back(curr);
+                    return true;
+                }
+            }
+            notPossible.insert(curr);
+            return false;
+        }
+
+        void howSumDP(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0),ansSum;
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            bool ans=helper_howSumDP(0,nums,ansSum,target);
+            if(ans){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+                cout<<"Ans : ";
+                for(unsigned long long num:ansSum)cout<<num<<",";
+                cout<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            notPossible.clear();
+        }
+
+        unordered_map<unsigned long long,vector<vector<unsigned long long>>>noOfWaysHowSum;
+
+        //this method doen't work for large targets becuase the vector<vector becomes very large
+        vector<vector<unsigned long long>> helper_howSumNoOfWays(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long &target){
+            //no need to check if(curr==target) becuase before 
+            //calling helper function noOfWaysHowSum[target]={{target}} done
+            cout<<"Curr = "<<curr<<endl;
+            if(curr>target){
+                return {};
+            }
+            else if(noOfWaysHowSum.find(curr)!=noOfWaysHowSum.end()){
+                // savedCalculation++;
+               return noOfWaysHowSum[curr];
+            }
+            
+            // cnt++;
+
+            
+            for(unsigned long long next:nums){
+                vector<vector<unsigned long long>>temp=helper_howSumNoOfWays(curr+next,nums,target);
+                if(!temp.empty()&&!temp[0].empty()){
+                    for(vector<unsigned long long>&it:temp){
+                        it.push_back(curr);
+                        noOfWaysHowSum[curr].push_back(it);
+                    }
+                } else {
+                    cout<<"for "<<next+curr<<" empty found"<<endl;
+                }
+            }
+            return noOfWaysHowSum[curr];
+        }
+
+        //Shows all possible ways to reach target via all numbers 
+        void howSumNoOfWays(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            cout<<"Lets start"<<endl;
+            noOfWaysHowSum[target]={{target}};
+
+            if(!helper_howSumNoOfWays(0,nums,target).empty()){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+                cout<<"Let's see from each no how many ways we can reach "<<target<<endl;
+                for(auto it:noOfWaysHowSum){
+                    if(!it.second.empty()){
+                        cout<<"From "<<it.first<<endl;
+                        for(unsigned long long i=0;i<it.second.size();i++){
+                            for(unsigned long long j=0;j<it.second[i].size();j++){
+                                cout<<it.second[i][j]<<",";
+                            }
+                            cout<<endl;
+                        }
+                    }
+                }
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            noOfWaysHowSum.clear();
+        }
+
+        bool helper_howSumNoOfWaysBoolTry(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long&target){
+            if(curr>target)return false;
+            else if(noOfWaysHowSum.find(curr)!=noOfWaysHowSum.end()){
+                savedCalculation++;
+                return true;
+            }
+            cnt++;
+            bool found=false;
+            for(unsigned long long& next:nums){
+                if(helper_howSumNoOfWaysBoolTry(curr+next,nums,target)){
+                    found=true;
+                    for(auto it:noOfWaysHowSum[curr+next]){
+                        it.push_back(curr);
+                        noOfWaysHowSum[curr].push_back(it);
+                    }
+                }
+            }
+            if(found)return true;
+            else return false;
+        }
+
+        // this also fails for big target as you can see with option '17' LARGE no of ways are possible to reach target so it takes large computing power to compute subsequent number vector<vector as we come up from bottom from trees
+        void howSumNoOfWaysBoolTry(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            cout<<"Lets start"<<endl;
+            noOfWaysHowSum[target]={{target}};
+
+            if(helper_howSumNoOfWaysBoolTry(0,nums,target)){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+                cout<<"Let's see from each no how many ways we can reach "<<target<<endl;
+                // for(auto it:noOfWaysHowSum){
+                //     if(!it.second.empty()){
+                //         cout<<"From "<<it.first<<endl;
+                //         for(unsigned long long i=0;i<it.second.size();i++){
+                //             for(unsigned long long j=0;j<it.second[i].size();j++){
+                //                 cout<<it.second[i][j]<<",";
+                //             }
+                //             cout<<endl;
+                //         }
+                //     }
+                // }
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            noOfWaysHowSum.clear();
+        }
+
+        unordered_map<unsigned long long,vector<unsigned long long>>bestSumMap;
+
+        bool helper_bestSum(unsigned long long curr,vector<unsigned long long>&nums,unsigned long long &target){
+            if(bestSumMap.find(curr)!=bestSumMap.end()){
+                savedCalculation++;
+                return true;
+            } else if(curr>target){
+                return false;
+            }
+            cnt++;
+            int minSize=INT_MAX;
+            bool found=false;
+            const auto it=nullptr;
+            vector<unsigned long long>minSizeArr;
+            for(unsigned long long& next:nums){
+                if(helper_bestSum(curr+next,nums,target)){
+                    if(!bestSumMap[curr+next].empty()){
+                        found=true;
+                        if(bestSumMap[curr+next].size()<minSize){
+                            minSizeArr=bestSumMap[curr+next];
+                            minSize=minSizeArr.size();
+                        }
+                    }
+                }
+            }
+            if(!minSizeArr.empty()){
+                minSizeArr.push_back(curr);
+                bestSumMap[curr]=minSizeArr;
+            }
+            return found;
+        }
+
+        void bestSum(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            cout<<"Lets start"<<endl;
+            bestSumMap[target]={target};
+            if(helper_bestSum(0,nums,target)){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+                cout<<"Best Path from 0-"<<target<<" is : ";
+                for(int var:bestSumMap[0]){
+                    cout<<var<<" ";
+                }
+                cout<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            noOfWaysHowSum.clear();
+        }
+        
+        unordered_map<string,int>countConstructMap;
+        string finalStr;
+        int size;
+
+        //  finalStr - azzzzzzzzzzzza
+        /// [z,b,a]
+
+
+        // azzccddeeffgghhjjkkllmmnnzza
+        //[ w x y t z n m l k j h g f e d c a d]
+        
+        bool helper_canConstructReursive(string curr,vector<string>&dict){
+            if(curr==finalStr){
+                return true;
+            } else if(curr.size()>=finalStr.size()){
+                return false;
+            }
+            // cout<<"cnt = "<<cnt<<endl;
+            cnt++;
+            for(string str:dict){
+                if(helper_canConstructReursive(curr+str,dict))return true;
+            }
+            return false;
+        }
+
+        void canConstructRecursive(){
+             int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            bool possible=helper_canConstructReursive("",dict);
+            if(possible){
+                cout<<"it is possible to construct "<<finalStr<<" using given dictionary of words"<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            cout<<"No of Function calls made : "<<cnt<<endl;
+            cnt=0;
+        }
+
+        unordered_set<string>notPossiblecanConstruct;
+
+        //in this DP used not checked-> whether curr is substring in finalStr or not and also the index at which the substring is present
+        bool helper_canConstructDP1(string curr,vector<string>&dict){
+            if(curr==finalStr)return true;
+            else if(notPossiblecanConstruct.find(curr)!=notPossiblecanConstruct.end()){
+                savedCalculation++;
+                return false;
+            } else if(curr.size()>=finalStr.size()){
+                return false;
+            }
+            cnt++;
+            for(string str:dict){
+                if(helper_canConstructDP1(curr+str,dict)){
+                    return true;
+                }
+            }
+            notPossiblecanConstruct.insert(curr);
+            return false;
+        }
+
+        void canConstructDP1(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            countConstructMap[finalStr]=1;
+            bool  possible=helper_canConstructDP1("",dict);
+            if(possible){
+                cout<<"it is possible to construct "<<finalStr<<" from given dictionary of words"<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            cout<<"No of function calls made : "<<cnt<<endl;
+            cout<<"Saved Calculations  : "<<savedCalculation<<endl;
+            cnt=0;
+            savedCalculation=0;
+            notPossiblecanConstruct.clear();
+        }
+       
+        unsigned long long notSubstringsavedCalculations=0;
+        unsigned long long substringPresentButNotAtStart=0;
+
+        bool helper_canConstructDP2(string curr,vector<string>&dict){
+            if(curr==finalStr)return true;
+            else if(notPossiblecanConstruct.find(curr)!=notPossiblecanConstruct.end()){
+                savedCalculation++;
+                return false;
+            } else if(finalStr.find(curr,0)==string::npos){
+                notSubstringsavedCalculations++;
+                return false;
+            }
+            cnt++;
+            for(string str:dict){
+                if(helper_canConstructDP2(curr+str,dict))return true;
+            }
+            notPossiblecanConstruct.insert(curr);
+            return false;
+        }
+
+        void canConstructDP2(){
+            notSubstringsavedCalculations=0;
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            countConstructMap[finalStr]=1;
+            bool  possible=helper_canConstructDP2("",dict);
+            if(possible){
+                cout<<"it is possible to construct "<<finalStr<<" from given dictionary of words"<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            cout<<"No of function calls made : "<<cnt<<endl;
+            cout<<"Saved Calculations  : "<<savedCalculation<<endl;
+            cout<<"no of calculations saved because curr is nto a substring of finalStr = "<<notSubstringsavedCalculations<<endl;
+            cnt=0;
+            savedCalculation=0;
+            notSubstringsavedCalculations=0;
+            notPossiblecanConstruct.clear();
+        }
+
+        bool helper_canConstructDP3(string curr,vector<string>&dict){
+            if(curr==finalStr)return true;
+            else if(notPossiblecanConstruct.find(curr)!=notPossiblecanConstruct.end()){
+                savedCalculation++;
+                return false;
+            } else if(finalStr.find(curr,0)==string::npos){
+                notSubstringsavedCalculations++;
+                return false;
+            } else if(finalStr.find(curr,0)!=0){
+                substringPresentButNotAtStart++;
+                return false;
+            }
+            cnt++;
+            for(string str:dict){
+                if(helper_canConstructDP3(curr+str,dict))return true;
+            }
+            notPossiblecanConstruct.insert(curr);
+            return false;
+        }
+
+        void canConstructDP3(){
+            notSubstringsavedCalculations=0;
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            countConstructMap[finalStr]=1;
+            bool  possible=helper_canConstructDP3("",dict);
+            if(possible){
+                cout<<"it is possible to construct "<<finalStr<<" from given dictionary of words"<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            cout<<"No of function calls made : "<<cnt<<endl;
+            cout<<"Saved Calculations  : "<<savedCalculation<<endl;
+            cout<<"no of calculations saved because curr is nto a substring of finalStr = "<<notSubstringsavedCalculations<<endl;
+            cout<<"No of calculations saved because substring was present but not at start = "<<substringPresentButNotAtStart<<endl;
+            cnt=0;
+            savedCalculation=0;
+            notSubstringsavedCalculations=0;
+            substringPresentButNotAtStart=0;
+            notPossiblecanConstruct.clear();
+        }
+
+        int helper_countConstruct(string curr,vector<string>&dict){
+            if(countConstructMap.find(curr)!=countConstructMap.end()){
+                return countConstructMap[curr];
+            } else if(curr.size()>=finalStr.size()||finalStr.find(curr)==string::npos){
+                return countConstructMap[curr];
+            }
+            int count=0;
+            for(string str:dict){
+                count+=helper_countConstruct(curr+str,dict);
+            }
+            countConstructMap[curr]=count;
+            return count; 
+        }
+
+        int countConstruct(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            countConstructMap[finalStr]=1;
+            int count=helper_countConstruct("",dict);
+            if(count!=0){
+                cout<<"No of ways to construct "<<finalStr<<" are "<<count<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            countConstructMap.clear();
+            return count;
+        }
+
+        unordered_set<string>howConstructMap_notPossible;
+
+        bool helper_howConstruct(string curr,vector<string>&dict,vector<string>&ans){
+            if(curr==finalStr)return true;
+            else if(curr.size()>=finalStr.size()||howConstructMap_notPossible.find(curr)!=howConstructMap_notPossible.end()){
+                return false;
+            }
+
+            for(string str:dict){
+                if(helper_howConstruct(curr+str,dict,ans)){
+                    ans.push_back(str);
+                    return true;
+                }
+            }
+            howConstructMap_notPossible.insert(curr);
+            return false;
+        }
+
+        void howConstruct(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n),ans;
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            bool possible=helper_howConstruct("",dict,ans);
+            if(possible){
+                cout<<"it is possible to construct "<<finalStr<<" using given dictionary of words"<<endl;
+                for(string str:ans){
+                    cout<<str<<",";
+                }
+                cout<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            howConstructMap_notPossible.clear();
+        }
+
+        unordered_map<string,vector<vector<string>>>allConstructsMap;
+
+        vector<vector<string>> helper_allConstructs(string curr,vector<string>&dict){
+            // cout<<"curr = "<<curr<<endl;
+            if(allConstructsMap.find(curr)!=allConstructsMap.end()){
+                savedCalculation++;
+                return allConstructsMap[curr];
+            } else if(curr.size()>=size){
+                return allConstructsMap[curr];
+            } else if(finalStr.find(curr)==string::npos){
+                // notSubstringsavedCalculations++;
+                allConstructsMap[curr];
+                return allConstructsMap[curr];
+            } else if(finalStr.find(curr,0)!=0){
+                substringPresentButNotAtStart++;
+                // allConstructsMap[curr];
+                return allConstructsMap[curr];
+            } else cnt++;
+
+            for(string str:dict){
+                vector<vector<string>>temp=helper_allConstructs(curr+str,dict);
+                if(!temp.empty()){
+                    for(vector<string>& it:temp){
+                        it.push_back(str);
+                        allConstructsMap[curr].push_back(it);
+                    }
+                }
+            }
+            return allConstructsMap[curr];
+        }
+
+        void allConstructs(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            this->size=this->finalStr.size();
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            
+            allConstructsMap[finalStr]={{}};
+
+            if(!helper_allConstructs("",dict).empty()){
+                cout<<"it is possible to construct "<<finalStr<<" using given dictionary of words in "<<allConstructsMap[""].size()<<" ways"<<endl;
+                bool ask;
+                cout<<"DO you want to print all possible ways : ";
+                cin>>ask;
+                if(ask){
+                    for(vector<string> str:allConstructsMap[""]){
+                        cout<<"[";
+                        for(string str2:str){
+                            cout<<str2<<",";
+                        }
+                        cout<<"]"<<endl;
+                    }
+                }
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            cout<<"Total function calls perfomed : "<<cnt<<endl;
+            cout<<"No of recursive calls avoided rouhgly : "<<savedCalculation<<endl;
+            cout<<"No of calculations saved due to formed string is nto a substring of the finalStr = "<<notSubstringsavedCalculations<<endl;
+            cout<<"no of calculatiosn saved becuase substring is present in finalStr but not at start = "<<substringPresentButNotAtStart<<endl;
+            savedCalculation=0;
+            substringPresentButNotAtStart=0;
+            notSubstringsavedCalculations=0;
+            cnt=0;
+            allConstructsMap.clear();
+        }
+
+        unsigned long long helper_fiboTabulation(unsigned long long num){
+            vector<unsigned long long>vec(num+1,0);
+            vec[1]=1;
+            for(int i=1;i<num;i++){
+                vec[i+1]+=vec[i];
+                if(i!=num-1)vec[i+2]+=vec[i];
+            }
+            return vec.back();
+        }
+
+        void fiboTabulation(){
+            unsigned long long num=1;
+            while(num){
+                cout<<"Enter n : ";
+                cin>>num;
+                cout<<"Fibonachi of "<<num<<" is : "<<helper_fiboTabulation(num)<<endl;
+            }
+        }
+
+        unsigned long long helper_fiboDPWithoutArray(unsigned long long num){
+            unsigned long long first=1,second=0,ans=0;
+            for(int i=2;i<=num;i++){
+                ans=first+second;
+                second=first;
+                first=ans;
+            }
+            return ans;
+        }
+
+        void fiboDPWithoutArray(){
+            unsigned long long num=1;
+            while(num){
+                cout<<"Enter n : ";
+                cin>>num;
+                cout<<"Fibonachi of "<<num<<" is : "<<helper_fiboDPWithoutArray(num)<<endl;
+            }
+        }
+
+        bool isSafeGridTraveller(int x,int y,vector<vector<int>>&matrix){
+            return (x>=0&&y>=0);
+        }
+       
+        unsigned long long helper_gridTraverllerTabulationReverse(int n){
+            vector<vector<int>>matrix(n,vector<int>(n,0));
+            vector<vector<bool>>visited(n,vector<bool>(n,false));
+            queue<pair<int,int>>loc;
+            matrix[n-1][n-1]=1;
+            loc.push({n-1,n-1});
+            while(!loc.empty()){
+                int x=loc.front().first;
+                int y=loc.front().second;
+                loc.pop();
+                if(visited[x][y])continue;
+                else visited[x][y]=true;
+                for(auto it:leftNup){
+                    int nextX=x+it.first;
+                    int nextY=y+it.second;
+                    if(isSafeGridTraveller(nextX,nextY,matrix)){
+                        matrix[nextX][nextY]+=matrix[x][y];
+                        loc.push({nextX,nextY});
+                    }
+                }
+            }
+            return matrix[0][0];
+        }
+
+        void gridTraverllerTabulationReverse(){
+            int n;
+            cout<<"ENter size of matrix : ";
+            cin>>n;
+            cout<<" no of ways to reach Bottom-Right from Top-Left are : "<<helper_gridTraverllerTabulationReverse(n)<<endl;
+        }
+
+        bool isSafeGridTravellerTabulation(int x,int y,vector<vector<int>>&matrix){
+            return (x<matrix.size()&&y<matrix[x].size());
+        }
+
+        //this can also be used for travelling the grid with obstacles
+        unsigned long long helper_gridTravellerTabulation(int n,vector<vector<unsigned long long>>&matrix){
+            if(n==1||n==0)return n;
+            for(int i=0;i<matrix.size();i++){
+                for(int j=0;j<matrix[i].size();j++){
+                    // for(auto it:downNright){
+                    //     int nextX=i+it.first;
+                    //     int nextY=j+it.second;
+                    //     if(isSafeGridTravellerTabulation(nextX,nextY,matrix)){
+                    //         matrix[nextX][nextY]+=matrix[i][j];
+                    //     }
+                    // }
+                    if(j!=matrix[i].size()-1){
+                        matrix[i][j+1]+=matrix[i][j];
+                    }
+                    if(i!=matrix.size()-1){
+                        matrix[i+1][j]+=matrix[i][j];
+                    }
+                }
+            }
+            return matrix[n][n];
+        }
+
+        void gridTraverllerTabulation(){
+            unsigned long long n;
+            cout<<"ENter N : ";
+            cin>>n;
+            vector<vector<unsigned long long>>matrix(n+1,vector<unsigned long long>(n+1,0));
+            matrix[1][1]=1;
+            cout<<"Ready?"<<endl;
+            cin.ignore();
+            cin.get();
+            cout<<"No of ways to go from Top-Left to Bottom-Right are = "<<helper_gridTravellerTabulation(n,matrix)<<endl;
+        }
+
+        vector<pair<int,pair<int,int>>>cubeDrxn={{1,{0,0}},{0,{1,0}},{0,{0,1}}};
+
+        bool isSafeCubeTraveller(int x,int y,int z,int& size){
+            return (x<size&&y<size&&z<size);
+        }
+
+        vector<vector<vector<unsigned long long>>>cube,memoizationCube;
+
+        int testVar=0;
+        void helper_cubeTraveller(int x,int y,int z,int& target){
+            // cout<<x<<","<<y<<","<<z<<endl;
+            if(x==target&&y==target&&z==target){
+                // cout<<"Condition hit"<<endl;
+                cnt++;
+                return;
+            }
+
+            if(x!=target){
+                helper_cubeTraveller(x+1,y,z,target);
+            }
+            //  else {
+            //     cout<<"x hit"<<endl;
+            // }
+
+            if(y!=target){
+                helper_cubeTraveller(x,y+1,z,target);  
+            }
+            // else {
+            //     cout<<"y hit"<<endl;
+            // }
+
+            
+            if(z!=target){
+                helper_cubeTraveller(x,y,z+1,target);  
+            }
+            // else {
+            //     cout<<"z hit"<<endl;
+            // }
+            // for(auto it:cubeDrxn){
+
+            //     int nextX=x+it.first;
+            //     int nextY=y+it.second.first;
+            //     int nextZ=z+it.second.second;
+            //     if(isSafeCubeTraveller(nextX,nextY,nextY,size)){
+            //         helper_cubeTraveller(nextX,nextY,nextZ,size,cube);
+            //     }
+            // }
+        }
+
+        void cubeTraveller(){
+            int n;
+            cout<<"Enter n : ";
+            cin>>n;
+            //there is no need in actual of the cube
+            // cube.resize(n,vector<vector<unsigned long long>>(n,vector<unsigned long long>(n,0)));
+
+            int target=n-1;
+            cout<<"Cube created"<<endl;
+            cnt=0;
+            cout<<"Ready?";
+            cin.ignore();
+            cin.get();
+            helper_cubeTraveller(0,0,0,target);
+            cout<<"Traversal complete"<<endl;
+            cout<<"NO of ways to reach from (0,0,0) to ("<<n-1<<","<<n-1<<","<<n-1<<") are : "<<cnt<<endl;
+            cnt=0;
+            // cube.clear();
+            memoizationCube.clear();
+        }
+
+        unsigned long long helper_cubeTravellerDP(int x,int y,int z,int& target){
+            if(memoizationCube[x][y][z]!=0)return memoizationCube[x][y][z];
+            unsigned long long temp=0;
+            if(x!=target){
+                temp+=helper_cubeTravellerDP(x+1,y,z,target);
+            }
+
+            if(y!=target){
+                temp+=helper_cubeTravellerDP(x,y+1,z,target);
+            }
+        
+            if(z!=target){
+                temp+=helper_cubeTravellerDP(x,y,z+1,target);
+            }
+
+            memoizationCube[x][y][z]=temp; //not using temp will give exact output but will more computation like very minor maybe
+            return temp;
+        }
+
+        void cubeTravellerDP(){
+            int n;
+            cout<<"Enter n : ";
+            cin>>n;
+
+            // cube.resize(n,vector<vector<unsigned long long>>(n,vector<unsigned long long>(n,0)));
+            memoizationCube.resize(n,vector<vector<unsigned long long>>(n,vector<unsigned long long>(n,0)));
+            cout<<"Cube created"<<endl;
+
+            int target=n-1;
+
+            memoizationCube[target][target][target]=1;
+            cout<<"Ready?";
+            cin.ignore();
+            cin.get();
+            unsigned long long totalPossibleWays=helper_cubeTravellerDP(0,0,0,target);
+            cout<<"Traversal complete"<<endl;
+            cout<<"NO of ways to reach from (0,0,0) to ("<<n-1<<","<<n-1<<","<<n-1<<") are : "<<totalPossibleWays<<endl;
+            // cube.clear();
+            memoizationCube.clear();
+        }
+
+        bool helper_canSumTabulation(unsigned long long target,vector<unsigned long long>&nums){
+            queue<int>loc;
+            for(int num:nums)loc.push(num);
+            while(!loc.empty()){
+                int curr=loc.front();
+                if(curr*2==target)return true;
+                loc.pop();
+                queue<int>loc2;
+                while(!loc.empty()){
+                    int secondNum=loc.front();
+                    loc.pop();
+                    loc2.push(secondNum);
+                    int next=curr+secondNum;
+                    if(next==target)return true;
+                    else if(next>target)continue;
+                    loc.push(next);
+                }
+                while(!loc2.empty()){
+                    loc.push(loc2.front());
+                    loc2.pop();
+                }
+            }
+            return false;
+        }
+        //slow -not DP
+        void canSumTabulation(){
+            unsigned long long target;
+            int nNum;
+            cout<<"Enter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            cout<<"Ready?";
+            cin.ignore();
+            cin.get();
+            if(helper_canSumTabulation(target,nums)){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            noOfWaysHowSum.clear();
+        }
+
+        unordered_set<unsigned long long>alreadyPushedCanSumTabulation;
+        bool helper_canSumTabulationTry2(unsigned long long&target,vector<unsigned long long>&nums){
+            stack<unsigned long long>loc;
+            loc.push(0);
+            while(!loc.empty()){
+                int curr=loc.top();
+                alreadyPushedCanSumTabulation.insert(curr);
+                loc.pop();
+                cnt++;
+                for(unsigned long long& num:nums){
+                    int next=curr+num;
+                    if(next==target)return true;
+                    else if(next<target ){
+                        if(alreadyPushedCanSumTabulation.find(next)==alreadyPushedCanSumTabulation.end()){
+                            loc.push(next);
+                        } else savedCalculation++;
+                    }
+                }
+            }
+            return false;
+        }
+
+        void canSumTabulationTry2(){
+            unsigned long long target;
+            int nNum;
+            cout<<"Enter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            cout<<"Ready?";
+            cin.ignore();
+            cin.get();
+            if(helper_canSumTabulationTry2(target,nums)){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            noOfWaysHowSum.clear();
+        }
+
+        bool helper_canSumTabulationTry3(unsigned long long & target,vector<unsigned long long>&nums,vector<bool>&possible){
+            for(int i=0;i<=target;i++){
+                if(possible[i]){
+                    for(int num:nums){
+                        cnt++;
+                        int next=i+num;
+                        if(next==target)return true;
+                        else if(next<target){
+                            possible[next]=true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+
+        //faster than Try2 as well as canSum DP Memoization
+        void canSumTabulationTry3(){
+            unsigned long long target;
+            int nNum;
+            cout<<"Enter target : ";
+            cin>>target;
+            vector<bool>possible(target+1,false);
+            possible[0]=true;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<unsigned long long>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            //19999998 79999920
+            cout<<"Ready?";
+            cin.ignore();
+            cin.get();
+            if(helper_canSumTabulationTry3(target,nums,possible)){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            noOfWaysHowSum.clear();
         }
 };
 
@@ -413,17 +1650,43 @@ int getChoice(){
     cout<<"10 : From Top Left to Bottom Right while marking [y][x] when noOfWays[x][y] found"<<endl;
     cout<<"11 : Can Sum Recursion"<<endl;
     cout<<"12 : Can Sum using DP"<<endl;
+    cout<<"13 : Can multiply Recursion"<<endl;
+    cout<<"14 : Can Multiply DP"<<endl;
+    cout<<"15 : Can Sum Using Negative numbers"<<endl;
+    cout<<"16 : can Sum +ve numbers only Decreasing from target"<<endl;
+    cout<<"17 : can Sum no of possible way"<<endl;
+    cout<<"18 : How sum Recursion"<<endl;
+    cout<<"19 : How Sum DP"<<endl;
+    cout<<"20 : How sum with path from each number"<<endl;
+    cout<<"21 : How Sum with path from each number bool try"<<endl;
+    cout<<"22 : Best Sum"<<endl;
+    cout<<"23 : countConstruct"<<endl;
+    cout<<"24 : How construct"<<endl;
+    cout<<"25 : All Constructs"<<endl;
+    cout<<"26 : can Construct Recursive"<<endl;
+    cout<<"27 : can Construct DP1(curr substring of finalStr not checked)"<<endl;
+    cout<<"28 : can Construct DP2 (checked whehter curr is substring of finalStr)"<<endl;
+    cout<<"29 : can Construct DP3 (Checked whehter substring is present at index 0 or not)"<<endl;
+    cout<<"30 : Fibonachi Tabulation Using Array"<<endl;
+    cout<<"31 : Fibo Tabulation Without using Array"<<endl;
+    cout<<"32 : Grid Traveller Tabulation (Reversing back-My Method) with Matrix"<<endl;
+    cout<<"33 : Grid Traveller Tabulation With Matrix (Alvin)"<<endl;
+    cout<<"34 : Cube traveller DFS"<<endl;
+    cout<<"35 : Cube traveller DP"<<endl;
+    cout<<"36 : Can Sum Tabulation"<<endl;
+    cout<<"37 : Can Sum Tabulation Try2(stack)"<<endl;
+    cout<<"38 : Can Sum Tabulation Try3 (using bool array)"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
 }
 
 int main(){
-    int n;
-    cout<<"Enter N : ";
-    cin>>n;
-    DynamicProgramming DP(n);
+
+    DynamicProgramming DP(1);
+
     int choice=1;
+    
     while(choice){
         choice=getChoice();
         if(choice==1){
@@ -469,7 +1732,85 @@ int main(){
         else if(choice==12){
             DP.canSumDP();
         }
-    }while(choice);
+        else if(choice==13){
+            DP.canMultiply();
+        }
+        else if(choice==14){
+            DP.canMultiplyDP();
+        }
+        else if(choice==15){
+            DP.canSumNegNums();
+        }
+        else if(choice==16){
+            DP.canSumDecreasingFromTarget();
+        }
+        else if(choice==17){
+            DP.canSumNoOfWays();
+        }
+        else if(choice==18){
+            DP.howSumRecursion();
+        }
+        else if(choice==19){
+            DP.howSumDP();
+        }
+        else if(choice==20){
+            DP.howSumNoOfWays();
+        }
+        else if(choice==21){
+            DP.howSumNoOfWaysBoolTry();
+        }
+        else if(choice==22){
+            DP.bestSum();
+        }
+        else if(choice==23){
+            DP.countConstruct();
+        }
+        else if(choice==24){
+            DP.howConstruct();
+        }
+        else if(choice==25){
+            DP.allConstructs();
+        }
+        else if(choice==26){
+            DP.canConstructRecursive();
+        }
+        else if(choice==27){
+            DP.canConstructDP1();
+        }
+        else if(choice==28){
+            DP.canConstructDP2();
+        }
+        else if(choice==29){
+            DP.canConstructDP3();
+        }
+        else if(choice==30){
+            DP.fiboTabulation();
+        }
+        else if(choice==31){
+            DP.fiboDPWithoutArray();
+        }
+        else if(choice==32){
+            DP.gridTraverllerTabulationReverse();
+        }
+        else if(choice==33){
+            DP.gridTraverllerTabulation();
+        }
+        else if(choice==34){
+            DP.cubeTraveller();
+        }
+        else if(choice==35){
+            DP.cubeTravellerDP();
+        }
+        else if(choice==36){
+            DP.canSumTabulation();
+        }
+        else if(choice==37){
+            DP.canSumTabulationTry2();
+        }
+        else if(choice==38){
+            DP.canSumTabulationTry3();
+        }
+    }
 }
 
 // 2399309444331282944
