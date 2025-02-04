@@ -5,6 +5,8 @@
 #include<climits>
 #include<unordered_set>
 #include<unordered_map>
+#include<unistd.h>
+#include<chrono>
 using namespace std;
 
 class DynamicProgramming{
@@ -27,8 +29,28 @@ class DynamicProgramming{
         unordered_set<unsigned long long>visitedNums;
         unordered_set<unsigned long long>notPossible;
 
+        double lastTime=0;
+        chrono::time_point<std::chrono::high_resolution_clock> start;
+        chrono::time_point<std::chrono::high_resolution_clock> end ;
+        // pair<auto,auto>pair;
+        // static auto start=nullptr;
+        // static auto end=nullptr;;
         //unordered_map<unsigned long long,vector<vector<unsigned long long>>>noOfWaysHowSum;
         
+        void startTime(){
+            start=chrono::high_resolution_clock::now();
+        }
+
+        void endTime(){
+            end=chrono::high_resolution_clock::now();
+            chrono::duration<double> elapsed = end - start;
+            cout<<"Time required was : "<<elapsed.count()<<endl;
+            if(lastTime!=0){
+                cout<<"Current approach is faster than old approach by "<<lastTime/elapsed.count()<<" times"<<endl;
+            } 
+            lastTime=elapsed.count();
+        }
+
         bool isSafe(int x,int y){
             return (x>=0&&y>=0&&x<noOfWays.size()&&y<noOfWays[x].size());
         }
@@ -82,7 +104,7 @@ class DynamicProgramming{
 
         unsigned long long matrixNormalTraverse(int x,int y){
             cnt++;
-            cout<<"Calculation no - "<<cnt<<endl;
+            // cout<<"Calculation no - "<<cnt<<endl;
             if(x==targetX&&y==targetY)return 1;
             unsigned long long ret=0;
 
@@ -125,6 +147,12 @@ class DynamicProgramming{
             }
         }
 
+        void ready(){
+            cout<<"Ready?";
+            cin.ignore();
+            cin.get();
+        }
+
         void gridTopLeftToBottomRightDynamic(){
             if(n==-1){
                 // cout<<"noOfWays matrix needs to be created"<<endl;
@@ -132,7 +160,10 @@ class DynamicProgramming{
             }
             noOfWays.assign(n,vector<unsigned long long>(n,0));
             noOfWays[targetX][targetY]=1;
+            ready();
+            startTime();
             dynamicTraverse(0,0);
+            endTime();
             // cout<<"Saved total "<<savedCalculation<<" calculation from outside"<<endl;
             cout<<"Dynamically traversed from Top-Left to Bottom-Right"<<endl;
             cout<<"Total no of ways to reach destination are : "<<noOfWays[0][0]<<endl;
@@ -904,7 +935,11 @@ class DynamicProgramming{
             }
             cout<<"Lets start"<<endl;
             bestSumMap[target]={target};
-            if(helper_bestSum(0,nums,target)){
+            ready();
+            startTime();
+            bool ans=helper_bestSum(0,nums,target);
+            endTime();
+            if(ans){
                 cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
                 cout<<"Best Path from 0-"<<target<<" is : ";
                 for(int var:bestSumMap[0]){
@@ -919,6 +954,7 @@ class DynamicProgramming{
             savedCalculation=0;
             cnt=0;
             noOfWaysHowSum.clear();
+            bestSumMap.clear();
         }
         
         unordered_map<string,int>countConstructMap;
@@ -927,7 +963,6 @@ class DynamicProgramming{
 
         //  finalStr - azzzzzzzzzzzza
         /// [z,b,a]
-
 
         // azzccddeeffgghhjjkkllmmnnzza
         //[ w x y t z n m l k j h g f e d c a d]
@@ -1073,6 +1108,7 @@ class DynamicProgramming{
                 substringPresentButNotAtStart++;
                 return false;
             }
+           
             cnt++;
             for(string str:dict){
                 if(helper_canConstructDP3(curr+str,dict))return true;
@@ -1234,8 +1270,11 @@ class DynamicProgramming{
             }
             
             allConstructsMap[finalStr]={{}};
-
-            if(!helper_allConstructs("",dict).empty()){
+            ready();
+            startTime();
+            vector<vector<string>>ans=helper_allConstructs("",dict);
+            endTime();
+            if(!ans.empty()){
                 cout<<"it is possible to construct "<<finalStr<<" using given dictionary of words in "<<allConstructsMap[""].size()<<" ways"<<endl;
                 bool ask;
                 cout<<"DO you want to print all possible ways : ";
@@ -1382,6 +1421,9 @@ class DynamicProgramming{
         }
 
         vector<vector<vector<unsigned long long>>>cube,memoizationCube;
+        vector<vector<vector<vector<unsigned long long>>>>memoizationCube4D;
+        vector<vector<vector<vector<vector<unsigned long long>>>>>memoizationCube5D;
+        vector<vector<vector<vector<vector<vector<unsigned long long>>>>>>memoizationCube6D;
 
         int testVar=0;
         void helper_cubeTraveller(int x,int y,int z,int& target){
@@ -1482,8 +1524,212 @@ class DynamicProgramming{
             unsigned long long totalPossibleWays=helper_cubeTravellerDP(0,0,0,target);
             cout<<"Traversal complete"<<endl;
             cout<<"NO of ways to reach from (0,0,0) to ("<<n-1<<","<<n-1<<","<<n-1<<") are : "<<totalPossibleWays<<endl;
+            cout<<"x 1 step : "<<memoizationCube[1][0][0]<<endl;
+            cout<<"y 1 step : "<<memoizationCube[0][1][0]<<endl;
+            cout<<"z 1 step : "<<memoizationCube[0][0][1]<<endl;
             // cube.clear();
             memoizationCube.clear();
+        }
+
+        unsigned long long helper_cubeTraveller4D(int x,int y,int z,int d4,int&target){
+            if(memoizationCube4D[x][y][z][d4]!=0){
+                return memoizationCube4D[x][y][z][d4];
+            } 
+
+            unsigned long long ret=0;
+            if(x!=target){
+                ret+=helper_cubeTraveller4D(x+1,y,z,d4,target);
+            }
+
+            if(y!=target){
+                ret+=helper_cubeTraveller4D(x,y+1,z,d4,target);
+            }
+
+            if(z!=target){
+                ret+=helper_cubeTraveller4D(x,y,z+1,d4,target);
+            }
+
+            if(d4!=target){
+                ret+=helper_cubeTraveller4D(x,y,x,d4+1,target);
+            }
+
+            memoizationCube4D[x][y][z][d4]=ret;
+            return ret;
+        }
+
+        void cubeTraveller4D(){
+            int n;
+            cout<<"Enter n :";
+            cin>>n;
+            int target=n-1;
+            memoizationCube4D.resize(n,vector<vector<vector<unsigned long long>>>(n,vector<vector<unsigned long long>>(n,vector<unsigned long long>(n,0))));
+            memoizationCube4D[target][target][target][target]=1;
+            cout<<"Cube in 4D is created"<<endl;
+
+            cout<<"Target is : ("<<target<<","<<target<<","<<target<<","<<target<<")"<<endl;
+            unsigned long long totalPossibleWays=helper_cubeTraveller4D(0,0,0,0,target);
+            if(totalPossibleWays!=0){
+                cout<<"It is possible to travel from (0,0,0,0) to ("<<target<<","<<target<<","<<target<<","<<target<<") in : "<<totalPossibleWays<<" ways"<<endl;
+                cout<<"x 1 step : "<<memoizationCube4D[1][0][0][0]<<endl;
+                cout<<"y 1 step : "<<memoizationCube4D[0][1][0][0]<<endl;
+                cout<<"z 1 step : "<<memoizationCube4D[0][0][1][0]<<endl;
+                cout<<"d4 1 step : "<<memoizationCube4D[0][0][0][1]<<endl;
+            } else {
+                cout<<"It is not possibel to travel from (0,0,0,0) to ("<<target<<","<<target<<","<<target<<","<<target<<")"<<endl;
+            }
+            printPossibleWays4DCube(target);
+            memoizationCube4D.clear();
+        }
+
+        unsigned long long helper_cubeTraveller5D(int x,int y,int z,int d4,int d5,int& target){
+            if(memoizationCube5D[x][y][z][d4][d5]!=0){
+                return memoizationCube5D[x][y][z][d4][d5];
+            }
+            unsigned long long ret=0;
+
+            if(x!=target){
+                ret+=helper_cubeTraveller5D(x+1,y,z,d4,d5,target);
+            }
+
+            if(y!=target){
+                ret+=helper_cubeTraveller5D(x,y+1,z,d4,d5,target);
+            }
+
+            if(z!=target){
+                ret+=helper_cubeTraveller5D(x,y,z+1,d4,d5,target);
+            }
+
+            if(d4!=target){
+                ret+=helper_cubeTraveller5D(x,y,z,d4+1,d5,target);
+            }
+
+            if(d5!=target){
+                ret+=helper_cubeTraveller5D(x,y,z,d4,d5+1,target);
+            }
+            memoizationCube5D[x][y][z][d4][d5]=ret;
+            // cout<<"ret = "<<ret<<endl;
+            return ret;
+        }
+
+        void printPossibleWays4DCube(int& target){
+            int totalCells=0;
+            for(int i=0;i<=target;i++){
+                for(int j=0;j<=target;j++){
+                    for(int k=0;k<=target;k++){
+                        for(int l=0;l<=target;l++){
+                            cout<<"from ("<<i<<","<<j<<","<<k<<","<<l<<") there are : "<<memoizationCube4D[i][j][k][l]<<" ways"<<endl;
+                            totalCells++;
+                        }
+                    }
+                }
+            }
+            cout<<"Total cells present are : "<<totalCells<<endl;
+        }
+
+        void printPossibleWays5DCube(int& target){
+            int totalCells=0;
+
+            for(int i=0;i<=target;i++){
+                for(int j=0;j<=target;j++){
+                    for(int k=0;k<=target;k++){
+                        for(int l=0;l<=target;l++){
+                            for(int m=0;m<=target;m++){
+                                cout<<"from ("<<i<<","<<j<<","<<k<<","<<l<<","<<m<<") there are : "<<memoizationCube5D[i][j][k][l][m]<<" ways"<<endl;
+                                totalCells++;
+                            }
+                        }
+                    }
+                }
+            }
+            cout<<"Total cells are : "<<totalCells<<endl;
+        }
+
+        void cubeTraveller5D(){
+            int n;
+            cout<<"Enter n :";
+            cin>>n;
+            int target=n-1;
+            memoizationCube5D.resize(n,vector<vector<vector<vector<unsigned long long>>>>(n,vector<vector<vector<unsigned long long>>>(n,vector<vector<unsigned long long>>(n,vector<unsigned long long>(n,0)))));
+            memoizationCube5D[target][target][target][target][target]=1;
+            cout<<"Cube in 5D is created"<<endl;
+
+            cout<<"Target is : ("<<target<<","<<target<<","<<target<<","<<target<<","<<target<<")"<<endl;
+
+            unsigned long long totalPossibleWays=helper_cubeTraveller5D(0,0,0,0,0,target);
+            if(totalPossibleWays!=0){
+                cout<<"It is possible to travel from (0,0,0,0,0) to ("<<target<<","<<target<<","<<target<<","<<target<<","<<target<<") in : "<<totalPossibleWays<<" ways"<<endl;
+                cout<<"x 1 step : "<<memoizationCube5D[1][0][0][0][0]<<endl;
+                cout<<"y 1 step : "<<memoizationCube5D[0][1][0][0][0]<<endl;
+                cout<<"z 1 step : "<<memoizationCube5D[0][0][1][0][0]<<endl;
+                cout<<"d4 1 step : "<<memoizationCube5D[0][0][0][1][0]<<endl;
+                cout<<"d5 1 step : "<<memoizationCube5D[0][0][0][0][1]<<endl;
+
+            } else {
+                cout<<"It is not possibel to travel from (0,0,0,0,0) to ("<<target<<","<<target<<","<<target<<","<<target<<","<<target<<")"<<endl;
+            }
+            printPossibleWays5DCube(target);
+            memoizationCube5D.clear();
+        }
+
+        unsigned long long helper_cubeTraveller6D(int x,int y,int z,int d4,int d5,int d6,int&target){
+            if(memoizationCube6D[x][y][z][d4][d5][d6]!=0){
+                return memoizationCube6D[x][y][z][d4][d5][d6];
+            }
+            unsigned long long ret=0;
+            if(x!=target){
+                ret+=helper_cubeTraveller6D(x+1,y,z,d4,d5,d6,target);
+            }
+
+            if(y!=target){
+                ret+=helper_cubeTraveller6D(x,y+1,z,d4,d5,d6,target);
+            }
+
+            if(z!=target){
+                ret+=helper_cubeTraveller6D(x,y,z+1,d4,d5,d6,target);
+            }
+
+            if(d4!=target){
+                ret+=helper_cubeTraveller6D(x,y,z,d4+1,d5,d6,target);
+            }
+
+            if(d5!=target){
+                ret+=helper_cubeTraveller6D(x,y,z,d4,d5+1,d6,target);
+            }
+
+            if(d6!=target){
+                ret+=helper_cubeTraveller6D(x,y,z,d4,d5,d6+1,target);
+            }
+
+            memoizationCube6D[x][y][z][d4][d5][d6]=ret;
+            return ret;
+        }
+
+        void cubeTraveller6D(){
+            int n;
+            cout<<"Enter n :";
+            cin>>n;
+            int target=n-1;
+
+            memoizationCube6D.resize(n,vector<vector<vector<vector<vector<unsigned long long>>>>>(n,vector<vector<vector<vector<unsigned long long>>>>(n,vector<vector<vector<unsigned long long>>>(n,vector<vector<unsigned long long>>(n,vector<unsigned long long>(n,0))))));
+            memoizationCube6D[target][target][target][target][target][target]=1;
+
+            cout<<"Cube in 6D is created"<<endl;
+
+            cout<<"Target is : ("<<target<<","<<target<<","<<target<<","<<target<<","<<target<<","<<target<<")"<<endl;
+
+            unsigned long long totalPossibleWays=helper_cubeTraveller6D(0,0,0,0,0,0,target);
+            if(totalPossibleWays!=0){
+                cout<<"It is possible to travel from (0,0,0,0,0,0) to ("<<target<<","<<target<<","<<target<<","<<target<<","<<target<<","<<target<<") in : "<<totalPossibleWays<<" ways"<<endl;
+                cout<<"x 1 step : "<<memoizationCube6D[1][0][0][0][0][0]<<endl;
+                cout<<"y 1 step : "<<memoizationCube6D[0][1][0][0][0][0]<<endl;
+                cout<<"z 1 step : "<<memoizationCube6D[0][0][1][0][0][0]<<endl;
+                cout<<"d4 1 step : "<<memoizationCube6D[0][0][0][1][0][0]<<endl;
+                cout<<"d5 1 step : "<<memoizationCube6D[0][0][0][0][1][0]<<endl;
+                cout<<"d6 1 step : "<<memoizationCube6D[0][0][0][0][0][1]<<endl;
+            } else {
+                cout<<"It is not possibel to travel from (0,0,0,0,0) to ("<<target<<","<<target<<","<<target<<","<<target<<","<<target<<")"<<endl;
+            }
+            memoizationCube6D.clear();
         }
 
         bool helper_canSumTabulation(unsigned long long target,vector<unsigned long long>&nums){
@@ -1510,6 +1756,7 @@ class DynamicProgramming{
             }
             return false;
         }
+        
         //slow -not DP
         void canSumTabulation(){
             unsigned long long target;
@@ -1539,6 +1786,7 @@ class DynamicProgramming{
         }
 
         unordered_set<unsigned long long>alreadyPushedCanSumTabulation;
+
         bool helper_canSumTabulationTry2(unsigned long long&target,vector<unsigned long long>&nums){
             stack<unsigned long long>loc;
             loc.push(0);
@@ -1603,7 +1851,6 @@ class DynamicProgramming{
             return false;
         }
 
-
         //faster than Try2 as well as canSum DP Memoization
         void canSumTabulationTry3(){
             unsigned long long target;
@@ -1634,6 +1881,576 @@ class DynamicProgramming{
             cnt=0;
             noOfWaysHowSum.clear();
         }
+
+        void displayGivenMatrix(vector<vector<int>>&matrix){
+            cout<<"Matrix is : "<<endl;
+            for(int i=0;i<matrix.size();i++){
+                if(!matrix[i].empty()){
+                    for(int j=0;j<matrix[i].size();j++){
+                        cout<<matrix[i][j]<<", ";
+                    }
+                } else {
+                    cout<<"Empty";
+                }
+                cout<<endl;
+            }
+        }
+
+        vector<int> helper_bestSumTabulationTry1(int& target,vector<int>&nums){
+            vector<vector<int>>ways(target+1,vector<int>(0));
+            for(int var:nums){
+                if(var<target){
+                    ways[var]={var};
+                }
+            }
+
+            // cout<<"before starting the traversal "<<endl;
+            // displayGivenMatrix(ways);
+            // cout<<"Starting the traversal"<<endl;
+
+            for(int i=0;i<=target;i++){
+                // cout<<ways[i].size()<<endl;
+                if(ways[i].size()!=0){
+                    for(int var:nums){
+                        int next=i+var;
+                        if(next>target)continue;
+                        else if(next==target){
+                            vector<int>temp=ways[i];
+                            temp.push_back(var);
+                            return temp;
+                        }
+                        if(ways[next].empty()){
+                            ways[next]=ways[i];
+                            ways[next].push_back(var);
+                        } else if(ways[next].size()>ways[i].size()+1){
+                            ways[next]=ways[i];
+                            ways[next].push_back(var);
+                        } else {
+                            // cout<<"ways["<<next<<"].size() = "<<ways[next].size()<<endl;
+                        }
+                    }
+                }
+            }
+
+            // cout<<"traversal complete"<<endl;
+            // displayGivenMatrix(ways);
+
+           return ways[target];
+        }
+
+        // more space complexity as well as time 
+        void bestSumTabulationTry1(){
+            int target;
+            cout<<"Enter target : ";
+            cin>>target;
+            int n;
+            cout<<"How many numbers are in the array : ";
+            cin>>n;
+            vector<int>nums(n,0);
+            cout<<"Enter "<<n<<" numbers : ";
+            for(int i=0;i<n;i++)cin>>nums[i];
+            ready();
+            startTime();
+            vector<int>ans=helper_bestSumTabulationTry1(target,nums);
+            endTime();
+            if(!ans.empty()){
+                cout<<"Best way to reach target is : [";
+                for(int var:ans){
+                    cout<<var<<",";
+                }
+                cout<<"]"<<endl;
+            } else {
+                cout<<"not possible to reach target with given array of numbers"<<endl;
+            }
+        }
+
+        // (m*m*n) time complexity 
+        // (m*m)   space complexity
+        //  m-target n-size of array of numbers
+
+        vector<unsigned long long> helper_howSumTabulationTry1(vector<int>&nums,int& target){
+
+            vector<vector<unsigned long long>>howSumMap(target+1,vector<unsigned long long>(0));
+            for(unsigned long long var:nums){
+                howSumMap[var]={var};
+            }
+
+            for(int i=0;i<=target;i++){
+                if(!howSumMap[i].empty()){
+                    for(int var:nums){
+                        int next=i+var;
+                        if(next==target){
+                            vector<unsigned long long>temp=howSumMap[i];
+                            temp.push_back(var);
+                            return temp;
+                        } else if(next<target){
+                            howSumMap[next]=howSumMap[i];
+                            howSumMap[next].push_back(var);
+                        }
+                    }
+                }
+            }
+            return {};
+        }
+
+        void howSumTabulationTry1(){
+            int target;
+            cout<<"Enter target : ";
+            cin>>target;
+            int n;
+            cout<<"How many numbers are in the array : ";
+            cin>>n;
+            vector<int>nums(n,0);
+            cout<<"Enter "<<n<<" numbers : ";
+            for(int i=0;i<n;i++)cin>>nums[i];
+            startTime();
+            vector<unsigned long long>ans=helper_howSumTabulationTry1(nums,target);
+            endTime();
+            if(!ans.empty()){
+                cout<<"One way to reach target is : [";
+                for(int var:ans){
+                    cout<<var<<",";
+                }
+                cout<<"]"<<endl;
+            } else {
+                cout<<"not possible to reach target with given array of numbers"<<endl;
+            }
+        }
+
+        vector<int> helper_bestSumTabulationTry2(int& target,vector<int>&nums){
+            
+            vector<int>table(target+1,INT_MAX);
+            for(int& var:nums){
+                if(var<=target){
+                    table[var]=0;
+                }
+            }
+
+            for(int i=0;i<=target;i++){
+                if(table[i]!=INT_MAX){
+                    for(int var:nums){
+                        int next=i+var;
+                        if(next<=target&&i<table[next]){
+                            // cout<<"Next = "<<next<<endl;
+                            table[next]=i;
+                            // cout<<"table[next] = "<<table[next]<<endl;
+                            // cout<<table.size()<<endl;
+                        }
+                    }
+                }
+            }
+
+            vector<int>ans;
+            int i=target,next;
+            int count=0;
+            if(table[target]==INT_MAX)return ans;
+            while(i>0){
+                count++;
+                next=table[i];
+                int added=(i-next);
+                // cout<<"Pushing : "<<added<<endl;
+                // cout<<"next = "<<next<<endl;
+                // cout<<"i = "<<i<<endl;
+                ans.push_back((added));
+                i=next;
+                // cout<<"After i = "<<i<<endl;
+            }
+            cout<<"Minimum no of steps required are : "<<count<<endl;
+            return ans;
+        }
+
+        //fails for certain cases
+        //target - 12, nums= 1 4 9 
+        void bestSumTabulationTry2(){
+            int target;
+            cout<<"Enter target : ";
+            cin>>target;
+            int n;
+            cout<<"How many numbers are in the array : ";
+            cin>>n;
+            vector<int>nums(n,0);
+            cout<<"Enter "<<n<<" numbers : ";
+            for(int i=0;i<n;i++)cin>>nums[i];
+            ready();
+            startTime();
+            vector<int>ans=helper_bestSumTabulationTry2(target,nums);
+            endTime();
+            if(!ans.empty()){
+                cout<<"Best way to reach target is : [";
+                for(int var:ans){
+                    cout<<var<<",";
+                }
+                cout<<"]"<<endl;
+            } else {
+                cout<<"not possible to reach target with given array of numbers"<<endl;
+            }
+        }
+
+        unordered_set<string>dictionary;
+
+        bool helper_canConstructTabulationTry1(){
+            vector<bool>table(finalStr.size()+1,false);
+            table[0]=true;
+            for(int i=1;i<=finalStr.size();i++){
+                string toCheck=finalStr.substr(0,i);
+                if(dictionary.find(toCheck)!=dictionary.end()){
+                    table[i]=true;
+                    continue;
+                }
+                for(int j=i-1;j>=0;j--){
+                    if(table[j]){
+                        string substrFind=toCheck;
+                        substrFind.erase(0,j);
+                        if(dictionary.find(substrFind)!=dictionary.end()){
+                            table[i]=true;
+                            break;
+                        }
+                    }
+                }
+            }
+            cout<<"Traversing completed"<<endl;
+            cout<<"vector is : ";
+            for(bool var:table)cout<<var<<" ";
+            cout<<endl;
+            return table.back();
+        }
+
+        void canConstructTabulationTry1(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            string str;
+            cout<<"Enter "<<n<<" strings : ";
+            for(int i=0;i<n;i++){
+                cin>>str;
+                dictionary.insert(str);
+            }
+            if(helper_canConstructTabulationTry1()){
+                cout<<"It is possible to consturtc finalStr from given dictionary of words"<<endl;
+            } else {
+                cout<<"it is not possible to construct finalStr from given dictionary of words"<<endl;
+            }
+            dictionary.clear();
+        }
+
+        bool helper_canConstructTabulationTry2(vector<string>&dict){
+            int target=finalStr.size();
+            vector<bool>table(target+1,false);
+            table[0]=true;
+            for(int i=0;i<=target;i++){
+                if(table[target])return true;
+                if(table[i]){
+                    string curr=finalStr.substr(0,i);
+                    for(string str:dict){
+                        string next=curr+str;
+                        if(next.size()>target)continue;
+                        string comp=finalStr.substr(0,next.size());
+                        if((next)==comp){
+                            table[next.size()]=true;
+                        }
+                    }
+                }
+            }
+            return table[target];
+        }
+
+        void canConstructTabulationTry2(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            vector<string>dict(n);
+            cout<<"Enter "<<n<<" strings : ";
+            for(int i=0;i<n;i++){
+                cin>>dict[i];
+            }
+            if(helper_canConstructTabulationTry2(dict)){
+                cout<<"It is possible to consturtc finalStr from given dictionary of words"<<endl;
+            } else {
+                cout<<"Not possible to construct "<<finalStr<<" from given dictionary fo words"<<endl;
+            }
+        }
+
+        vector<string> helper_bestConstructTabulationTry1(){
+            int target=finalStr.size();
+            vector<vector<string>>table(target+1,vector<string>(0));
+            table[0]={""};
+            for(int i=0;i<=target;i++){
+                if(table[i].empty()){
+                    string toFind=finalStr.substr(0,i);
+                    if(dictionary.find(toFind)!=dictionary.end()){
+                        table[i]={toFind};
+                        continue;
+                    } else {
+                        cout<<"looking back for "<<toFind<<endl;
+                    }
+                    for(int j=i-1;j>=0;j--){
+                        if(!table[j].empty()){
+                            string extraNeeded=toFind.substr(j);
+                            // extraNeeded.erase(0,j);
+                            if(dictionary.find(extraNeeded)!=dictionary.end()){
+                                if(table[i].empty()){
+                                    table[i]=table[j];
+                                    table[i].push_back(extraNeeded);
+                                }else if(table[i].size()>table[j].size()+1){
+                                    table[i]=table[j];
+                                    table[i].push_back(extraNeeded);
+                                }
+                            }
+                        }
+                    }
+                    cout<<"For "<<toFind<<" set vector is : [";
+                    for(string str:table[i]){
+                        cout<<str<<", ";
+                    }
+                    cout<<"]"<<endl;
+                }
+            }
+            return table[target];
+        }
+
+        void bestConstructTabulationTry1(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            string str;
+            cout<<"Enter "<<n<<" strings : ";
+            for(int i=0;i<n;i++){
+                cin>>str;
+                dictionary.insert(str);
+            }
+            vector<string>bestConstruct=helper_bestConstructTabulationTry1();
+            if(!bestConstruct.empty()){
+                cout<<"It is possible to consturtc finalStr from given dictionary of words"<<endl;
+                cout<<"Best possible way is : [";
+                for(string str:bestConstruct){
+                    cout<<str<<", ";
+                }
+                cout<<"]"<<endl;
+            } else {
+                cout<<"it is not possible to construct finalStr from given dictionary of words"<<endl;
+            }
+            dictionary.clear();
+        }
+
+        int helper_countConstructTabulationTry1(){
+            int target=finalStr.size();
+            vector<int>table(target+1,0);
+            table[0]=1;
+            for(int i=1;i<=target;i++){
+                string toFind=finalStr.substr(0,i);
+                for(int j=i-1;j>=0;j--){
+                    if(table[j]==0)continue;
+                    string extraNeeded=toFind.substr(j);
+                    if(dictionary.find(extraNeeded)!=dictionary.end()){
+                        table[i]+=table[j];
+                    }
+                }
+            }
+
+            return table[target];
+        }
+        
+        //int his we are moving backward (m*m) + some o(1) operations everytime - useful when m is small but n(no of words in dictionary are LARGE);
+        void countConstructTabulationTry1(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            cout<<"Enter "<<n<<" string : "<<endl;
+            string str;
+            for(int i=0;i<n;i++){
+                cin>>str;
+                dictionary.insert(str);
+            }
+            int count=helper_countConstructTabulationTry1();
+            if(count!=0){
+                cout<<"No of ways to construct "<<finalStr<<" are "<<count<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+        }
+
+        int helper_countConstructTabulationTry2(){
+            int target=finalStr.size();
+            vector<int>table(target+1,0);
+            table[0]=1;
+            for(int i=0;i<target;i++){
+                string curr=finalStr.substr(0,i);
+                for(string str:dictionary){
+                    if(finalStr.find(curr+str)==0){
+                        table[curr.size()+str.size()]+=table[i];
+                    }
+                }
+            }
+            return table[target];
+        }
+
+        //in this emthod we check forard from current position Alvin's method (m*n) time complexity -useful when m can be LARGE but n(no of word sin dictionary) is small
+        void countConstructTabulationTry2(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            cout<<"Enter "<<n<<" string : "<<endl;
+            string str;
+            for(int i=0;i<n;i++){
+                cin>>str;
+                dictionary.insert(str);
+            }
+            int count=helper_countConstructTabulationTry2();
+            if(count!=0){
+                cout<<"No of ways to construct "<<finalStr<<" are "<<count<<endl;
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+        }
+
+        unordered_map<int,vector<int>>possibleWay;
+
+        bool helper_bestSumMemoizationTry2(unsigned long long& target,int curr,vector<int>&nums){
+            if(curr==target){
+                return true;
+            } else if(curr>target){
+                return false;
+            } else if(notPossible.find(curr)!=notPossible.end()){
+                return false;
+            } else if(possibleWay.find(curr)!=possibleWay.end()){
+                return true;
+            }
+
+            bool found=false;
+            int minNeighbour=INT_MAX,minVec=INT_MAX,diff;
+            for(int var:nums){
+                int next=var+curr;
+                if(helper_bestSumMemoizationTry2(target,next,nums)){
+                    found=true;
+                    if(possibleWay[next].size()<minVec){
+                        minVec=possibleWay[next].size();
+                        minNeighbour=next;
+                        diff=var;
+                    }
+                
+                }
+            }
+            if(found){
+                if(minVec!=INT_MAX){
+                    possibleWay[curr]=possibleWay[minNeighbour];
+                    possibleWay[curr].push_back(diff);
+                }
+                return true;
+            } else {
+                notPossible.insert(curr);
+                return false;
+            }
+        }
+
+        void bestSumMemoizationTry2(){
+            unsigned long long target;
+            int nNum;
+            cout<<"ENter target : ";
+            cin>>target;
+            cout<<"How many number are in the vector : ";
+            cin>>nNum;
+            vector<int>nums(nNum,0);
+            cout<<"Enter "<<nNum<<" numbers of the vector"<<endl;
+            for(int i=0;i<nNum;i++){
+                cin>>nums[i];
+            }
+            possibleWay[target]={};
+            ready();
+            startTime();
+            bool ans=helper_bestSumMemoizationTry2(target,0,nums);
+            endTime();
+            if(ans){
+                cout<<"It is possible to reach sum to : "<<target<<" using the given numbers"<<endl;
+                cout<<"Best Path from 0-"<<target<<" is : ";
+                for(int var:possibleWay[0]){
+                    cout<<var<<" ";
+                }
+                cout<<endl;
+            } else {
+                cout<<"it is not possible to reach target with given numbers"<<endl;
+            }
+            cout<<"Total calculations required = "<<cnt<<endl;
+            cout<<"No of calculations saved roughly : "<<savedCalculation<<endl;
+            savedCalculation=0;
+            cnt=0;
+            possibleWay.clear();
+            notPossible.clear();
+        }
+
+        vector<vector<string>> helper_allConstructsTabulationTry1(){
+            int target=finalStr.size();
+            vector<vector<vector<string>>>table(target+1,vector<vector<string>>(0));
+            table[0]={{}};
+            for(int i=1;i<=target;i++){
+                string toFind=finalStr.substr(0,i);
+                for(int j=i-1;j>=0;j--){
+                    string extraNeeded=toFind.substr(j,target);
+                    if(dictionary.find(extraNeeded)!=dictionary.end()){
+                        for(auto it:table[j]){
+                            it.push_back(extraNeeded);
+                            table[i].push_back(it);
+                        }
+                    }
+                }
+            }
+            return table[target];
+        }
+
+        void allConstructsTabulationTry1(){
+            int n;
+            cout<<"Enter final string : ";
+            cin>>this->finalStr;
+            this->size=this->finalStr.size();
+            cout<<"How many strings are present in the dictionary : ";
+            cin>>n;
+            string str;
+            cout<<"Enter "<<n<<" string : "<<endl;
+            for(int i=0;i<n;i++){
+                cin>>str;
+                dictionary.insert(str);
+            }
+            ready();
+            startTime();
+            vector<vector<string>>ans=helper_allConstructsTabulationTry1();
+            endTime();
+
+            if(!ans.empty()){
+                cout<<"it is possible to construct "<<finalStr<<" using given dictionary of words in "<<ans.size()<<" ways"<<endl;
+                bool ask;
+                cout<<"Do you want to print all possible ways : ";
+                cin>>ask;
+                if(ask){
+                    for(auto it:ans){
+                        cout<<"[";
+                        for(string str:it){
+                            cout<<str<<", ";
+                        }
+                        cout<<"]"<<endl;
+                    }
+                }
+            } else {
+                cout<<"It is not possible to construct "<<finalStr<<" from given dictionary"<<endl;
+            }
+            cout<<"Total function calls perfomed : "<<cnt<<endl;
+            cout<<"No of recursive calls avoided rouhgly : "<<savedCalculation<<endl;
+            cout<<"No of calculations saved due to formed string is nto a substring of the finalStr = "<<notSubstringsavedCalculations<<endl;
+            cout<<"no of calculatiosn saved becuase substring is present in finalStr but not at start = "<<substringPresentButNotAtStart<<endl;
+            savedCalculation=0;
+            substringPresentButNotAtStart=0;
+            notSubstringsavedCalculations=0;
+            cnt=0;
+            allConstructsMap.clear();       
+        }
 };
 
 int getChoice(){
@@ -1659,7 +2476,7 @@ int getChoice(){
     cout<<"19 : How Sum DP"<<endl;
     cout<<"20 : How sum with path from each number"<<endl;
     cout<<"21 : How Sum with path from each number bool try"<<endl;
-    cout<<"22 : Best Sum"<<endl;
+    cout<<"22 : Best Sum MEmoization Try1"<<endl;
     cout<<"23 : countConstruct"<<endl;
     cout<<"24 : How construct"<<endl;
     cout<<"25 : All Constructs"<<endl;
@@ -1676,6 +2493,19 @@ int getChoice(){
     cout<<"36 : Can Sum Tabulation"<<endl;
     cout<<"37 : Can Sum Tabulation Try2(stack)"<<endl;
     cout<<"38 : Can Sum Tabulation Try3 (using bool array)"<<endl;
+    cout<<"39 : Cube traveller 4D"<<endl;
+    cout<<"40 : Best Sum Tabulation Try1"<<endl;
+    cout<<"41 : Cube traveller in 5D"<<endl;
+    cout<<"42 : Cube Traveller in 6D"<<endl;
+    cout<<"43 : How Sum Tabulation try1 (vector<vector< >> formed)"<<endl;
+    cout<<"44 : Best sum Tabulation Try2 (fails for cartain cases)"<<endl;
+    cout<<"45 : Can COnstruct Tabulation Try1(looking backward if false found)"<<endl;
+    cout<<"46 : Can construct Tabulation Try2 (looking forward)"<<endl;
+    cout<<"47 : Best Construct Tabulation Try1"<<endl;
+    cout<<"48 : Count construct Tabulation Try1 (Moving backward for every index m*m) - my method"<<endl;
+    cout<<"49 : Count COnstruct Tabulation Try2 (In this we check forward m*n)"<<endl;
+    cout<<"50 : Best SUm Memoization Try2"<<endl;
+    cout<<"51 : ALl Constructs Tabulation Try1"<<endl;
     cout<<"Your choice : ";
     cin>>choice;
     return choice;
@@ -1690,10 +2520,14 @@ int main(){
     while(choice){
         choice=getChoice();
         if(choice==1){
+            
             DP.gridTopLeftToBottomRightDynamic();
         } 
         else if(choice==2){
+            DP.ready();
+            DP.startTime();
             unsigned long long totalPossiblePaths=DP.matrixNormalTraverse(0,0);
+            DP.endTime();
             cout<<"DFS traversal done from Top-Left to Bottom-Right"<<endl;
             cout<<"Total no of possible paths are : "<<totalPossiblePaths<<endl;
         }
@@ -1810,6 +2644,46 @@ int main(){
         else if(choice==38){
             DP.canSumTabulationTry3();
         }
+        else if(choice==39){
+            DP.cubeTraveller4D();
+        }
+        else if(choice==40){
+            DP.bestSumTabulationTry1();
+        }
+        else if(choice==41){
+            DP.cubeTraveller5D();
+        }
+        else if(choice==42){
+            DP.cubeTraveller6D();
+        }
+        else if(choice==43){
+            DP.howSumTabulationTry1();
+        }
+        else if(choice==44){
+            DP.bestSumTabulationTry2();
+        }
+        else if(choice==45){
+            DP.canConstructTabulationTry1();
+        }
+        else if(choice==46){
+            DP.canConstructTabulationTry2();
+        }
+        else if(choice==47){
+            DP.bestConstructTabulationTry1();
+        }
+        else if(choice==48){
+            DP.countConstructTabulationTry1();
+        }
+        else if(choice==49){
+            DP.countConstructTabulationTry2();
+        }
+        else if(choice==50){
+            DP.bestSumMemoizationTry2();
+        }
+        else if(choice==51){
+            DP.allConstructsTabulationTry1();
+        }
+        sleep(2);
     }
 }
 
